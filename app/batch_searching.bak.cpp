@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
-#include "../core/searching.h"
+#include "../core/Searching.h"
 #include "../include/utils.h"
 #include "../include/efanna2e/index_nsg.h"
 

@@ -24,7 +24,7 @@ endif()
 
 # Build Library
 add_library(PANNS
-        core/searching.cpp
+        core/Searching.cpp
         ./include/utils.cpp
         include/efanna2e/index.cpp
         include/efanna2e/index_nsg.cpp)

@@ -1989,7 +1989,7 @@ void IndexNSG::DegreeDistribution(
 }
 
 ///**
-// * Record the data trace when doing the searching.
+// * Record the data trace when doing the Searching.
 // * Then the trace could be used to do the ideal computation without graph traverse.
 // * @param query
 // * @param K

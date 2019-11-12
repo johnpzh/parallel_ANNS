@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
-#include "../core/searching.h"
+#include <chrono>
+#include "../core/Searching.h"
 #include "../include/utils.h"
-#include "../include/efanna2e/index_nsg.h"
+//#include "../include/efanna2e/index_nsg.h"
 
 int main(int argc, char **argv)
 {
@@ -19,7 +20,7 @@ int main(int argc, char **argv)
     }
     setbuf(stdout, nullptr); // Added by Johnpzh
 
-    PANNS::searching engine;
+    PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
     unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
@@ -43,13 +44,13 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-    efanna2e::IndexNSG index(data_dimension, points_num, efanna2e::FAST_L2, nullptr);
+//    efanna2e::IndexNSG index(data_dimension, points_num, efanna2e::FAST_L2, nullptr);
 
-    index.width = engine.width_;
-    index.ep_ = engine.ep_;
-    index.final_graph_ = engine.nsg_graph_;
-    index.norms = engine.norms_;
-    index.data_ = engine.data_load_.data();
+//    index.width = engine.width_;
+//    index.ep_ = engine.ep_;
+//    index.final_graph_ = engine.nsg_graph_;
+//    index.norms = engine.norms_;
+//    index.data_ = engine.data_load_.data();
 //    index.Load(argv[3]);
 //    index.OptimizeGraph(data_load.data());
 //
@@ -66,23 +67,27 @@ int main(int argc, char **argv)
         unsigned batch_size_max = 1;
         for (unsigned batch_size = 1; batch_size <= batch_size_max; batch_size *= 2) {
             // Added by Johnpzh
-            int warmup_max = 4;
+            int warmup_max = 1;
             for (int warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<unsigned>> res(query_num);
                 for (unsigned i = 0; i < query_num; i++) res[i].resize(K);
 
                 std::vector<unsigned> init_ids(L);
-                boost::dynamic_bitset<> flags(index.GetSizeOfDataset());
-                std::vector<std::vector<efanna2e::Neighbor> > retset_list(batch_size, std::vector<efanna2e::Neighbor>(
-                        L + 1)); // Return set
-                std::vector<boost::dynamic_bitset<> > is_visited_list(batch_size, boost::dynamic_bitset<>(
-                        index.GetSizeOfDataset()));// Check flags
+                boost::dynamic_bitset<> flags(engine.num_v_);
+                std::vector<std::vector< PANNS::Candidate > > retset_list(batch_size,
+                        std::vector< PANNS::Candidate >(L + 1)); // Return set
+                std::vector<boost::dynamic_bitset<> > is_visited_list(batch_size,
+                        boost::dynamic_bitset<>(engine.num_v_));// Check flags
 
 
                 unsigned remain = query_num % batch_size;
                 unsigned q_i_bound = query_num - remain;
                 auto s = std::chrono::high_resolution_clock::now();
-                index.PrepareInitIDs(
+//                index.PrepareInitIDs(
+//                        init_ids,
+//                        flags,
+//                        L);
+                engine.prepare_init_ids(
                         init_ids,
                         flags,
                         L);
@@ -90,53 +95,53 @@ int main(int argc, char **argv)
 
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < q_i_bound; q_i += batch_size) {
-//                    index.PrepareRetsetList(
-//                            engine.queries_load_.data(),
-////                            query_load.data(),
-//                            retset_list,
-//                            is_visited_list,
-//                            init_ids,
-//                            flags,
-//                            q_i,
-//                            batch_size,
-//                            L);
-                    index.SearchWithOptGraphInBatch(
-                            engine.queries_load_.data(),
-//                            query_load.data(),
+//                    index.SearchWithOptGraphInBatch(
+////                            engine.queries_load_.data(),
+//////                            query_load.data(),
+////                            K,
+////                            L,
+//////                            paras,
+////                            retset_list,
+////                            is_visited_list,
+////                            init_ids,
+////                            flags,
+////                            q_i,
+////                            batch_size,
+////                            res);
+                    engine.search_in_batch(
                             K,
                             L,
-//                            paras,
+                            q_i,
+                            batch_size,
                             retset_list,
                             is_visited_list,
                             init_ids,
                             flags,
-                            q_i,
-                            batch_size,
                             res);
                 }
                 if (remain) {
-//                    index.PrepareRetsetList(
+//                    index.SearchWithOptGraphInBatch(
 //                            engine.queries_load_.data(),
 ////                            query_load.data(),
+//                            K,
+//                            L,
+////                            paras,
 //                            retset_list,
 //                            is_visited_list,
 //                            init_ids,
 //                            flags,
 //                            q_i_bound,
-//                            batch_size,
-//                            L);
-                    index.SearchWithOptGraphInBatch(
-                            engine.queries_load_.data(),
-//                            query_load.data(),
+//                            remain,
+//                            res);
+                    engine.search_in_batch(
                             K,
                             L,
-//                            paras,
+                            q_i_bound,
+                            remain,
                             retset_list,
                             is_visited_list,
                             init_ids,
                             flags,
-                            q_i_bound,
-                            remain,
                             res);
                 }
 //                for (unsigned i = 0; i < query_num; i++) {
@@ -151,7 +156,7 @@ int main(int argc, char **argv)
                            "L: %u "
                            "search_time(s.): %f "
                            //                       "time_distance_computation: %f "
-                           "count_distance_computation: %lu "
+//                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
@@ -162,7 +167,7 @@ int main(int argc, char **argv)
                            L,
                            diff.count(),
 //                       index.time_distance_computation,
-                           index.count_distance_computation,
+//                           index.count_distance_computation,
                            K,
                            points_num,
                            data_dimension,
@@ -170,7 +175,7 @@ int main(int argc, char **argv)
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num);
 //                index.time_distance_computation = 0.0;
-                    index.count_distance_computation = 0;
+//                    index.count_distance_computation = 0;
                 }
 
                 // Ended by Johnpzh
