@@ -3,7 +3,7 @@
 //
 
 #include "utils.h"
-#include <fstream>
+
 
 namespace PANNS {
 
@@ -17,7 +17,9 @@ namespace PANNS {
  */
 void load_data(
         char *filename,
-        std::vector<dataf> &data,
+//        std::vector<dataf> &data,
+//        std::vector< std::vector<dataf> > &data,
+        dataf *&data,
         idi &number,
         dimi &dimension)
 {
@@ -28,20 +30,25 @@ void load_data(
     }
     fin.read(reinterpret_cast<char *>(&dimension), 4); // Read the dimension
     fin.seekg(0, std::ios_base::end);
-//    std::ios::pos_type ss = in.tellg();
-//    size_t fsize = (size_t) ss;
     uint64_t file_size = fin.tellg();
-//    idi num_v = (unsigned) (fsize / (dim + 1) / 4);
     number = file_size / (4 + 4 * dimension);
-//    data = (float *) _mm_malloc((size_t) num * (size_t) dim * sizeof(float), 64);
-//    data = new float[(size_t) num * (size_t) dim];
-    data.resize(static_cast<size_t>(number) * static_cast<size_t>(dimension));
+//    data.resize(static_cast<size_t>(number) * static_cast<size_t>(dimension));
+//    data.resize(number);
+//    data = (dataf *) malloc(static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf));
+    data = (dataf *) _mm_malloc(static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf), 64);
+    if (!data) {
+        fprintf(stderr, "Error: cannot malloc %lu bytes.\n", static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf));
+        exit(EXIT_FAILURE);
+    }
 
     fin.seekg(0, std::ios_base::beg);
     for (size_t i = 0; i < number; i++) {
+//        data[i].resize(dimension);
+
         fin.seekg(4, std::ios_base::cur);
-        fin.read(reinterpret_cast<char *>(&data[i * dimension]), 4 * dimension);
-//        fin.read((char *) (data + i * dim), dim * 4);
+//        fin.read(reinterpret_cast<char *>(&data[i * dimension]), 4 * dimension);
+//        fin.read(reinterpret_cast<char *>(data[i].data()), 4 * dimension);
+        fin.read(reinterpret_cast<char *>(data + i * dimension), 4 * dimension);
     }
 }
 
@@ -65,6 +72,13 @@ void save_result(const char *filename,
         fout.write(reinterpret_cast<char *>(&GK), sizeof(unsigned));
         fout.write(reinterpret_cast<const char *>(qs.data()), GK * sizeof(unsigned));
     }
+}
+
+double get_time_mark()
+{
+    timeval t;
+    gettimeofday(&t, NULL);
+    return t.tv_sec + t.tv_usec * 0.000001;
 }
 
 } // namespace PANNS

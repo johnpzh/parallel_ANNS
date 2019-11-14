@@ -24,15 +24,27 @@ endif()
 
 # Build Library
 add_library(PANNS
-        core/Searching.cpp
-        ./include/utils.cpp
-        include/efanna2e/index.cpp
-        include/efanna2e/index_nsg.cpp)
+        ./core/Searching.cpp
+        ./include/utils.cpp)
 target_compile_options(PANNS PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(PANNS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
+add_library(NSG
+        include/efanna2e/index_nsg.cpp
+        ./include/efanna2e/index.cpp)
+target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
 # Bin
-add_executable(app_batch_searching app/app_batch_searching.cpp)
-target_compile_options(app_batch_searching PRIVATE ${CXX_OPTION} -march=native)
-#target_link_libraries(batch_searching PRIVATE PANNS -ltcmalloc)
-target_link_libraries(app_batch_searching PRIVATE PANNS)
+#add_executable(app_batch_searching app/app_batch_searching.cpp)
+#target_compile_options(app_batch_searching PRIVATE ${CXX_OPTION} -march=native)
+##target_link_libraries(batch_searching PRIVATE PANNS -ltcmalloc)
+#target_link_libraries(app_batch_searching PRIVATE PANNS)
+
+add_executable(app_seq_searching app/app_seq_searching.cpp)
+target_compile_options(app_seq_searching PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(app_seq_searching PRIVATE PANNS /usr/local/lib/libpapi.a)
+
+add_executable(test_nsg_optimized_search app/test_nsg_optimized_search.cpp)
+target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(test_nsg_optimized_search NSG /usr/local/lib/libpapi.a)

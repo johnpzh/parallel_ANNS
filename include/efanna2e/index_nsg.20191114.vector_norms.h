@@ -26,7 +26,10 @@ public:
     virtual void Load(const char *filename) override;
 
 
-    virtual void Build(size_t n, const float *data, const Parameters &parameters) override;
+    virtual void Build(
+            size_t n,
+            const float *data,
+            const Parameters &parameters) override;
 
     virtual void Search(
             const float *query,
@@ -45,46 +48,46 @@ public:
 
 
     // Added by Johnpzh
-    void get_true_NN(
-            const float *query,
-            unsigned K,
-            std::vector<std::pair<unsigned, float> > &ngbrs);
+//    void get_true_NN(
+//            const float *query,
+//            unsigned K,
+//            std::vector<std::pair<unsigned, float> > &ngbrs);
 
-    void SearchWithOptGraph(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::pair<unsigned, float> > &ngbrs);
+//    void SearchWithOptGraph(
+//            const float *query,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::pair<unsigned, float> > &ngbrs);
 
-    void SearchWithOptGraph(
-            const float *query_load,
-            unsigned query_num,
-            unsigned query_dim,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &res);
+//    void SearchWithOptGraph(
+//            const float *query_load,
+//            unsigned query_num,
+//            unsigned query_dim,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::vector<unsigned> > &res);
 
-    void SearchWithOptGraph(
-            const float *query_load,
-            unsigned query_num,
-            unsigned query_dim,
-            unsigned query_batch_start,
-            unsigned query_batch_size,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &res);
+//    void SearchWithOptGraph(
+//            const float *query_load,
+//            unsigned query_num,
+//            unsigned query_dim,
+//            unsigned query_batch_start,
+//            unsigned query_batch_size,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::vector<unsigned> > &res);
 
 //    void SearchWithOptGraphMeasurement(
 //            const float *query,
 //            size_t K,
 //            const Parameters &parameters,
 //            unsigned *indices);
-
-    void get_candidate_queues(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &queues);
+//
+//    void get_candidate_queues(
+//            const float *query,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::vector<unsigned> > &queues);
 
     void load_true_NN(
             const char *filename,
@@ -104,20 +107,20 @@ public:
             const float *data,
             const Parameters &parameters);
 
-    void get_top_ranks(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<unsigned> &tops);
+//    void get_top_ranks(
+//            const float *query,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<unsigned> &tops);
 
     void DegreeDistribution(
             std::vector<unsigned> &degree_to_count);
 
-    void SearchWithOptGraphToRecordTrace(
-            const float *query,
-            const Parameters &parameters,
-            std::vector<unsigned> &trace_ids,
-            std::vector<float> &trace);
+//    void SearchWithOptGraphToRecordTrace(
+//            const float *query,
+//            const Parameters &parameters,
+//            std::vector<unsigned> &trace_ids,
+//            std::vector<float> &trace);
 
     void SearchWithOptGraphAndTrace(
             const float *query,
@@ -155,8 +158,8 @@ public:
 //            const Parameters &parameters,
             std::vector< std::vector<Neighbor> > &retset_list,
             std::vector< boost::dynamic_bitset<> > &is_visited_list,
-//            const std::vector<unsigned> &init_ids,
-//            const boost::dynamic_bitset<> &flags,
+            const std::vector<unsigned> &init_ids,
+            const boost::dynamic_bitset<> &flags,
             unsigned batch_start,
             unsigned batch_size,
             std::vector<std::vector<unsigned> > &indices_list);
@@ -186,10 +189,11 @@ public:
 
     // Ended by Johnpzh
 
-protected:
+//protected:
+public:
     typedef std::vector<std::vector<unsigned> > CompactGraph;
     typedef std::vector<SimpleNeighbors> LockGraph;
-    typedef std::vector<nhood> KNNGraph;
+//    typedef std::vector<nhood> KNNGraph;
 
     CompactGraph final_graph_;
 
@@ -228,15 +232,19 @@ protected:
     void findroot(boost::dynamic_bitset<> &flag, unsigned &root, const Parameters &parameter);
 
 
-private:
+//private:
+public:
     unsigned width;
     unsigned ep_;
-    std::vector<std::mutex> locks;
-    char *opt_graph_;
+//    std::vector<std::mutex> locks;
+//    char *opt_graph_;
     size_t node_size;
     size_t data_len;
     size_t neighbor_len;
-    KNNGraph nnd_graph;
+//    KNNGraph nnd_graph;
+
+    std::vector<float> norms;
+//    std::vector< std::vector<float> > vertex_data;
 };
 }
 

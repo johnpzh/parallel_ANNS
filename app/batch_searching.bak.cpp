@@ -7,7 +7,7 @@
 #include <vector>
 #include "../core/Searching.h"
 #include "../include/utils.h"
-#include "../include/efanna2e/index_nsg.h"
+#include "../include/efanna2e/index_nsg.20191114.vector_norms.h"
 
 int main(int argc, char **argv)
 {

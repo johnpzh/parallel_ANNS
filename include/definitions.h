@@ -13,6 +13,7 @@ namespace PANNS {
 using dataf = float;
 using distf = float;
 using idi = uint32_t;
+using edgei = uint32_t;
 using dimi = uint32_t;
 using Candidate = std::pair<distf, idi>; // .first: distance; .second: vertex ID
 

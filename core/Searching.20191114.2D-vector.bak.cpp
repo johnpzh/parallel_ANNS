@@ -2,8 +2,13 @@
 // Created by Zhen Peng on 11/11/19.
 //
 
-
+#include <iostream>
+#include <fstream>
+#include <immintrin.h>
+#include <string.h>
 #include "Searching.h"
+#include "../include/utils.h"
+//#include "../include/efanna2e/neighbor.h"
 
 namespace PANNS {
 
@@ -16,20 +21,14 @@ namespace PANNS {
 void Searching::prepare_init_ids(
         std::vector<unsigned int> &init_ids,
         boost::dynamic_bitset<> &is_visited,
-        unsigned L) const
+        unsigned L)
 {
-//    idi num_ngbrs = nsg_graph_[ep_].size();
-    idi num_ngbrs = get_out_degree(ep_);
-    edgei edge_start = nsg_graph_indices_[ep_];
+    idi num_ngbrs = nsg_graph_[ep_].size();
     // Store ep_'s neighbors as candidates
     idi tmp_l = 0;
     for (; tmp_l < L && tmp_l < num_ngbrs; tmp_l++) {
-//        init_ids[tmp_l] = nsg_graph_[ep_][tmp_l];
-        init_ids[tmp_l] = nsg_graph_out_edges_[edge_start + tmp_l];
-//        is_visited[init_ids[tmp_l]] = true;
-    }
-    for (idi i = 0; i < tmp_l; ++i) {
-        is_visited[init_ids[i]] = true;
+        init_ids[tmp_l] = nsg_graph_[ep_][tmp_l];
+        is_visited[init_ids[tmp_l]] = true;
     }
 
     // If ep_'s neighbors are not enough, add other random vertices
@@ -167,29 +166,29 @@ void Searching::prepare_init_ids(
 void Searching::search_in_sequential(
         idi query_id,
 //        idi query_start,
-        idi K,
-        idi L,
+        size_t K,
+        size_t L,
         std::vector<Candidate> &set_L,
         boost::dynamic_bitset<> is_visited,
         boost::dynamic_bitset<> &is_checked,
         const std::vector<idi> &init_ids,
         std::vector<idi> &set_K)
 {
-//    const std::vector<dataf> &query = queries_load_[query_id];
+    const std::vector<dataf> &query = queries_load_[query_id];
 //    std::vector<char> is_checked(L + 1, 0);
 //    boost::dynamic_bitset<> is_checked(num_v_);
 
-    for (idi v_i = 0; v_i < L; ++v_i) {
-        idi v_id = init_ids[v_i];
-        _mm_prefetch(reinterpret_cast<char *>(data_load_ + v_id * dimension_), _MM_HINT_T0);
-    }
+//    for (unsigned i = 0; i < init_ids.size(); i++) {
+//        unsigned id = init_ids[i];
+//        _mm_prefetch(reinterpret_cast<char *>(data_load_.data() + id * dimension_), _MM_HINT_T0);
+//    }
     // Get the distances of all candidates, store in the set retset.
     for (unsigned i = 0; i < L; i++) {
-        unsigned v_id = init_ids[i];
+        unsigned id = init_ids[i];
         distf dist = compute_distance_with_norm(
-                v_id,
-                query_id,
-                norms_[v_id]);
+                data_load_[id],
+                query,
+                norms_[id]);
 //        distf dist = compute_distance_with_norm(
 //                data_load_,
 //                queries_load_,
@@ -197,7 +196,7 @@ void Searching::search_in_sequential(
 //                query_start,
 //                norms_[id],
 //                dimension_);
-        set_L[i] = Candidate(dist, v_id);
+        set_L[i] = Candidate(dist, id);
     }
     std::sort(set_L.begin(), set_L.begin() + L);
 
@@ -210,32 +209,32 @@ void Searching::search_in_sequential(
         if (!is_checked[v_id]) {
             is_checked[v_id] = true;
 
-            const idi out_degree = get_out_degree(v_id);
-            const idi e_i_start = nsg_graph_indices_[v_id];
-            const idi e_i_bound = e_i_start + out_degree;
-            _mm_prefetch(reinterpret_cast<char *>(nsg_graph_out_edges_ + e_i_start), _MM_HINT_T0);
-
+            _mm_prefetch((char *) nsg_graph_[v_id].data(), _MM_HINT_T0);
+            const auto &ngbrs = nsg_graph_[v_id];
+            const idi out_degree = ngbrs.size();
             // Prefetch is not necessarily better for performance.
-//            for (idi e_i = e_i_start; e_i < e_i_bound; ++e_i) {
-//                idi nb_id = nsg_graph_out_edges_[e_i];
-//                if (is_visited[nb_id]) {
-//                    continue;
-//                }
-//                _mm_prefetch(reinterpret_cast<char *>(data_load_ + nb_id * dimension_), _MM_HINT_T0);
-//            }
-            for (idi e_i = e_i_start; e_i < e_i_bound; ++e_i) {
-                idi nb_id = nsg_graph_out_edges_[e_i];
-                if (is_visited[nb_id]) {
+//            for (unsigned m = 0; m < out_degree; ++m)
+//                _mm_prefetch(reinterpret_cast<char *>(data_load_.data() + ngbrs[m] * dimension_), _MM_HINT_T0);
+            for (unsigned m = 0; m < out_degree; ++m) {
+                unsigned id = ngbrs[m];
+                if (is_visited[id]) {
                     continue;
                 }
-                is_visited[nb_id] = true;
+                is_visited[id] = true;
                 distf dist = compute_distance_with_norm(
-                        nb_id,
-                        query_id,
-                        norms_[nb_id]);
+                        data_load_[id],
+                        query,
+                        norms_[id]);
+//                distf dist = compute_distance_with_norm(
+//                        data_load_,
+//                        queries_load_,
+//                        id * dimension_,
+//                        query_start,
+//                        norms_[id],
+//                        dimension_);
                 if (dist >= set_L[L - 1].first) continue;
 //                    efanna2e::Neighbor nn(id, dist, true);
-                Candidate cand(dist, nb_id);
+                Candidate cand(dist, id);
                 idi r = insert_into_queue_panns(set_L, L, cand);
 
 //                memmove(is_checked.data() + r + 1,
@@ -317,81 +316,39 @@ void Searching::load_nsg_graph(char *filename)
     fin.read(reinterpret_cast<char *>(&width_), sizeof(unsigned));
     fin.read(reinterpret_cast<char *>(&ep_), sizeof(unsigned));
 
-    // Get all edges and build the vertex indices.
-    if (0 == num_v_) {
-        fprintf(stderr, "Error: number of vertices is 0.\n");
-        exit(EXIT_FAILURE);
-    }
-    nsg_graph_indices_ = (idi *) malloc(num_v_ * sizeof(idi));
-    if (!nsg_graph_indices_) {
-        std::cerr << "Error: no enough memory for nsg_graph_indices_." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    idi v_id = 0;
-    std::vector< std::vector<idi> > tmp_edge_list;
-    num_e_ = 0;
     while (true) {
         idi degree;
         fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
         if (fin.eof()) {
             break;
         }
-        nsg_graph_indices_[v_id++] = num_e_;
-        num_e_ += degree;
-
         std::vector<idi> ngbrs(degree);
         fin.read(reinterpret_cast<char *>(ngbrs.data()), degree * sizeof(unsigned));
-//        nsg_graph_.push_back(ngbrs);
-        tmp_edge_list.push_back(ngbrs);
-    }
-    if (v_id != num_v_) {
-        std::cerr << "Error: NSG data has " << v_id
-                << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    // Build the graph edges
-    nsg_graph_out_edges_ = (edgei *) malloc(num_e_ * sizeof(edgei));
-    if (!nsg_graph_out_edges_) {
-        std::cerr << "Error: no enough memory for nsg_graph_edges_." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    edgei offset = 0;
-    for (idi v_i = 0; v_i < num_v_; ++v_i) {
-        edgei degree = tmp_edge_list[v_i].size();
-        memcpy(nsg_graph_out_edges_ + offset, tmp_edge_list[v_i].data(), degree * sizeof(idi));
-        offset += degree;
+        nsg_graph_.push_back(ngbrs);
     }
 
     // Compute norms
-//    norms_.resize(num_v_);
-    norms_ = (dataf *) malloc(num_v_ * sizeof(dataf));
+    norms_.resize(num_v_);
     for (idi v_i = 0; v_i < num_v_; ++v_i) {
 //        norms_[v_i] = compute_norm(data_load_, v_i * dimension_, dimension_);
-//        norms_[v_i] = compute_norm(data_load_[v_i]);
-        norms_[v_i] = compute_norm(v_i);
+        norms_[v_i] = compute_norm(data_load_[v_i]);
     }
 }
 
 // TODO: re-code in AVX-512
 dataf Searching::compute_norm(
-        idi vertex_id)
-//        const std::vector<PANNS::dataf> &data)
+        const std::vector<PANNS::dataf> &data)
 //        size_t loc_start,
 //        idi dimension)
 {
 //    const dataf *a = data.data() + loc_start;
-    const dataf *a = data_load_ + vertex_id * dimension_;
+    const dataf *a = data.data();
     idi size = dimension_;
     dataf result = 0;
 #define AVX_L2NORM(addr, dest, tmp) \
-    tmp = _mm256_load_ps(addr); \
+    tmp = _mm256_loadu_ps(addr); \
     tmp = _mm256_mul_ps(tmp, tmp); \
     dest = _mm256_add_ps(dest, tmp);
-//#define AVX_L2NORM(addr, dest, tmp) \
-//    tmp = _mm256_loadu_ps(addr); \
-//    tmp = _mm256_mul_ps(tmp, tmp); \
-//    dest = _mm256_add_ps(dest, tmp);
 
     __m256 sum;
     __m256 l0, l1;
@@ -402,25 +359,21 @@ dataf Searching::compute_norm(
     const float *e_l = l + DD;
     float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
-    sum = _mm256_load_ps(unpack);
-//    sum = _mm256_loadu_ps(unpack);
+    sum = _mm256_loadu_ps(unpack);
     if (DR) { AVX_L2NORM(e_l, sum, l0); }
     for (unsigned i = 0; i < DD; i += 16, l += 16) {
         AVX_L2NORM(l, sum, l0);
         AVX_L2NORM(l + 8, sum, l1);
     }
-    _mm256_store_ps(unpack, sum);
-//    _mm256_storeu_ps(unpack, sum);
+    _mm256_storeu_ps(unpack, sum);
     result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
 
     return result;
 }
 
 dataf Searching::compute_distance_with_norm(
-        idi vertex_id,
-        idi query_id,
-//        const std::vector<PANNS::dataf> &d_data,
-//        const std::vector<PANNS::dataf> &q_data,
+        const std::vector<PANNS::dataf> &d_data,
+        const std::vector<PANNS::dataf> &q_data,
 //        PANNS::idi d_start,
 //        PANNS::idi q_start,
         dataf d_norm)
@@ -429,15 +382,10 @@ dataf Searching::compute_distance_with_norm(
     idi size = dimension_;
     float result = 0;
 #define AVX_DOT(addr1, addr2, dest, tmp1, tmp2) \
-          tmp1 = _mm256_load_ps(addr1);\
-          tmp2 = _mm256_load_ps(addr2);\
+          tmp1 = _mm256_loadu_ps(addr1);\
+          tmp2 = _mm256_loadu_ps(addr2);\
           tmp1 = _mm256_mul_ps(tmp1, tmp2); \
           dest = _mm256_add_ps(dest, tmp1);
-//#define AVX_DOT(addr1, addr2, dest, tmp1, tmp2) \
-//          tmp1 = _mm256_loadu_ps(addr1);\
-//          tmp2 = _mm256_loadu_ps(addr2);\
-//          tmp1 = _mm256_mul_ps(tmp1, tmp2); \
-//          dest = _mm256_add_ps(dest, tmp1);
 
     __m256 sum;
     __m256 l0, l1;
@@ -445,24 +393,22 @@ dataf Searching::compute_distance_with_norm(
     unsigned D = (size + 7) & ~7U;
     unsigned DR = D % 16;
     unsigned DD = D - DR;
-    const float *l = data_load_ + vertex_id * dimension_;
-    const float *r = queries_load_ + query_id * dimension_;
+    const float *l = d_data.data();
+    const float *r = q_data.data();
 //    const float *l = d_data.data() + d_start;
 //    const float *r = q_data.data() + q_start;
     const float *e_l = l + DD;
     const float *e_r = r + DD;
     float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
-    sum = _mm256_load_ps(unpack);
-//    sum = _mm256_loadu_ps(unpack);
+    sum = _mm256_loadu_ps(unpack);
     if (DR) { AVX_DOT(e_l, e_r, sum, l0, r0); }
 
     for (unsigned i = 0; i < DD; i += 16, l += 16, r += 16) {
         AVX_DOT(l, r, sum, l0, r0);
         AVX_DOT(l + 8, r + 8, sum, l1, r1);
     }
-    _mm256_store_ps(unpack, sum);
-//    _mm256_storeu_ps(unpack, sum);
+    _mm256_storeu_ps(unpack, sum);
     result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
 
     result = -2 * result + d_norm;
