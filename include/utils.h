@@ -24,7 +24,7 @@ void load_data(
 //        std::vector< std::vector<dataf> > &data,
         dataf *&data,
         idi &number,
-        dimi &dimension);
+        uint64_t &dimension);
 
 void save_result(
         const char *filename,

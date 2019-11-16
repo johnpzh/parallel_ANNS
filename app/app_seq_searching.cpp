@@ -33,6 +33,8 @@ int main(int argc, char **argv)
     }
     engine.load_nsg_graph(argv[3]);
 
+//    engine.build_opt_graph();
+
     unsigned L = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
 
@@ -54,8 +56,8 @@ int main(int argc, char **argv)
 
             std::vector<PANNS::idi> init_ids(L);
             boost::dynamic_bitset<> is_visited_master(engine.num_v_);
-            boost::dynamic_bitset<> is_visited(engine.num_v_);
-            boost::dynamic_bitset<> is_checked(engine.num_v_);
+//            boost::dynamic_bitset<> is_visited(engine.num_v_);
+//            boost::dynamic_bitset<> is_checked(engine.num_v_);
             std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 
             PANNS::L3CacheMissRate cache_miss;
@@ -69,18 +71,19 @@ int main(int argc, char **argv)
 
 //#pragma omp parallel for
             for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                is_visited = is_visited_master;
+//                is_visited = is_visited_master;
                 engine.search_in_sequential(
 //                        q_i * data_dimension,
                         q_i,
                         K,
                         L,
                         set_L,
-                        is_visited,
-                        is_checked,
+//                        is_visited,
+                        is_visited_master,
+//                        is_checked,
                         init_ids,
                         set_K_list[q_i]);
-                is_checked.reset();
+//                is_checked.reset();
             }
             cache_miss.measure_stop();
             auto e = std::chrono::high_resolution_clock::now();

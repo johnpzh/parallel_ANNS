@@ -11,7 +11,7 @@ k=200
 l=200
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
 ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
 
 
@@ -22,7 +22,7 @@ k=400
 l=400
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
+${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
 ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
 
 # DEEP10M
@@ -32,7 +32,7 @@ k=400
 l=400
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
 ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
 
 ## Do computation with trace so without graph traverse

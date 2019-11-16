@@ -14,8 +14,8 @@ using dataf = float;
 using distf = float;
 using idi = uint32_t;
 using edgei = uint32_t;
-using dimi = uint32_t;
-using Candidate = std::pair<distf, idi>; // .first: distance; .second: vertex ID
+//using Candidate = std::pair<distf, idi>; // .first: distance; .second: vertex ID
+//using Candidate = std::tuple<dataf, idi, bool>; // 0: distance; 1: vertex ID; 2: flag is checked
 
 } // namespace PANNS
 

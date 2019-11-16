@@ -14,7 +14,6 @@
 #include "../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
 #include "../include/utils.h"
-#include "../include/Candidate.h"
 
 namespace PANNS {
 
@@ -42,7 +41,7 @@ public:
 //    idi *nsg_graph_indices_;
 //    idi *nsg_graph_out_edges_;
 
-//    std::vector< std::vector<idi> > edge_list_;
+    std::vector< std::vector<idi> > edge_list_;
 
     char *opt_nsg_graph_;
     uint64_t data_bytes_;
@@ -51,16 +50,13 @@ public:
 
 
     dataf compute_norm(
-            const dataf *data);
-//          idi vertex_id);
+          idi vertex_id);
 //            const std::vector<PANNS::dataf> &data);
 //        size_t loc_start,
 //        idi dimension)
     dataf compute_distance_with_norm(
-            const dataf *v_data,
-            const dataf *q_data,
-//            idi vertex_id,
-//            idi query_id,
+            idi vertex_id,
+            idi query_id,
 //            const std::vector<dataf> &d_data,
 //            const std::vector<dataf> &q_data,
 //        PANNS::idi d_start,
@@ -68,7 +64,7 @@ public:
             dataf vertex_norm);
 //        idi dimension)
     static idi insert_into_queue_panns(
-            std::vector<Candidate> &c_queue,
+            std::vector< Candidate > &c_queue,
             idi c_queue_top,
             Candidate cand);
 //    idi insert_into_queue_nsg(
@@ -92,7 +88,7 @@ public:
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
     void load_nsg_graph(char *filename);
-//    void build_opt_graph();
+    void build_opt_graph();
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
             boost::dynamic_bitset<> &is_visited,

@@ -14,7 +14,6 @@
 #include "../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
 #include "../include/utils.h"
-#include "../include/Candidate.h"
 
 namespace PANNS {
 
@@ -24,7 +23,7 @@ public:
     idi num_v_ = 0;
     edgei num_e_ = 0;
     idi num_queries_ = 0;
-    uint64_t dimension_ = 0;
+    dimi dimension_ = 0;
 
     idi width_ = 0; // NSG largest degree
     idi ep_ = 0; // Start point
@@ -36,31 +35,21 @@ public:
 //    std::vector<distf> norms_;
     dataf *data_load_;
     dataf *queries_load_;
-//    dataf *norms_;
+    dataf *norms_;
 //    std::vector< std::vector<idi> > nsg_graph_;
 
-//    idi *nsg_graph_indices_;
-//    idi *nsg_graph_out_edges_;
-
-//    std::vector< std::vector<idi> > edge_list_;
-
-    char *opt_nsg_graph_;
-    uint64_t data_bytes_;
-    uint64_t neighbor_bytes_;
-    uint64_t vertex_bytes_;
+    idi *nsg_graph_indices_;
+    idi *nsg_graph_out_edges_;
 
 
     dataf compute_norm(
-            const dataf *data);
-//          idi vertex_id);
+          idi vertex_id);
 //            const std::vector<PANNS::dataf> &data);
 //        size_t loc_start,
 //        idi dimension)
     dataf compute_distance_with_norm(
-            const dataf *v_data,
-            const dataf *q_data,
-//            idi vertex_id,
-//            idi query_id,
+            idi vertex_id,
+            idi query_id,
 //            const std::vector<dataf> &d_data,
 //            const std::vector<dataf> &q_data,
 //        PANNS::idi d_start,
@@ -68,7 +57,7 @@ public:
             dataf vertex_norm);
 //        idi dimension)
     static idi insert_into_queue_panns(
-            std::vector<Candidate> &c_queue,
+            std::vector< Candidate > &c_queue,
             idi c_queue_top,
             Candidate cand);
 //    idi insert_into_queue_nsg(
@@ -81,18 +70,15 @@ public:
     {
 //        free(data_load_);
 //        free(queries_load_);
-//        _mm_free(data_load_);
-        free(queries_load_);
-//        free(norms_);
-//        free(nsg_graph_indices_);
-//        free(nsg_graph_out_edges_);
-
-        free(opt_nsg_graph_);
+        _mm_free(data_load_);
+        _mm_free(queries_load_);
+        free(norms_);
+        free(nsg_graph_indices_);
+        free(nsg_graph_out_edges_);
     }
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
     void load_nsg_graph(char *filename);
-//    void build_opt_graph();
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
             boost::dynamic_bitset<> &is_visited,
@@ -123,18 +109,18 @@ public:
             idi L,
             std::vector<Candidate> &set_L,
             boost::dynamic_bitset<> is_visited,
-//            boost::dynamic_bitset<> &is_checked,
+            boost::dynamic_bitset<> &is_checked,
             const std::vector<idi> &init_ids,
             std::vector<idi> &set_K);
 
-//    idi get_out_degree(idi v_id) const
-//    {
-//        if (v_id < num_v_ - 1) {
-//            return nsg_graph_indices_[v_id + 1] - nsg_graph_indices_[v_id];
-//        } else {
-//            return num_e_ - nsg_graph_indices_[v_id];
-//        }
-//    }
+    idi get_out_degree(idi v_id) const
+    {
+        if (v_id < num_v_ - 1) {
+            return nsg_graph_indices_[v_id + 1] - nsg_graph_indices_[v_id];
+        } else {
+            return num_e_ - nsg_graph_indices_[v_id];
+        }
+    }
 };
 
 } // namespace PANNS

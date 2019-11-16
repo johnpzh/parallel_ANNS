@@ -182,7 +182,6 @@ void Searching::search_in_sequential(
 //    const std::vector<dataf> &query = queries_load_[query_id];
 //    std::vector<char> is_checked(L + 1, 0);
 //    boost::dynamic_bitset<> is_checked(num_v_);
-    const dataf *query_data = queries_load_ + query_id  * dimension_;
 
     for (idi v_i = 0; v_i < L; ++v_i) {
         idi v_id = init_ids[v_i];
@@ -192,16 +191,12 @@ void Searching::search_in_sequential(
     // Get the distances of all candidates, store in the set retset.
     for (unsigned i = 0; i < L; i++) {
         unsigned v_id = init_ids[i];
-        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
-        dataf norm = *v_data++;
-//        distf dist = compute_distance_with_norm(
-//                v_id,
-//                query_id,
-//                *((distf *) (opt_nsg_graph_ + v_id * vertex_bytes_)));
+        distf dist = compute_distance_with_norm(
+                v_id,
+                query_id,
+                *((distf *) (opt_nsg_graph_ + v_id * vertex_bytes_)));
 //                norms_[v_id]);
-        distf dist = compute_distance_with_norm(v_data, query_data, norm);
-//        set_L[i] = Candidate(dist, v_id, false); // is not checked.
-        set_L[i] = Candidate(v_id, dist, false);
+        set_L[i] = Candidate(dist, v_id, false); // is not checked.
     }
     std::sort(set_L.begin(), set_L.begin() + L);
 
@@ -210,12 +205,9 @@ void Searching::search_in_sequential(
         Candidate &top_cand = set_L[k];
         unsigned nk = L;
 //        idi v_id = set_L[k].second;
-//        if (!std::get<2>(top_cand)) {
-//            std::get<2>(top_cand) = true;
-//            idi v_id = std::get<1>(top_cand); // Vertex ID.
-        if (!top_cand.is_checked_) {
-            top_cand.is_checked_ = true;
-            idi v_id = top_cand.id_; // Vertex ID.
+        if (!std::get<2>(top_cand)) {
+            std::get<2>(top_cand) = true;
+            idi v_id = std::get<1>(top_cand); // Vertex ID.
             _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
             idi *out_edges = (idi *) (opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_);
             idi out_degree = *out_edges++;
@@ -243,20 +235,15 @@ void Searching::search_in_sequential(
                     continue;
                 }
                 is_visited[nb_id] = true;
-                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-                dataf norm = *nb_data++;
-                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-//                distf dist = compute_distance_with_norm(
-//                        nb_id,
-//                        query_id,
-//                        *((distf *) (opt_nsg_graph_ + nb_id * vertex_bytes_)));
+                distf dist = compute_distance_with_norm(
+                        nb_id,
+                        query_id,
+                        *((distf *) (opt_nsg_graph_ + nb_id * vertex_bytes_)));
 //                        norms_[nb_id]);
-//                if (dist >= std::get<0>(set_L[L - 1])) {
-                if (dist >= set_L[L-1].distance_) {
+                if (dist >= std::get<0>(set_L[L - 1])) {
                     continue;
                 }
-//                Candidate cand(dist, nb_id, false);
-                Candidate cand(nb_id, dist, false);
+                Candidate cand(dist, nb_id, false);
                 idi r = insert_into_queue_panns(set_L, L, cand);
                 if (r < nk) {
                     nk = r;
@@ -272,8 +259,7 @@ void Searching::search_in_sequential(
 
     for (size_t k_i = 0; k_i < K; ++k_i) {
 //        set_K[k_i] = set_L[k_i].second;
-//        set_K[k_i] = std::get<1>(set_L[k_i]);
-        set_K[k_i] = set_L[k_i].id_;
+        set_K[k_i] = std::get<1>(set_L[k_i]);
     }
 }
 
@@ -389,8 +375,7 @@ void Searching::load_nsg_graph(char *filename)
 //        fin.read(reinterpret_cast<char *>(tmp_ngbrs.data()), degree * sizeof(unsigned));
 
         // Norm and data
-        distf norm = compute_norm(data_load_ + v_id * dimension_);
-//        distf norm = compute_norm(v_id);
+        distf norm = compute_norm(v_id);
         std::memcpy(base_location, &norm, sizeof(distf)); // Norm
         memcpy(base_location + sizeof(distf), data_load_ + v_id * dimension_, dimension_ * sizeof(dataf)); // Data
         base_location += data_bytes_;
@@ -434,16 +419,15 @@ void Searching::load_nsg_graph(char *filename)
 }
 
 // TODO: re-code in AVX-512
-inline dataf Searching::compute_norm(
-        const dataf *data)
-//        idi vertex_id)
+dataf Searching::compute_norm(
+        idi vertex_id)
 //        const std::vector<PANNS::dataf> &data)
 //        size_t loc_start,
 //        idi dimension)
 {
 //    const dataf *a = data.data() + loc_start;
-//    const dataf *a = data_load_ + vertex_id * dimension_;
-//    idi size = dimension_;
+    const dataf *a = data_load_ + vertex_id * dimension_;
+    idi size = dimension_;
     dataf result = 0;
 //#define AVX_L2NORM(addr, dest, tmp) \
 //    tmp = _mm256_load_ps(addr); \
@@ -456,10 +440,10 @@ inline dataf Searching::compute_norm(
 
     __m256 sum;
     __m256 l0, l1;
-    unsigned D = (dimension_ + 7) & ~7U;
+    unsigned D = (size + 7) & ~7U;
     unsigned DR = D % 16;
     unsigned DD = D - DR;
-    const float *l = data;
+    const float *l = a;
     const float *e_l = l + DD;
     float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -477,19 +461,17 @@ inline dataf Searching::compute_norm(
     return result;
 }
 
-inline dataf Searching::compute_distance_with_norm(
-        const dataf *v_data,
-        const dataf *q_data,
-//        idi vertex_id,
-//        idi query_id,
+dataf Searching::compute_distance_with_norm(
+        idi vertex_id,
+        idi query_id,
 //        const std::vector<PANNS::dataf> &d_data,
 //        const std::vector<PANNS::dataf> &q_data,
 //        PANNS::idi d_start,
 //        PANNS::idi q_start,
-        dataf v_norm)
+        dataf d_norm)
 //        idi dimension)
 {
-//    idi size = dimension_;
+    idi size = dimension_;
     float result = 0;
 //#define AVX_DOT(addr1, addr2, dest, tmp1, tmp2) \
 //          tmp1 = _mm256_load_ps(addr1);\
@@ -505,13 +487,14 @@ inline dataf Searching::compute_distance_with_norm(
     __m256 sum;
     __m256 l0, l1;
     __m256 r0, r1;
-    unsigned D = (dimension_ + 7) & ~7U;
+    unsigned D = (size + 7) & ~7U;
     unsigned DR = D % 16;
     unsigned DD = D - DR;
-    const float *l = v_data;
-    const float *r = q_data;
-//    const float *l = (float *) (opt_nsg_graph_ + vertex_id * vertex_bytes_ + sizeof(distf));
-//    const float *r = queries_load_ + query_id * dimension_;
+//    const float *l = data_load_ + vertex_id * dimension_;
+    const float *l = (float *) (opt_nsg_graph_ + vertex_id * vertex_bytes_ + sizeof(distf));
+    const float *r = queries_load_ + query_id * dimension_;
+//    const float *l = d_data.data() + d_start;
+//    const float *r = q_data.data() + q_start;
     const float *e_l = l + DD;
     const float *e_r = r + DD;
     float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -528,7 +511,7 @@ inline dataf Searching::compute_distance_with_norm(
 //    _mm256_storeu_ps(unpack, sum);
     result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
 
-    result = -2 * result + v_norm;
+    result = -2 * result + d_norm;
 
     return result;
 }
@@ -540,15 +523,14 @@ inline dataf Searching::compute_distance_with_norm(
  * @param cand
  * @return
  */
-inline idi Searching::insert_into_queue_panns(
+idi Searching::insert_into_queue_panns(
         std::vector<PANNS::Candidate> &c_queue,
         PANNS::idi c_queue_top,
         PANNS::Candidate cand)
 {
     // If the first
 //    if (c_queue[0].first > cand.first) {
-//    if (std::get<0>(c_queue[0]) > std::get<0>(cand)) {
-    if (c_queue[0].distance_ > cand.distance_) {
+    if (std::get<0>(c_queue[0]) > std::get<0>(cand)) {
         memmove(reinterpret_cast<char *>(c_queue.data() + 1),
                 reinterpret_cast<char *>(c_queue.data()),
                 c_queue_top * sizeof(Candidate));
@@ -566,8 +548,7 @@ inline idi Searching::insert_into_queue_panns(
     while (left < right) {
         idi mid = (right - left) / 2 + left;
 //        if (c_queue[mid].first > cand.first) {
-//        if (std::get<0>(c_queue[mid]) > std::get<0>(cand)) {
-        if (c_queue[mid].distance_ > cand.distance_) {
+        if (std::get<0>(c_queue[mid]) > std::get<0>(cand)) {
             right = mid;
         } else {
             left = mid + 1;
