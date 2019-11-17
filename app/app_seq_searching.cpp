@@ -55,39 +55,47 @@ int main(int argc, char **argv)
             for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
             std::vector<PANNS::idi> init_ids(L);
-            boost::dynamic_bitset<> is_visited_master(engine.num_v_);
+//            boost::dynamic_bitset<> is_visited_master(engine.num_v_); // Default 0
 //            boost::dynamic_bitset<> is_visited(engine.num_v_);
 //            boost::dynamic_bitset<> is_checked(engine.num_v_);
             std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 
-            PANNS::L3CacheMissRate cache_miss;
+//            PANNS::L3CacheMissRate cache_miss;
             auto s = std::chrono::high_resolution_clock::now();
-            cache_miss.measure_start();
+//            cache_miss.measure_start();
+//            engine.cache_miss_kernel.measure_start();
             // Prepare init_ids at first, as they are constant.
-            engine.prepare_init_ids(
-                    init_ids,
-                    is_visited_master,
-                    L);
+//            engine.cache_miss_kernel.measure_start();
+//            engine.prepare_init_ids(
+//                    init_ids,
+//                    is_visited_master,
+//                    L);
+//            engine.cache_miss_kernel.measure_stop();
 
 //#pragma omp parallel for
             for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 //                is_visited = is_visited_master;
+//                engine.cache_miss_kernel.measure_start();
                 engine.search_in_sequential(
 //                        q_i * data_dimension,
                         q_i,
+//                        engine.queries_load_ + q_i * engine.dimension_,
                         K,
                         L,
                         set_L,
 //                        is_visited,
-                        is_visited_master,
+//                        is_visited_master,
 //                        is_checked,
                         init_ids,
                         set_K_list[q_i]);
+//                is_visited_master.reset();
 //                is_checked.reset();
             }
-            cache_miss.measure_stop();
+//            cache_miss.measure_stop();
+//            engine.cache_miss_kernel.measure_stop();
             auto e = std::chrono::high_resolution_clock::now();
-            cache_miss.print();
+//            cache_miss.print();
+//            engine.cache_miss_kernel.print();
             std::chrono::duration<double> diff = e - s;
             {// Basic output
                 printf("L: %u "

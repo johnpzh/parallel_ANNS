@@ -540,6 +540,7 @@ void IndexNSG::Search(const float *query, const float *x, size_t K,
 void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
                                   const Parameters &parameters, unsigned *indices)
 {
+//    cache_miss_kernel.measure_start();
     unsigned L = parameters.Get<unsigned>("L_search");
     DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
 
@@ -608,6 +609,8 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
     // std::cout<<L<<std::endl;
 
     std::sort(retset.begin(), retset.begin() + L);
+//    cache_miss_kernel.measure_stop();
+//    cache_miss_kernel.measure_start();
     int k = 0; // the index of the 1st unchecked vertices in retset.
     while (k < (int) L) {
         int nk = L; // the minimum insert location of new candidates
@@ -647,6 +650,7 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
             ++k;
         }
     }
+//    cache_miss_kernel.measure_stop();
     for (size_t i = 0; i < K; i++) {
         indices[i] = retset[i].id;
     }

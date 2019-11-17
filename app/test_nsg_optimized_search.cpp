@@ -104,17 +104,18 @@ int main(int argc, char **argv)
             std::vector<std::vector<unsigned>> res(query_num);
             for (unsigned i = 0; i < query_num; i++) res[i].resize(K);
 
-            PANNS::L3CacheMissRate cache_miss;
+//            PANNS::L3CacheMissRate cache_miss;
             auto s = std::chrono::high_resolution_clock::now();
-            cache_miss.measure_start();
+//            cache_miss.measure_start();
 //#pragma omp parallel for
             for (unsigned i = 0; i < query_num; i++) {
                 index.SearchWithOptGraph(query_load + i * dim, K, paras, res[i].data());
             }
             // Ended by Johnpzh
-            cache_miss.measure_stop();
+//            cache_miss.measure_stop();
             auto e = std::chrono::high_resolution_clock::now();
-            cache_miss.print();
+//            cache_miss.print();
+//            index.cache_miss_kernel.print();
             std::chrono::duration<double> diff = e - s;
             // Add by Johnpzh
             {// Basic output
