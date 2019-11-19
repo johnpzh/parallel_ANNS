@@ -21,6 +21,7 @@ if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
     set(CXX_OPTION ${CXX_OPTION} -Wall -Wextra -pedantic -Werror)
 endif()
 #set(CXX_OPTION ${CXX_OPTION} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
+set(LIBPAPI /usr/local/lib/libpapi.a)
 
 # Build Library
 add_library(PANNS
@@ -43,8 +44,12 @@ target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(app_seq_searching app/app_seq_searching.cpp)
 target_compile_options(app_seq_searching PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(app_seq_searching PRIVATE PANNS /usr/local/lib/libpapi.a)
+target_link_libraries(app_seq_searching PRIVATE PANNS ${LIBPAPI})
 
 add_executable(test_nsg_optimized_search app/test_nsg_optimized_search.cpp)
 target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(test_nsg_optimized_search NSG /usr/local/lib/libpapi.a)
+target_link_libraries(test_nsg_optimized_search NSG ${LIBPAPI})
+
+add_executable(profile_top_m_search app/profile_top_m_search.cpp)
+target_compile_options(profile_top_m_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_search PANNS)

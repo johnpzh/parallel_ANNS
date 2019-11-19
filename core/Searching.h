@@ -9,6 +9,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include <immintrin.h>
 #include <cstring>
 #include "../include/definitions.h"
@@ -139,6 +140,24 @@ public:
 //            return num_e_ - nsg_graph_indices_[v_id];
 //        }
 //    }
+
+    void search_with_top_m(
+            idi M,
+            idi query_id,
+            idi K,
+            idi L,
+            std::vector<Candidate> &set_L,
+            std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            std::vector< std::vector<idi> > &top_m_list) const;
+
+    void load_true_NN(
+            const char *filename,
+            std::vector< std::vector<idi> > &true_nn_list);
+    void get_recall_for_all_queries(
+            const std::vector< std::vector<idi> > &true_nn_list,
+            const std::vector<std::vector<unsigned>> &set_K_list,
+            std::unordered_map<unsigned, double> &recalls);
 };
 
 // TODO: re-code in AVX-512
@@ -290,6 +309,40 @@ inline idi Searching::insert_into_queue_panns(
     return left;
 }
 
+//inline void Searching::cand_pushes_ngbrs_into_queue(
+//        idi cand_id,
+//        const dataf *query_data,
+//        idi L,
+//        idi &new_k,
+//        boost::dynamic_bitset<> &is_visited,
+//        std::vector<Candidate> &set_L)
+//{
+//    _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+//    idi *out_edges = (idi *) (opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_);
+//    idi out_degree = *out_edges++;
+//    for (idi n_i = 0; n_i < out_degree; ++n_i) {
+//        _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+//    }
+//    for (idi e_i = 0; e_i < out_degree; ++e_i) {
+//        idi nb_id = out_edges[e_i];
+//        if (is_visited[nb_id]) {
+//            continue;
+//        }
+//        is_visited[nb_id] = true;
+//        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+//        dataf norm = *nb_data++;
+//        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+//        if (dist >= set_L[L-1].distance_) {
+//            continue;
+//        }
+//        Candidate cand(nb_id, dist, false);
+//        idi r = insert_into_queue_panns(set_L, L, cand);
+//        if (r < nk) {
+//            nk = r;
+//        }
+//    }
+//}
+
 inline void Searching::search_in_sequential(
         idi query_id,
         idi K,
@@ -367,6 +420,7 @@ inline void Searching::search_in_sequential(
             for (idi n_i = 0; n_i < out_degree; ++n_i) {
                 _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
             }
+            // Traverse v_id's all neighbors, pushing them into the queue
             for (idi e_i = 0; e_i < out_degree; ++e_i) {
                 idi nb_id = out_edges[e_i];
                 if (is_visited[nb_id]) {
@@ -375,11 +429,13 @@ inline void Searching::search_in_sequential(
                 is_visited[nb_id] = true;
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                 dataf norm = *nb_data++;
+                // Compute the distance
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                 if (dist >= set_L[L-1].distance_) {
                     continue;
                 }
                 Candidate cand(nb_id, dist, false);
+                // Insert into the queue
                 idi r = insert_into_queue_panns(set_L, L, cand);
                 if (r < nk) {
                     nk = r;
@@ -398,6 +454,8 @@ inline void Searching::search_in_sequential(
         set_K[k_i] = set_L[k_i].id_;
     }
 }
+
+
 
 } // namespace PANNS
 

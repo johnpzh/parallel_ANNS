@@ -594,4 +594,259 @@ void Searching::load_nsg_graph(char *filename)
 //    return right;
 //}
 
+/**
+ * Load those true top-K neighbors (ground truth) of queries
+ * @param filename
+ * @param[out] true_nn_list
+ */
+void Searching::load_true_NN(
+        const char *filename,
+        std::vector< std::vector<idi> > &true_nn_list)
+//        unsigned &t_K)
+{
+    std::ifstream fin(filename);
+    if (!fin.is_open()) {
+        fprintf(stderr, "Error: cannot open file %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    idi t_query_num;
+    idi t_K;
+//    unsigned t_K;
+    fin.read(reinterpret_cast<char *>(&t_query_num), sizeof(t_query_num));
+    fin.read(reinterpret_cast<char *>(&t_K), sizeof(t_K));
+//    if (t_query_num != query_num) {
+//        fprintf(stderr, "Error: query_num %u is not equal to the record %u in true-NN file %s\n",
+//                query_num, t_query_num, filename);
+//        exit(EXIT_FAILURE);
+//    }
+    if (t_query_num < num_queries_) {
+        fprintf(stderr, "Error: t_query_num %u is smaller than num_queries_ %u\n", t_query_num, num_queries_);
+        exit(EXIT_FAILURE);
+    }
+    if (t_K < 100) {
+        fprintf(stderr, "Error: t_K %u is smaller than 100.\n", t_K);
+        exit(EXIT_FAILURE);
+    }
+
+//    data = new unsigned[(size_t) t_query_num * (size_t) t_K];
+    true_nn_list.resize(t_query_num);
+    for (idi q_i = 0; q_i < t_query_num; ++q_i) {
+        true_nn_list[q_i].resize(t_K);
+    }
+
+    for (unsigned q_i = 0; q_i < t_query_num; ++q_i) {
+//        size_t offset = q_i * t_K;
+        for (unsigned n_i = 0; n_i < t_K; ++n_i) {
+            unsigned id;
+            float dist;
+            fin.read(reinterpret_cast<char *>(&id), sizeof(id));
+            fin.read(reinterpret_cast<char *>(&dist), sizeof(dist));
+//            data[offset + n_i] = id;
+            true_nn_list[q_i][n_i] = id;
+        }
+    }
+
+    fin.close();
+}
+
+void Searching::get_recall_for_all_queries(
+        const std::vector< std::vector<idi> > &true_nn_list,
+        const std::vector<std::vector<unsigned>> &set_K_list,
+        std::unordered_map<unsigned, double> &recalls)
+{
+//    if (t_K < 100) {
+//        fprintf(stderr, "Error: t_K %u is smaller than 100.\n", t_K);
+//        exit(EXIT_FAILURE);
+//    }
+    if (true_nn_list[0].size() < 100) {
+        fprintf(stderr, "Error: Number of true nearest neighbors of a query is smaller than 100.\n");
+        exit(EXIT_FAILURE);
+    }
+    recalls[5] = 0.0;
+    recalls[10] = 0.0;
+    recalls[20] = 0.0;
+    recalls[50] = 0.0;
+    recalls[100] = 0.0;
+    for (unsigned q_i = 0; q_i < num_queries_; ++q_i) {
+//        size_t offset = q_i * t_K;
+        for (unsigned top_i = 0; top_i < 100; ++top_i) {
+            unsigned true_id = true_nn_list[q_i][top_i];
+            for (unsigned n_i = 0; n_i < 100; ++n_i) {
+                if (set_K_list[q_i][n_i] == true_id) {
+                    if (n_i < 5) recalls[5] += 1;
+                    if (n_i < 10) recalls[10] += 1;
+                    if (n_i < 20) recalls[20] += 1;
+                    if (n_i < 50) recalls[50] += 1;
+                    if (n_i < 100) recalls[100] += 1;
+                }
+            }
+        }
+    }
+    recalls[5] /= 5.0 * num_queries_;
+    recalls[10] /= 10.0 * num_queries_;
+    recalls[20] /= 20.0 * num_queries_;
+    recalls[50] /= 50.0 * num_queries_;
+    recalls[100] /= 100.0 * num_queries_;
+}
+
+void Searching::search_with_top_m(
+        PANNS::idi M,
+        PANNS::idi query_id,
+        PANNS::idi K,
+        PANNS::idi L,
+        std::vector<Candidate> &set_L,
+        std::vector<idi> &init_ids,
+        std::vector<idi> &set_K,
+        std::vector< std::vector<idi> > &top_m_list) const
+{
+    boost::dynamic_bitset<> is_visited(num_v_);
+
+    {
+        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+        unsigned out_degree = *out_edges++;
+        idi tmp_l = 0;
+        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+            init_ids[tmp_l] = out_edges[tmp_l];
+        }
+
+        for (idi i = 0; i < tmp_l; ++i) {
+            is_visited[init_ids[i]] = true;
+        }
+
+        // If ep_'s neighbors are not enough, add other random vertices
+        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+        while (tmp_l < L) {
+            tmp_id %= num_v_;
+            unsigned id = tmp_id++;
+            if (is_visited[id]) {
+                continue;
+            }
+            is_visited[id] = true;
+            init_ids[tmp_l] = id;
+            tmp_l++;
+        }
+    }
+
+    const dataf *query_data = queries_load_ + query_id  * dimension_;
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        idi v_id = init_ids[v_i];
+        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+    }
+    // Get the distances of all candidates, store in the set retset.
+    for (unsigned i = 0; i < L; i++) {
+        unsigned v_id = init_ids[i];
+        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+        dataf norm = *v_data++;
+        distf dist = compute_distance_with_norm(v_data, query_data, norm);
+        set_L[i] = Candidate(v_id, dist, false); // False means not checked.
+    }
+    std::sort(set_L.begin(), set_L.begin() + L);
+
+    std::vector<idi> top_m_candidates(M);
+    idi top_m_candidates_end = 0;
+    idi k = 0; // Index of every queue's first unchecked candidate.
+    while (k < L) {
+
+        unsigned nk = L;
+
+        // Select M candidates
+        idi last_k = L;
+        for (idi c_i = k; c_i < L; ++c_i) {
+            if (set_L[c_i].is_checked_) {
+                continue;
+            }
+            last_k = c_i; // Record the location of the last candidate selected.
+            set_L[c_i].is_checked_ = true;
+            top_m_candidates[top_m_candidates_end++] = set_L[c_i].id_;
+            if (top_m_candidates_end == M) {
+                break;
+            }
+        }
+
+        if (top_m_candidates_end) {
+            std::vector<idi> tmp_top_m(top_m_candidates_end);
+            tmp_top_m.assign(top_m_candidates.begin(), top_m_candidates.begin() + top_m_candidates_end);
+            top_m_list.push_back(tmp_top_m);
+        } else {
+            break;
+        }
+
+        // Push M candidates' neighbors into the queue.
+        for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
+            idi cand_id = top_m_candidates[c_i];
+            _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+            idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+            idi out_degree = *out_edges++;
+            for (idi n_i = 0; n_i < out_degree; ++n_i) {
+                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+            }
+            for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                idi nb_id = out_edges[e_i];
+                if (is_visited[nb_id]) {
+                    continue;
+                }
+                is_visited[nb_id] = true;
+                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+                dataf norm = *nb_data++;
+                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+                if (dist >= set_L[L-1].distance_) {
+                    continue;
+                }
+                Candidate cand(nb_id, dist, false);
+                idi r = insert_into_queue_panns(set_L, L, cand);
+                if (r < nk) {
+                    nk = r;
+                }
+            }
+        }
+        top_m_candidates_end = 0; // Clear top_m_candidates
+
+        if (nk <= last_k) {
+            k = nk;
+        } else {
+            k = last_k + 1;
+        }
+
+//        /////////////////////////////////////////
+//        Candidate &top_cand = set_L[k];
+//        if (!top_cand.is_checked_) {
+//            top_cand.is_checked_ = true;
+//            idi v_id = top_cand.id_; // Vertex ID.
+//            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+//            idi *out_edges = (idi *) (opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_);
+//            idi out_degree = *out_edges++;
+//            for (idi n_i = 0; n_i < out_degree; ++n_i) {
+//                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+//            }
+//            for (idi e_i = 0; e_i < out_degree; ++e_i) {
+//                idi nb_id = out_edges[e_i];
+//                if (is_visited[nb_id]) {
+//                    continue;
+//                }
+//                is_visited[nb_id] = true;
+//                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+//                dataf norm = *nb_data++;
+//                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+//                if (dist >= set_L[L-1].distance_) {
+//                    continue;
+//                }
+//                Candidate cand(nb_id, dist, false);
+//                idi r = insert_into_queue_panns(set_L, L, cand);
+//                if (r < nk) {
+//                    nk = r;
+//                }
+//            }
+//        }
+//        if (nk <= k) {
+//            k = nk;
+//        } else {
+//            ++k;
+//        }
+    }
+
+    for (size_t k_i = 0; k_i < K; ++k_i) {
+        set_K[k_i] = set_L[k_i].id_;
+    }
+}
+
 } // namespace PANNS

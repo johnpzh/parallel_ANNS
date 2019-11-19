@@ -1,8 +1,7 @@
 #! /bin/bash
 
-# PANNS sequential searching vs. NSG sequential searching
-bin_panns=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/app_seq_searching
-bin_nsg=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/test_nsg_optimized_search
+# PANNS Performane vs. value M
+bin_panns=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/profile_top_m_search
 
 # SIFT
 data_path=/scratch/zpeng/sift1m
@@ -11,9 +10,7 @@ k=200
 l=200
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
-${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
-
+${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_paired_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000 ${data_path}/${data_name}.true-100_NN.q-10000.binary 128 2
 
 # GIST
 data_path=/scratch/zpeng/gist1m
@@ -22,8 +19,7 @@ k=400
 l=400
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
-${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
+${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_paired_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000 ${data_path}/${data_name}.true-100_NN.q-1000.binary 128 2
 
 # DEEP10M
 data_path=/scratch/zpeng/deep1b
@@ -32,8 +28,42 @@ k=400
 l=400
 output=output.${data_name}.txt
 echo "---- ${data_path}/${data_name} ----"
-${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
-${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_paired_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000 ${data_path}/${data_name}.true-100_NN.q-10000.binary 128 2
+
+## PANNS sequential searching vs. NSG sequential searching
+#bin_panns=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/app_seq_searching
+#bin_nsg=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/test_nsg_optimized_search
+#
+## SIFT
+#data_path=/scratch/zpeng/sift1m
+#data_name=sift
+#k=200
+#l=200
+#output=output.${data_name}.txt
+#echo "---- ${data_path}/${data_name} ----"
+#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+#${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+#
+#
+## GIST
+#data_path=/scratch/zpeng/gist1m
+#data_name=gist
+#k=400
+#l=400
+#output=output.${data_name}.txt
+#echo "---- ${data_path}/${data_name} ----"
+#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
+#${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 1000
+#
+## DEEP10M
+#data_path=/scratch/zpeng/deep1b
+#data_name=deep10M
+#k=400
+#l=400
+#output=output.${data_name}.txt
+#echo "---- ${data_path}/${data_name} ----"
+#${bin_nsg} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
+#${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 10000
 
 ## Do computation with trace so without graph traverse
 #bin=/home/zpeng/pppp/clion/searching_mac/cmake-build-release/tests/app_search_in_batch
