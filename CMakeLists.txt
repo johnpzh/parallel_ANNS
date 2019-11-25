@@ -53,3 +53,7 @@ target_link_libraries(test_nsg_optimized_search NSG ${LIBPAPI})
 add_executable(profile_top_m_search app/profile_top_m_search.cpp)
 target_compile_options(profile_top_m_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(profile_top_m_search PANNS)
+
+add_executable(profile_top_m_batch_search app/profile_top_m_batch_search.cpp)
+target_compile_options(profile_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_batch_search PANNS)

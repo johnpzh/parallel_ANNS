@@ -6,6 +6,7 @@
 #include "../include/efanna2e/util.h"
 #include <chrono>
 #include <string>
+#include <clocale>
 // Added by Johnpzh
 #include <omp.h>
 //#include  "extras/utils.h"
@@ -59,6 +60,8 @@ int main(int argc, char **argv)
         exit(-1);
     }
     setbuf(stdout, nullptr); // Added by Johnpzh
+    setlocale(LC_NUMERIC, ""); // For comma number format
+
     float *data_load = NULL;
     unsigned points_num, dim;
     load_data(argv[1], data_load, points_num, dim);
@@ -122,7 +125,7 @@ int main(int argc, char **argv)
                 printf("L: %u "
                        "search_time(s.): %f "
 //                       "time_distance_computation: %f "
-                       "count_distance_computation: %lu "
+                       "count_distance_computation: %'lu "
                        "K: %u "
                        "Volume: %u "
                        "Dimension: %u "

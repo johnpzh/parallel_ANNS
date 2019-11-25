@@ -168,85 +168,6 @@ namespace PANNS {
 //    }
 //}
 
-//void Searching::search_in_sequential(
-//        idi query_id,
-////        const dataf *query_data,
-////        idi query_start,
-//        idi K,
-//        idi L,
-//        std::vector<Candidate> &set_L,
-//        boost::dynamic_bitset<> is_visited,
-////        boost::dynamic_bitset<> &is_checked,
-//        const std::vector<idi> &init_ids,
-//        std::vector<idi> &set_K)
-//{
-////    const std::vector<dataf> &query = queries_load_[query_id];
-////    std::vector<char> is_checked(L + 1, 0);
-////    boost::dynamic_bitset<> is_checked(num_v_);
-//    cache_miss_kernel.measure_stop();
-////    cache_miss_kernel.measure_start();
-//    const dataf *query_data = queries_load_ + query_id  * dimension_;
-//
-//    for (idi v_i = 0; v_i < L; ++v_i) {
-//        idi v_id = init_ids[v_i];
-////        _mm_prefetch(reinterpret_cast<char *>(data_load_ + v_id * dimension_), _MM_HINT_T0);
-//        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
-//    }
-//    // Get the distances of all candidates, store in the set retset.
-//    for (unsigned i = 0; i < L; i++) {
-//        unsigned v_id = init_ids[i];
-//        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
-//        dataf norm = *v_data++;
-//        distf dist = compute_distance_with_norm(v_data, query_data, norm);
-//        set_L[i] = Candidate(v_id, dist, false); // False means not checked.
-//    }
-//    std::sort(set_L.begin(), set_L.begin() + L);
-////    cache_miss_kernel.measure_stop();
-////    cache_miss_kernel.measure_start();
-//    idi k = 0; // Index of every queue's first unchecked candidate.
-//    while (k < L) {
-//        Candidate &top_cand = set_L[k];
-//        unsigned nk = L;
-//        if (!top_cand.is_checked_) {
-//            top_cand.is_checked_ = true;
-//            idi v_id = top_cand.id_; // Vertex ID.
-//            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
-//            idi *out_edges = (idi *) (opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_);
-//            idi out_degree = *out_edges++;
-//            for (idi n_i = 0; n_i < out_degree; ++n_i) {
-//                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
-//            }
-//            for (idi e_i = 0; e_i < out_degree; ++e_i) {
-//                idi nb_id = out_edges[e_i];
-//                if (is_visited[nb_id]) {
-//                    continue;
-//                }
-//                is_visited[nb_id] = true;
-//                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-//                dataf norm = *nb_data++;
-//                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-//                if (dist >= set_L[L-1].distance_) {
-//                    continue;
-//                }
-//                Candidate cand(nb_id, dist, false);
-//                idi r = insert_into_queue_panns(set_L, L, cand);
-//                if (r < nk) {
-//                    nk = r;
-//                }
-//            }
-//        }
-//        if (nk <= k) {
-//            k = nk;
-//        } else {
-//            ++k;
-//        }
-//    }
-////    cache_miss_kernel.measure_stop();
-//
-//    for (size_t k_i = 0; k_i < K; ++k_i) {
-//        set_K[k_i] = set_L[k_i].id_;
-//    }
-//}
 
 /**
  * Input the data from the file.
@@ -404,195 +325,6 @@ void Searching::load_nsg_graph(char *filename)
 //    }
 }
 
-//// TODO: re-code in AVX-512
-//inline dataf Searching::compute_norm(
-//        const dataf *data)
-////        idi vertex_id)
-////        const std::vector<PANNS::dataf> &data)
-////        size_t loc_start,
-////        idi dimension)
-//{
-////    const dataf *a = data.data() + loc_start;
-////    const dataf *a = data_load_ + vertex_id * dimension_;
-////    idi size = dimension_;
-//    dataf result = 0;
-////#define AVX_L2NORM(addr, dest, tmp) \
-////    tmp = _mm256_load_ps(addr); \
-////    tmp = _mm256_mul_ps(tmp, tmp); \
-////    dest = _mm256_add_ps(dest, tmp);
-//#define AVX_L2NORM(addr, dest, tmp) \
-//    tmp = _mm256_loadu_ps(addr); \
-//    tmp = _mm256_mul_ps(tmp, tmp); \
-//    dest = _mm256_add_ps(dest, tmp);
-//
-//    __m256 sum;
-//    __m256 l0, l1;
-//    unsigned D = (dimension_ + 7) & ~7U;
-//    unsigned DR = D % 16;
-//    unsigned DD = D - DR;
-//    const float *l = data;
-//    const float *e_l = l + DD;
-//    float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
-//
-//    sum = _mm256_load_ps(unpack);
-////    sum = _mm256_loadu_ps(unpack);
-//    if (DR) { AVX_L2NORM(e_l, sum, l0); }
-//    for (unsigned i = 0; i < DD; i += 16, l += 16) {
-//        AVX_L2NORM(l, sum, l0);
-//        AVX_L2NORM(l + 8, sum, l1);
-//    }
-//    _mm256_store_ps(unpack, sum);
-////    _mm256_storeu_ps(unpack, sum);
-//    result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
-//
-//    return result;
-//}
-//
-//inline dataf Searching::compute_distance_with_norm(
-//        const dataf *v_data,
-//        const dataf *q_data,
-////        idi vertex_id,
-////        idi query_id,
-////        const std::vector<PANNS::dataf> &d_data,
-////        const std::vector<PANNS::dataf> &q_data,
-////        PANNS::idi d_start,
-////        PANNS::idi q_start,
-//        dataf v_norm)
-////        idi dimension)
-//{
-////    idi size = dimension_;
-//    float result = 0;
-////#define AVX_DOT(addr1, addr2, dest, tmp1, tmp2) \
-////          tmp1 = _mm256_load_ps(addr1);\
-////          tmp2 = _mm256_load_ps(addr2);\
-////          tmp1 = _mm256_mul_ps(tmp1, tmp2); \
-////          dest = _mm256_add_ps(dest, tmp1);
-//#define AVX_DOT(addr1, addr2, dest, tmp1, tmp2) \
-//          tmp1 = _mm256_loadu_ps(addr1);\
-//          tmp2 = _mm256_loadu_ps(addr2);\
-//          tmp1 = _mm256_mul_ps(tmp1, tmp2); \
-//          dest = _mm256_add_ps(dest, tmp1);
-//
-//    __m256 sum;
-//    __m256 l0, l1;
-//    __m256 r0, r1;
-//    unsigned D = (dimension_ + 7) & ~7U;
-//    unsigned DR = D % 16;
-//    unsigned DD = D - DR;
-//    const float *l = v_data;
-//    const float *r = q_data;
-////    const float *l = (float *) (opt_nsg_graph_ + vertex_id * vertex_bytes_ + sizeof(distf));
-////    const float *r = queries_load_ + query_id * dimension_;
-//    const float *e_l = l + DD;
-//    const float *e_r = r + DD;
-//    float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
-//
-//    sum = _mm256_load_ps(unpack);
-////    sum = _mm256_loadu_ps(unpack);
-//    if (DR) { AVX_DOT(e_l, e_r, sum, l0, r0); }
-//
-//    for (unsigned i = 0; i < DD; i += 16, l += 16, r += 16) {
-//        AVX_DOT(l, r, sum, l0, r0);
-//        AVX_DOT(l + 8, r + 8, sum, l1, r1);
-//    }
-//    _mm256_store_ps(unpack, sum);
-////    _mm256_storeu_ps(unpack, sum);
-//    result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
-//
-//    result = -2 * result + v_norm;
-//
-//    return result;
-//}
-//
-///**
-// * PANNS version of InsertIntoPool(): binary-search to find the insert place and then move.
-// * @param[out] c_queue
-// * @param c_queue_top
-// * @param cand
-// * @return
-// */
-//inline idi Searching::insert_into_queue_panns(
-//        std::vector<PANNS::Candidate> &c_queue,
-//        PANNS::idi c_queue_top,
-//        PANNS::Candidate cand)
-//{
-//    // If the first
-////    if (c_queue[0].first > cand.first) {
-////    if (std::get<0>(c_queue[0]) > std::get<0>(cand)) {
-//    if (c_queue[0].distance_ > cand.distance_) {
-//        memmove(reinterpret_cast<char *>(c_queue.data() + 1),
-//                reinterpret_cast<char *>(c_queue.data()),
-//                c_queue_top * sizeof(Candidate));
-//        c_queue[0] = cand;
-//        return 0;
-//    }
-////    // If beyond the last
-////    if (c_queue[c_queue_top - 1].first < cand.first) {
-////        c_queue[c_queue_top] = cand;
-////        return c_queue_top;
-////    }
-//
-//    idi left = 0;
-//    idi right = c_queue_top;
-//    while (left < right) {
-//        idi mid = (right - left) / 2 + left;
-////        if (c_queue[mid].first > cand.first) {
-////        if (std::get<0>(c_queue[mid]) > std::get<0>(cand)) {
-//        if (c_queue[mid].distance_ > cand.distance_) {
-//            right = mid;
-//        } else {
-//            left = mid + 1;
-//        }
-//    }
-//
-//    // Insert to left
-//    memmove(reinterpret_cast<char *>(c_queue.data() + left + 1),
-//            reinterpret_cast<char *>(c_queue.data() + left),
-//            (c_queue_top - left) * sizeof(Candidate));
-//    c_queue[left] = cand;
-//    return left;
-//}
-
-///**
-// * NSG version of InsertIntoPool()
-// * @param[out] c_queue
-// * @param c_queue_top
-// * @param cand
-// * @return
-// */
-//idi Searching::insert_into_queue_nsg(
-//        std::vector<PANNS::Candidate> &c_queue,
-//        PANNS::idi c_queue_top,
-//        PANNS::Candidate cand)
-//{
-//    // find the location to insert
-//    unsigned left=0,right=c_queue_top-1;
-//    if(c_queue[left].first>cand.first){
-//        memmove((char *)&c_queue[left+1], &c_queue[left],c_queue_top * sizeof(Candidate));
-//        c_queue[left] = cand;
-//        return left;
-//    }
-//    if(c_queue[right].first<cand.first){
-//        c_queue[c_queue_top] = cand;
-//        return c_queue_top;
-//    }
-//    while(left<right-1){
-//        unsigned mid=(left+right)/2;
-//        if(c_queue[mid].first>cand.first)right=mid;
-//        else left=mid;
-//    }
-//    //check equal ID
-////
-////    while (left > 0){
-////        if (c_queue[left].first < cand.first) break;
-////        if (c_queue[left].second == cand.second) return c_queue_top + 1;
-////        left--;
-////    }
-////    if(c_queue[left].second == cand.second||c_queue[right].second==cand.second)return c_queue_top+1;
-//    memmove((char *)&c_queue[right+1], &c_queue[right],(c_queue_top-right) * sizeof(Candidate));
-//    c_queue[right]=cand;
-//    return right;
-//}
 
 /**
  * Load those true top-K neighbors (ground truth) of queries
@@ -690,14 +422,14 @@ void Searching::get_recall_for_all_queries(
 }
 
 void Searching::search_with_top_m(
-        PANNS::idi M,
-        PANNS::idi query_id,
-        PANNS::idi K,
-        PANNS::idi L,
+        const PANNS::idi M,
+        const PANNS::idi query_id,
+        const PANNS::idi K,
+        const PANNS::idi L,
         std::vector<Candidate> &set_L,
         std::vector<idi> &init_ids,
         std::vector<idi> &set_K,
-        std::vector< std::vector<idi> > &top_m_list) const
+        std::vector< std::vector<idi> > &top_m_list)
 {
     boost::dynamic_bitset<> is_visited(num_v_);
 
@@ -725,6 +457,16 @@ void Searching::search_with_top_m(
             init_ids[tmp_l] = id;
             tmp_l++;
         }
+
+//        while (tmp_l < L) {
+//            unsigned id = rand() % num_v_;
+//            if (is_visited[id]) {
+//                continue;
+//            }
+//            is_visited[id] = true;
+//            init_ids[tmp_l] = id;
+//            tmp_l++;
+//        }
     }
 
     const dataf *query_data = queries_load_ + query_id  * dimension_;
@@ -737,6 +479,7 @@ void Searching::search_with_top_m(
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
         dataf norm = *v_data++;
+        ++count_distance_computation;
         distf dist = compute_distance_with_norm(v_data, query_data, norm);
         set_L[i] = Candidate(v_id, dist, false); // False means not checked.
     }
@@ -744,7 +487,7 @@ void Searching::search_with_top_m(
 
     std::vector<idi> top_m_candidates(M);
     idi top_m_candidates_end = 0;
-    idi k = 0; // Index of every queue's first unchecked candidate.
+    idi k = 0; // Index of first unchecked candidate.
     while (k < L) {
 
         unsigned nk = L;
@@ -788,6 +531,7 @@ void Searching::search_with_top_m(
                 is_visited[nb_id] = true;
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                 dataf norm = *nb_data++;
+                ++count_distance_computation;
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                 if (dist >= set_L[L-1].distance_) {
                     continue;
@@ -846,6 +590,169 @@ void Searching::search_with_top_m(
 
     for (size_t k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i].id_;
+    }
+}
+
+void Searching::search_with_top_m_in_batch(
+        const PANNS::idi M,
+        const PANNS::idi batch_start,
+        const PANNS::idi batch_size,
+        const PANNS::idi K,
+        const PANNS::idi L,
+        std::vector< std::vector<Candidate> > &set_L_list,
+        std::vector<idi> &init_ids,
+        std::vector< std::vector<idi> > &set_K_list) const
+{
+    std::vector< boost::dynamic_bitset<> > is_visited_list(batch_size, boost::dynamic_bitset<> (num_v_));
+
+    // Prepare the init_ids
+    {
+        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+        unsigned out_degree = *out_edges++;
+        idi tmp_l = 0;
+        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+            init_ids[tmp_l] = out_edges[tmp_l];
+        }
+
+        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+            for (idi i = 0; i < tmp_l; ++i) {
+                is_visited_list[q_i][init_ids[i]] = true;
+            }
+        }
+
+        // If ep_'s neighbors are not enough, add other random vertices
+        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+        while (tmp_l < L) {
+            tmp_id %= num_v_;
+            unsigned id = tmp_id++;
+            if (is_visited_list[0][id]) {
+                continue;
+            }
+            for (idi q_i = 0; q_i < batch_size; ++q_i) {
+                is_visited_list[q_i][id] = true;
+            }
+            init_ids[tmp_l] = id;
+            tmp_l++;
+        }
+    }
+
+    // Initialize set_L_list
+    {
+        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+            const dataf *query_data = queries_load_ + (q_i + batch_start) * dimension_;
+            for (unsigned i = 0; i < L; i++) {
+                unsigned v_id = init_ids[i];
+                auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+                dataf norm = *v_data++;
+                distf dist = compute_distance_with_norm(v_data, query_data, norm);
+                set_L_list[q_i][i] = Candidate(v_id, dist, false); // False means not checked.
+            }
+            std::sort(set_L_list[q_i].begin(), set_L_list[q_i].begin() + L);
+        }
+    }
+
+    {
+        std::vector<idi> shared_top_m_candidates(M * batch_size); // Joint queue for all shared top-M candidates
+        idi shared_top_m_candidates_end = 0;
+        boost::dynamic_bitset<> is_shared_top_m_candidates(num_v_);
+        std::vector< std::vector<idi> > query_ids_selecting_candidates(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in query_ids_selecting_candidates[cand_id].
+        std::vector<idi> query_ids_selecting_candidates_ends(num_v_, 0);
+
+        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+            // First M are candidates
+            for (idi v_i = 0; v_i < M; ++v_i) {
+                idi cand_id = set_L_list[q_i][v_i].id_;
+                if (is_shared_top_m_candidates[cand_id]) {
+                    continue;
+                }
+                is_shared_top_m_candidates[cand_id] = true;
+                shared_top_m_candidates[shared_top_m_candidates_end++] = cand_id;
+                query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_i;
+            }
+        }
+
+        std::vector<idi> ks(batch_size, 0); // Indices of every queue's first unchekced candidate.
+        std::vector<idi> nks(batch_size, L);
+        std::vector<idi> last_ks(batch_size, L); // TODO: when to update those 3 buddies?
+        while (!shared_top_m_candidates_end) {
+            // Traverse every shared candidate
+            for (idi c_i = 0; c_i < shared_top_m_candidates_end; ++c_i) {
+                idi cand_id = shared_top_m_candidates[c_i];
+                is_shared_top_m_candidates[cand_id] = false; // Reset is_shared_top_m_candidates
+                const auto &query_local_ids = query_ids_selecting_candidates[cand_id];
+                // Push neighbors to every queue of the queries that selected cand_id.
+                idi &q_i_bound = query_ids_selecting_candidates_ends[cand_id];
+                for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
+                    idi q_local_id = query_local_ids[q_i];
+                    // Traverse cand_id's neighbors
+                    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+                    idi out_degree = *out_edges++;
+                    for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                        idi nb_id = out_edges[e_i];
+                        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+                        dataf norm = *nb_data++;
+
+                        if (is_visited_list[q_local_id][nb_id]) {
+                            continue;
+                        }
+                        is_visited_list[q_local_id][nb_id] = true;
+                        dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
+                        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+                        if (dist >= set_L_list[q_local_id][L-1].distance_) {
+                            continue;
+                        }
+                        Candidate new_cand(nb_id, dist, false);
+                        idi insert_loc = insert_into_queue_panns(set_L_list[q_local_id], L, new_cand);
+                        if (insert_loc < nks[q_local_id]) {
+                            nks[q_local_id] = insert_loc;
+                        }
+                    }
+                    q_i_bound = 0; // Clear query_ids_selecting_candidates[cand_id]
+                }
+                query_ids_selecting_candidates_ends[cand_id] = 0;
+            }
+            shared_top_m_candidates_end = 0; //  Clear shared_top_m_candidates
+            for (idi q_i = 0; q_i < batch_size; ++q_i) {
+                if (nks[q_i] <= last_ks[q_i]) {
+                    ks[q_i] = nks[q_i];
+                } else {
+                    ks[q_i] = last_ks[q_i] + 1;
+                }
+                nks[q_i] = L;
+
+            }
+
+            // Build the new joint queue
+            // Traverse every query's queue
+            for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {
+                last_ks[q_local_id] = L;
+                auto &set_L = set_L_list[q_local_id];
+                idi top_m_count = 0;
+                for (idi c_i = ks[q_local_id]; c_i < L; ++c_i) {
+                    if (set_L[c_i].is_checked_) {
+                        continue;
+                    }
+                    set_L[c_i].is_checked_ = true;
+                    last_ks[q_local_id] = c_i;
+                    ++top_m_count;
+                    idi cand_id = set_L[c_i].id_;
+                    if (is_shared_top_m_candidates[cand_id]) {
+                        continue;
+                    }
+                    is_shared_top_m_candidates[cand_id] = true;
+                    shared_top_m_candidates[shared_top_m_candidates_end++] = cand_id;
+                    query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_local_id;
+                }
+            }
+        }
+    }
+
+    {
+        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+            for (idi c_i = 0; c_i < K; ++c_i) {
+                set_K_list[q_i + batch_start][c_i] = set_L_list[q_i][c_i].id_;
+            }
+        }
     }
 }
 

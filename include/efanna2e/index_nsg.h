@@ -45,35 +45,35 @@ public:
     void OptimizeGraph(float *data);
 
 
-    // Added by Johnpzh
-    void get_true_NN(
-            const float *query,
-            unsigned K,
-            std::vector<std::pair<unsigned, float> > &ngbrs);
+//    // Added by Johnpzh
+//    void get_true_NN(
+//            const float *query,
+//            unsigned K,
+//            std::vector<std::pair<unsigned, float> > &ngbrs);
 
-    void SearchWithOptGraph(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::pair<unsigned, float> > &ngbrs);
-
-    void SearchWithOptGraph(
-            const float *query_load,
-            unsigned query_num,
-            unsigned query_dim,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &res);
-
-    void SearchWithOptGraph(
-            const float *query_load,
-            unsigned query_num,
-            unsigned query_dim,
-            unsigned query_batch_start,
-            unsigned query_batch_size,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &res);
+//    void SearchWithOptGraph(
+//            const float *query,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::pair<unsigned, float> > &ngbrs);
+//
+//    void SearchWithOptGraph(
+//            const float *query_load,
+//            unsigned query_num,
+//            unsigned query_dim,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::vector<unsigned> > &res);
+//
+//    void SearchWithOptGraph(
+//            const float *query_load,
+//            unsigned query_num,
+//            unsigned query_dim,
+//            unsigned query_batch_start,
+//            unsigned query_batch_size,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<std::vector<unsigned> > &res);
 
 //    void SearchWithOptGraphMeasurement(
 //            const float *query,
@@ -81,86 +81,86 @@ public:
 //            const Parameters &parameters,
 //            unsigned *indices);
 
-    void get_candidate_queues(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<std::vector<unsigned> > &queues);
-
-    void load_true_NN(
-            const char *filename,
-            unsigned *&data,
-//            unsigned query_num,
-            unsigned &t_K);
-
-    void get_recall_for_all_queries(
-            unsigned query_num,
-            unsigned K,
-            const unsigned *query_true_NN,
-            const std::vector<std::vector<unsigned>> &queries_result_NN,
-            std::unordered_map<unsigned, double> &recalls);
-
-    void BuildReverse(
-            size_t n,
-            const float *data,
-            const Parameters &parameters);
-
-    void get_top_ranks(
-            const float *query,
-            size_t K,
-            const Parameters &parameters,
-            std::vector<unsigned> &tops);
-
-    void DegreeDistribution(
-            std::vector<unsigned> &degree_to_count);
-
-    void SearchWithOptGraphToRecordTrace(
-            const float *query,
-            const Parameters &parameters,
-            std::vector<unsigned> &trace_ids,
-            std::vector<float> &trace);
-
-    void SearchWithOptGraphAndTrace(
-            const float *query,
-            size_t K,
-            unsigned *trace_ids,
-            float *trace,
-            size_t trace_size,
-            const Parameters &parameters,
-            unsigned *indices);
-
-    void SearchWithOptGraphAndTrace(
-            const float *query,
-            size_t K,
-            char *trace,
-            size_t trace_id_size,
-            const Parameters &parameters,
-            unsigned *indices);
-    void PrepareInitIDs(
-            std::vector<unsigned> &init_ids,
-            boost::dynamic_bitset<> &flags,
-            unsigned L);
-    void PrepareRetsetList(
-            const float *query_load,
-            std::vector<std::vector<Neighbor> > &retset_list,
-            std::vector<boost::dynamic_bitset<> > &is_visited_list,
-            const std::vector<unsigned> &init_ids,
-            const boost::dynamic_bitset<> &flags,
-            unsigned batch_start,
-            unsigned batch_size,
-            unsigned L);
-    void SearchWithOptGraphInBatch(
-            const float *query_load,
-            size_t K,
-            size_t L,
+//    void get_candidate_queues(
+//            const float *query,
+//            size_t K,
 //            const Parameters &parameters,
-            std::vector< std::vector<Neighbor> > &retset_list,
-            std::vector< boost::dynamic_bitset<> > &is_visited_list,
+//            std::vector<std::vector<unsigned> > &queues);
+//
+//    void load_true_NN(
+//            const char *filename,
+//            unsigned *&data,
+////            unsigned query_num,
+//            unsigned &t_K);
+//
+//    void get_recall_for_all_queries(
+//            unsigned query_num,
+//            unsigned K,
+//            const unsigned *query_true_NN,
+//            const std::vector<std::vector<unsigned>> &queries_result_NN,
+//            std::unordered_map<unsigned, double> &recalls);
+//
+//    void BuildReverse(
+//            size_t n,
+//            const float *data,
+//            const Parameters &parameters);
+//
+//    void get_top_ranks(
+//            const float *query,
+//            size_t K,
+//            const Parameters &parameters,
+//            std::vector<unsigned> &tops);
+//
+//    void DegreeDistribution(
+//            std::vector<unsigned> &degree_to_count);
+//
+//    void SearchWithOptGraphToRecordTrace(
+//            const float *query,
+//            const Parameters &parameters,
+//            std::vector<unsigned> &trace_ids,
+//            std::vector<float> &trace);
+//
+//    void SearchWithOptGraphAndTrace(
+//            const float *query,
+//            size_t K,
+//            unsigned *trace_ids,
+//            float *trace,
+//            size_t trace_size,
+//            const Parameters &parameters,
+//            unsigned *indices);
+//
+//    void SearchWithOptGraphAndTrace(
+//            const float *query,
+//            size_t K,
+//            char *trace,
+//            size_t trace_id_size,
+//            const Parameters &parameters,
+//            unsigned *indices);
+//    void PrepareInitIDs(
+//            std::vector<unsigned> &init_ids,
+//            boost::dynamic_bitset<> &flags,
+//            unsigned L);
+//    void PrepareRetsetList(
+//            const float *query_load,
+//            std::vector<std::vector<Neighbor> > &retset_list,
+//            std::vector<boost::dynamic_bitset<> > &is_visited_list,
 //            const std::vector<unsigned> &init_ids,
 //            const boost::dynamic_bitset<> &flags,
-            unsigned batch_start,
-            unsigned batch_size,
-            std::vector<std::vector<unsigned> > &indices_list);
+//            unsigned batch_start,
+//            unsigned batch_size,
+//            unsigned L);
+//    void SearchWithOptGraphInBatch(
+//            const float *query_load,
+//            size_t K,
+//            size_t L,
+////            const Parameters &parameters,
+//            std::vector< std::vector<Neighbor> > &retset_list,
+//            std::vector< boost::dynamic_bitset<> > &is_visited_list,
+////            const std::vector<unsigned> &init_ids,
+////            const boost::dynamic_bitset<> &flags,
+//            unsigned batch_start,
+//            unsigned batch_size,
+//            std::vector<std::vector<unsigned> > &indices_list);
 //    void SearchWithOptGraphOnCUDA(
 //            bool *d_switch);
 

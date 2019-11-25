@@ -77,10 +77,12 @@ public:
 //            idi c_queue_top,
 //            Candidate cand);
 
-    // For Profiling
-    L3CacheMissRate cache_miss_kernel;
 
 public:
+    // For Profiling
+//    L3CacheMissRate cache_miss_kernel;
+    uint64_t count_distance_computation = 0;
+
     ~Searching()
     {
 //        free(data_load_);
@@ -149,7 +151,16 @@ public:
             std::vector<Candidate> &set_L,
             std::vector<idi> &init_ids,
             std::vector<idi> &set_K,
-            std::vector< std::vector<idi> > &top_m_list) const;
+            std::vector< std::vector<idi> > &top_m_list);
+    void search_with_top_m_in_batch(
+            PANNS::idi M,
+            PANNS::idi batch_start,
+            PANNS::idi batch_size,
+            PANNS::idi K,
+            PANNS::idi L,
+            std::vector< std::vector<Candidate> > &set_L_list,
+            std::vector<idi> &init_ids,
+            std::vector< std::vector<idi> > &set_K_list) const;
 
     void load_true_NN(
             const char *filename,
@@ -158,7 +169,7 @@ public:
             const std::vector< std::vector<idi> > &true_nn_list,
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls);
-};
+}; // Class Searching
 
 // TODO: re-code in AVX-512
 inline dataf Searching::compute_norm(
@@ -344,9 +355,9 @@ inline idi Searching::insert_into_queue_panns(
 //}
 
 inline void Searching::search_in_sequential(
-        idi query_id,
-        idi K,
-        idi L,
+        const idi query_id,
+        const idi K,
+        const idi L,
         std::vector<Candidate> &set_L,
 //        boost::dynamic_bitset<> &is_visited,
 //        boost::dynamic_bitset<> is_visited,
@@ -396,7 +407,7 @@ inline void Searching::search_in_sequential(
 //        _mm_prefetch(reinterpret_cast<char *>(data_load_ + v_id * dimension_), _MM_HINT_T0);
         _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
     }
-    // Get the distances of all candidates, store in the set retset.
+    // Get the distances of all candidates, store in the set set_L.
     for (unsigned i = 0; i < L; i++) {
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);

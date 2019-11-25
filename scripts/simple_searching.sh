@@ -1,6 +1,6 @@
 #! /bin/bash
 
-bin=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/batch_searching
+bin=/home/zpeng/pppp/clion/batch_searching/cmake-build-release/test_nsg_optimized_search
 
 # SIFT
 data_path=/scratch/zpeng/sift1m
