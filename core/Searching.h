@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <immintrin.h>
 #include <cstring>
+#include <unordered_set>
 #include "../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
 #include "../include/utils.h"
@@ -81,7 +82,7 @@ public:
 public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
-    uint64_t count_distance_computation = 0;
+//    uint64_t count_distance_computation = 0;
 
     ~Searching()
     {
@@ -99,10 +100,9 @@ public:
     void load_queries_load(char *filename);
     void load_nsg_graph(char *filename);
 //    void build_opt_graph();
-//    void prepare_init_ids(
-//            std::vector<unsigned> &init_ids,
-//            boost::dynamic_bitset<> &is_visited,
-//            unsigned L) const;
+    void prepare_init_ids(
+            std::vector<unsigned> &init_ids,
+            unsigned L) const;
 //    void prepare_candidate_queue_list(
 //            const float *query_load,
 //            std::vector<std::vector<efanna2e::Neighbor> > &retset_list,
@@ -130,8 +130,8 @@ public:
             std::vector<Candidate> &set_L,
 //            boost::dynamic_bitset<> &is_visited,
 //            boost::dynamic_bitset<> is_visited,
-            std::vector<idi> &init_ids,
-//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &init_ids,
+            const std::vector<idi> &init_ids,
             std::vector<idi> &set_K) const;
 
 //    idi get_out_degree(idi v_id) const
@@ -159,7 +159,7 @@ public:
             PANNS::idi K,
             PANNS::idi L,
             std::vector< std::vector<Candidate> > &set_L_list,
-            std::vector<idi> &init_ids,
+            const std::vector<idi> &init_ids,
             std::vector< std::vector<idi> > &set_K_list) const;
 
     void load_true_NN(
@@ -170,6 +170,53 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls);
 }; // Class Searching
+
+/**
+ * Prepare init_ids and flags, as they are constant for all queries.
+ * @param[out] init_ids
+ * @param L
+ */
+inline void Searching::prepare_init_ids(
+        std::vector<unsigned int> &init_ids,
+        unsigned L) const
+{
+//    idi num_ngbrs = get_out_degree(ep_);
+//    edgei edge_start = nsg_graph_indices_[ep_];
+//    // Store ep_'s neighbors as candidates
+//    idi tmp_l = 0;
+//    for (; tmp_l < L && tmp_l < num_ngbrs; tmp_l++) {
+//        init_ids[tmp_l] = nsg_graph_out_edges_[edge_start + tmp_l];
+//    }
+    std::unordered_set<idi> visited_ids;
+    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+    unsigned out_degree = *out_edges++;
+    idi tmp_l = 0;
+    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+        init_ids[tmp_l] = out_edges[tmp_l];
+        visited_ids.insert(init_ids[tmp_l]);
+    }
+
+//    for (idi i = 0; i < tmp_l; ++i) {
+//        is_visited[init_ids[i]] = true;
+//    }
+
+    // If ep_'s neighbors are not enough, add other random vertices
+    idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+    while (tmp_l < L) {
+        tmp_id %= num_v_;
+        unsigned id = tmp_id++;
+//        if (is_visited[id]) {
+//            continue;
+//        }
+        if (visited_ids.find(id) != visited_ids.end()) {
+            continue;
+        }
+//        is_visited[id] = true;
+        visited_ids.insert(id);
+        init_ids[tmp_l] = id;
+        tmp_l++;
+    }
+}
 
 // TODO: re-code in AVX-512
 inline dataf Searching::compute_norm(
@@ -283,32 +330,45 @@ inline idi Searching::insert_into_queue_panns(
         PANNS::idi c_queue_top,
         PANNS::Candidate cand) const
 {
-    // If the first
-//    if (c_queue[0].first > cand.first) {
-//    if (std::get<0>(c_queue[0]) > std::get<0>(cand)) {
+
     if (c_queue[0].distance_ > cand.distance_) {
+        // If the first
         memmove(reinterpret_cast<char *>(c_queue.data() + 1),
                 reinterpret_cast<char *>(c_queue.data()),
                 c_queue_top * sizeof(Candidate));
         c_queue[0] = cand;
         return 0;
+    } else if (c_queue[c_queue_top - 1].distance_ == cand.distance_) {
+        // If the last
+        if (c_queue[c_queue_top - 1].id_ > cand.id_) {
+            // Use ID as the second metrics for ordering
+            c_queue[c_queue_top - 1] = cand;
+            return c_queue_top - 1;
+        } else {
+            return c_queue_top;
+        }
     }
-//    // If beyond the last
-//    if (c_queue[c_queue_top - 1].first < cand.first) {
-//        c_queue[c_queue_top] = cand;
-//        return c_queue_top;
-//    }
 
     idi left = 0;
     idi right = c_queue_top;
     while (left < right) {
         idi mid = (right - left) / 2 + left;
-//        if (c_queue[mid].first > cand.first) {
-//        if (std::get<0>(c_queue[mid]) > std::get<0>(cand)) {
         if (c_queue[mid].distance_ > cand.distance_) {
             right = mid;
         } else {
             left = mid + 1;
+        }
+    }
+
+    // If the distance is the same
+    if (0 != left && c_queue[left - 1].distance_ != cand.distance_) {
+            ;
+    } else {
+        while (0 != left
+               && c_queue[left - 1].distance_ == cand.distance_
+               && c_queue[left - 1].id_ > cand.id_) {
+            // Use ID as the second metrics for ordering
+            --left;
         }
     }
 
@@ -361,39 +421,42 @@ inline void Searching::search_in_sequential(
         std::vector<Candidate> &set_L,
 //        boost::dynamic_bitset<> &is_visited,
 //        boost::dynamic_bitset<> is_visited,
-        std::vector<idi> &init_ids,
-//        const std::vector<idi> &init_ids,
+//        std::vector<idi> &init_ids,
+        const std::vector<idi> &init_ids,
         std::vector<idi> &set_K) const
 {
 //    std::vector<Candidate> set_L(L+1);
 //    std::vector<idi> init_ids(L);
     boost::dynamic_bitset<> is_visited(num_v_);
 
-    {
-        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-        unsigned out_degree = *out_edges++;
-        idi tmp_l = 0;
-        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
-            init_ids[tmp_l] = out_edges[tmp_l];
-        }
-
-        for (idi i = 0; i < tmp_l; ++i) {
-            is_visited[init_ids[i]] = true;
-        }
-
-        // If ep_'s neighbors are not enough, add other random vertices
-        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
-        while (tmp_l < L) {
-            tmp_id %= num_v_;
-            unsigned id = tmp_id++;
-            if (is_visited[id]) {
-                continue;
-            }
-            is_visited[id] = true;
-            init_ids[tmp_l] = id;
-            tmp_l++;
-        }
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        is_visited[init_ids[v_i]] = true;
     }
+//    {
+//        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+//        unsigned out_degree = *out_edges++;
+//        idi tmp_l = 0;
+//        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+//            init_ids[tmp_l] = out_edges[tmp_l];
+//        }
+//
+//        for (idi i = 0; i < tmp_l; ++i) {
+//            is_visited[init_ids[i]] = true;
+//        }
+//
+//        // If ep_'s neighbors are not enough, add other random vertices
+//        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+//        while (tmp_l < L) {
+//            tmp_id %= num_v_;
+//            unsigned id = tmp_id++;
+//            if (is_visited[id]) {
+//                continue;
+//            }
+//            is_visited[id] = true;
+//            init_ids[tmp_l] = id;
+//            tmp_l++;
+//        }
+//    }
 
 //    const std::vector<dataf> &query = queries_load_[query_id];
 //    std::vector<char> is_checked(L + 1, 0);
@@ -442,9 +505,12 @@ inline void Searching::search_in_sequential(
                 dataf norm = *nb_data++;
                 // Compute the distance
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-                if (dist >= set_L[L-1].distance_) {
+                if (dist > set_L[L-1].distance_) {
                     continue;
                 }
+//                if (dist >= set_L[L-1].distance_) {
+//                    continue;
+//                }
                 Candidate cand(nb_id, dist, false);
                 // Insert into the queue
                 idi r = insert_into_queue_panns(set_L, L, cand);

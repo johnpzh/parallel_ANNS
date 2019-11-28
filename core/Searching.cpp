@@ -10,12 +10,10 @@ namespace PANNS {
 ///**
 // * Prepare init_ids and flags, as they are constant for all queries.
 // * @param[out] init_ids
-// * @param[out] is_visited
 // * @param L
 // */
 //void Searching::prepare_init_ids(
 //        std::vector<unsigned int> &init_ids,
-//        boost::dynamic_bitset<> &is_visited,
 //        unsigned L) const
 //{
 ////    idi num_ngbrs = get_out_degree(ep_);
@@ -25,26 +23,32 @@ namespace PANNS {
 ////    for (; tmp_l < L && tmp_l < num_ngbrs; tmp_l++) {
 ////        init_ids[tmp_l] = nsg_graph_out_edges_[edge_start + tmp_l];
 ////    }
+//    std::unordered_set<idi> visited_ids;
 //    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
 //    unsigned out_degree = *out_edges++;
 //    idi tmp_l = 0;
 //    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
 //        init_ids[tmp_l] = out_edges[tmp_l];
+//        visited_ids.insert(init_ids[tmp_l]);
 //    }
 //
-//    for (idi i = 0; i < tmp_l; ++i) {
-//        is_visited[init_ids[i]] = true;
-//    }
+////    for (idi i = 0; i < tmp_l; ++i) {
+////        is_visited[init_ids[i]] = true;
+////    }
 //
 //    // If ep_'s neighbors are not enough, add other random vertices
 //    idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
 //    while (tmp_l < L) {
 //        tmp_id %= num_v_;
 //        unsigned id = tmp_id++;
-//        if (is_visited[id]) {
+////        if (is_visited[id]) {
+////            continue;
+////        }
+//        if (visited_ids.find(id) != visited_ids.end()) {
 //            continue;
 //        }
-//        is_visited[id] = true;
+////        is_visited[id] = true;
+//        visited_ids.insert(id);
 //        init_ids[tmp_l] = id;
 //        tmp_l++;
 //    }
@@ -479,7 +483,7 @@ void Searching::search_with_top_m(
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
         dataf norm = *v_data++;
-        ++count_distance_computation;
+//        ++count_distance_computation;
         distf dist = compute_distance_with_norm(v_data, query_data, norm);
         set_L[i] = Candidate(v_id, dist, false); // False means not checked.
     }
@@ -494,16 +498,16 @@ void Searching::search_with_top_m(
 
         // Select M candidates
         idi last_k = L;
-        for (idi c_i = k; c_i < L; ++c_i) {
+        for (idi c_i = k; c_i < L && top_m_candidates_end < M; ++c_i) {
             if (set_L[c_i].is_checked_) {
                 continue;
             }
             last_k = c_i; // Record the location of the last candidate selected.
             set_L[c_i].is_checked_ = true;
             top_m_candidates[top_m_candidates_end++] = set_L[c_i].id_;
-            if (top_m_candidates_end == M) {
-                break;
-            }
+//            if (top_m_candidates_end == M) {
+//                break;
+//            }
         }
 
         if (top_m_candidates_end) {
@@ -531,11 +535,14 @@ void Searching::search_with_top_m(
                 is_visited[nb_id] = true;
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                 dataf norm = *nb_data++;
-                ++count_distance_computation;
+//                ++count_distance_computation;
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-                if (dist >= set_L[L-1].distance_) {
+                if (dist > set_L[L-1].distance_) {
                     continue;
                 }
+//                if (dist >= set_L[L-1].distance_) {
+//                    continue;
+//                }
                 Candidate cand(nb_id, dist, false);
                 idi r = insert_into_queue_panns(set_L, L, cand);
                 if (r < nk) {
@@ -588,9 +595,16 @@ void Searching::search_with_top_m(
 //        }
     }
 
-    for (size_t k_i = 0; k_i < K; ++k_i) {
+    for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i].id_;
     }
+//
+//    {//test
+//        for (idi k_i = 0; k_i < K; ++k_i) {
+//            printf("%u: %u %f\n", k_i, set_L[k_i].id_, set_L[k_i].distance_);
+//        }
+//        exit(1);
+//    }
 }
 
 void Searching::search_with_top_m_in_batch(
@@ -600,39 +614,45 @@ void Searching::search_with_top_m_in_batch(
         const PANNS::idi K,
         const PANNS::idi L,
         std::vector< std::vector<Candidate> > &set_L_list,
-        std::vector<idi> &init_ids,
+        const std::vector<idi> &init_ids,
         std::vector< std::vector<idi> > &set_K_list) const
 {
     std::vector< boost::dynamic_bitset<> > is_visited_list(batch_size, boost::dynamic_bitset<> (num_v_));
 
     // Prepare the init_ids
     {
-        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-        unsigned out_degree = *out_edges++;
-        idi tmp_l = 0;
-        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
-            init_ids[tmp_l] = out_edges[tmp_l];
-        }
-
+//        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+//        unsigned out_degree = *out_edges++;
+//        idi tmp_l = 0;
+//        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+//            init_ids[tmp_l] = out_edges[tmp_l];
+//        }
+//
+//        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+//            for (idi i = 0; i < tmp_l; ++i) {
+//                is_visited_list[q_i][init_ids[i]] = true;
+//            }
+//        }
+//
+//        // If ep_'s neighbors are not enough, add other random vertices
+//        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+//        while (tmp_l < L) {
+//            tmp_id %= num_v_;
+//            unsigned id = tmp_id++;
+//            if (is_visited_list[0][id]) {
+//                continue;
+//            }
+//            for (idi q_i = 0; q_i < batch_size; ++q_i) {
+//                is_visited_list[q_i][id] = true;
+//            }
+//            init_ids[tmp_l] = id;
+//            tmp_l++;
+//        }
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
-            for (idi i = 0; i < tmp_l; ++i) {
-                is_visited_list[q_i][init_ids[i]] = true;
+            auto &is_visited = is_visited_list[q_i];
+            for (idi c_i = 0; c_i < L; ++c_i) {
+                is_visited[init_ids[c_i]] = true;
             }
-        }
-
-        // If ep_'s neighbors are not enough, add other random vertices
-        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
-        while (tmp_l < L) {
-            tmp_id %= num_v_;
-            unsigned id = tmp_id++;
-            if (is_visited_list[0][id]) {
-                continue;
-            }
-            for (idi q_i = 0; q_i < batch_size; ++q_i) {
-                is_visited_list[q_i][id] = true;
-            }
-            init_ids[tmp_l] = id;
-            tmp_l++;
         }
     }
 
@@ -640,8 +660,8 @@ void Searching::search_with_top_m_in_batch(
     {
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
             const dataf *query_data = queries_load_ + (q_i + batch_start) * dimension_;
-            for (unsigned i = 0; i < L; i++) {
-                unsigned v_id = init_ids[i];
+            for (idi i = 0; i < L; i++) {
+                idi v_id = init_ids[i];
                 auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
                 dataf norm = *v_data++;
                 distf dist = compute_distance_with_norm(v_data, query_data, norm);
@@ -652,83 +672,51 @@ void Searching::search_with_top_m_in_batch(
     }
 
     {
-        std::vector<idi> shared_top_m_candidates(M * batch_size); // Joint queue for all shared top-M candidates
-        idi shared_top_m_candidates_end = 0;
-        boost::dynamic_bitset<> is_shared_top_m_candidates(num_v_);
+        std::vector<idi> joint_queue(M * batch_size); // Joint queue for all shared top-M candidates
+        idi joint_queue_end = 0;
+        boost::dynamic_bitset<> is_in_joint_queue(num_v_);
         std::vector< std::vector<idi> > query_ids_selecting_candidates(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in query_ids_selecting_candidates[cand_id].
         std::vector<idi> query_ids_selecting_candidates_ends(num_v_, 0);
 
-        for (idi q_i = 0; q_i < batch_size; ++q_i) {
-            // First M are candidates
-            for (idi v_i = 0; v_i < M; ++v_i) {
-                idi cand_id = set_L_list[q_i][v_i].id_;
-                if (is_shared_top_m_candidates[cand_id]) {
-                    continue;
-                }
-                is_shared_top_m_candidates[cand_id] = true;
-                shared_top_m_candidates[shared_top_m_candidates_end++] = cand_id;
-                query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_i;
-            }
-        }
+//        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+//            // First M are candidates
+//            for (idi v_i = 0; v_i < M; ++v_i) {
+//                idi cand_id = set_L_list[q_i][v_i].id_;
+//                if (is_in_joint_queue[cand_id]) {
+//                    continue;
+//                }
+//                is_in_joint_queue[cand_id] = true;
+//                joint_queue[joint_queue_end++] = cand_id;
+//                query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_i;
+//            }
+//        }
 
         std::vector<idi> ks(batch_size, 0); // Indices of every queue's first unchekced candidate.
-        std::vector<idi> nks(batch_size, L);
-        std::vector<idi> last_ks(batch_size, L); // TODO: when to update those 3 buddies?
-        while (!shared_top_m_candidates_end) {
-            // Traverse every shared candidate
-            for (idi c_i = 0; c_i < shared_top_m_candidates_end; ++c_i) {
-                idi cand_id = shared_top_m_candidates[c_i];
-                is_shared_top_m_candidates[cand_id] = false; // Reset is_shared_top_m_candidates
-                const auto &query_local_ids = query_ids_selecting_candidates[cand_id];
-                // Push neighbors to every queue of the queries that selected cand_id.
-                idi &q_i_bound = query_ids_selecting_candidates_ends[cand_id];
-                for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
-                    idi q_local_id = query_local_ids[q_i];
-                    // Traverse cand_id's neighbors
-                    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
-                    idi out_degree = *out_edges++;
-                    for (idi e_i = 0; e_i < out_degree; ++e_i) {
-                        idi nb_id = out_edges[e_i];
-                        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-                        dataf norm = *nb_data++;
+        std::vector<idi> nks(batch_size, L); // Indices of highest candidate inserted
+        std::vector<idi> last_ks(batch_size, L); // Indices of lowest candidate unchecked
+        std::vector<idi> queries_not_finished(batch_size);
+        idi queries_not_finished_end = batch_size;
+        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+            queries_not_finished[q_i] = q_i;
+        }
+        bool is_finished = false;
 
-                        if (is_visited_list[q_local_id][nb_id]) {
-                            continue;
-                        }
-                        is_visited_list[q_local_id][nb_id] = true;
-                        dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
-                        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-                        if (dist >= set_L_list[q_local_id][L-1].distance_) {
-                            continue;
-                        }
-                        Candidate new_cand(nb_id, dist, false);
-                        idi insert_loc = insert_into_queue_panns(set_L_list[q_local_id], L, new_cand);
-                        if (insert_loc < nks[q_local_id]) {
-                            nks[q_local_id] = insert_loc;
-                        }
-                    }
-                    q_i_bound = 0; // Clear query_ids_selecting_candidates[cand_id]
-                }
-                query_ids_selecting_candidates_ends[cand_id] = 0;
-            }
-            shared_top_m_candidates_end = 0; //  Clear shared_top_m_candidates
-            for (idi q_i = 0; q_i < batch_size; ++q_i) {
-                if (nks[q_i] <= last_ks[q_i]) {
-                    ks[q_i] = nks[q_i];
-                } else {
-                    ks[q_i] = last_ks[q_i] + 1;
-                }
-                nks[q_i] = L;
+        idi counter_for_debug = 0;
 
-            }
-
+        while (!is_finished) {
+            ++counter_for_debug;
             // Build the new joint queue
             // Traverse every query's queue
-            for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {
-                last_ks[q_local_id] = L;
+//            for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {
+//                if (ks[q_local_id] >= L) {
+//                    continue;
+//                }
+            for(idi q_i = 0; q_i < queries_not_finished_end; ++q_i) {
+                idi q_local_id = queries_not_finished[q_i];
+//                last_ks[q_local_id] = L;
                 auto &set_L = set_L_list[q_local_id];
                 idi top_m_count = 0;
-                for (idi c_i = ks[q_local_id]; c_i < L; ++c_i) {
+                for (idi c_i = ks[q_local_id]; c_i < L && top_m_count < M; ++c_i) {
                     if (set_L[c_i].is_checked_) {
                         continue;
                     }
@@ -736,13 +724,75 @@ void Searching::search_with_top_m_in_batch(
                     last_ks[q_local_id] = c_i;
                     ++top_m_count;
                     idi cand_id = set_L[c_i].id_;
-                    if (is_shared_top_m_candidates[cand_id]) {
+                    // Record which query selected cand_id
+                    query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_local_id;
+                    // Add candidate cand_id into the joint queue
+                    if (is_in_joint_queue[cand_id]) {
                         continue;
                     }
-                    is_shared_top_m_candidates[cand_id] = true;
-                    shared_top_m_candidates[shared_top_m_candidates_end++] = cand_id;
-                    query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_local_id;
+                    is_in_joint_queue[cand_id] = true;
+                    joint_queue[joint_queue_end++] = cand_id;
                 }
+            }
+            queries_not_finished_end = 0; // Clear queries_not_finished
+//            if (!joint_queue_end) {
+//                break;
+//            }
+
+            // Traverse every shared candidate
+            for (idi c_i = 0; c_i < joint_queue_end; ++c_i) {
+                idi cand_id = joint_queue[c_i];
+                is_in_joint_queue[cand_id] = false; // Reset is_in_joint_queue
+                idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+                idi out_degree = *out_edges++;
+                const auto &query_local_ids = query_ids_selecting_candidates[cand_id];
+                // Push neighbors to every queue of the queries that selected cand_id.
+                idi &q_i_bound = query_ids_selecting_candidates_ends[cand_id];
+                for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
+                    idi q_local_id = query_local_ids[q_i];
+                    auto &is_visited = is_visited_list[q_local_id];
+                    auto &set_L = set_L_list[q_local_id];
+                    // Traverse cand_id's neighbors
+                    for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                        idi nb_id = out_edges[e_i];
+                        if (is_visited[nb_id]) {
+                            continue;
+                        }
+                        is_visited[nb_id] = true;
+                        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+                        dataf norm = *nb_data++;
+                        dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
+                        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+                        if (dist > set_L[L-1].distance_) {
+                            continue;
+                        }
+//                        if (dist >= set_L[L-1].distance_) {
+//                            continue;
+//                        }
+                        Candidate new_cand(nb_id, dist, false);
+                        idi insert_loc = insert_into_queue_panns(set_L, L, new_cand);
+                        if (insert_loc < nks[q_local_id]) {
+                            nks[q_local_id] = insert_loc;
+                        }
+                    }
+                }
+                q_i_bound = 0; // Clear query_ids_selecting_candidates[cand_id]
+            }
+            joint_queue_end = 0; //  Clear joint_queue
+            for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {
+                if (nks[q_local_id] <= last_ks[q_local_id]) {
+                    ks[q_local_id] = nks[q_local_id];
+                } else {
+                    ks[q_local_id] = last_ks[q_local_id] + 1;
+                }
+                nks[q_local_id] = L;
+                last_ks[q_local_id] = L;
+                if (ks[q_local_id] < L) {
+                    queries_not_finished[queries_not_finished_end++] = q_local_id;
+                }
+            }
+            if (!queries_not_finished_end) {
+                is_finished = true;
             }
         }
     }
@@ -754,6 +804,15 @@ void Searching::search_with_top_m_in_batch(
             }
         }
     }
+////
+//    {//test
+//        for (idi q_i = 0; q_i < batch_size; ++q_i) {
+//            printf("query: %u\n", q_i + batch_start);
+//            for (idi c_i = 0; c_i < K; ++c_i) {
+//                printf("%u: %u %f\n", c_i, set_L_list[q_i][c_i].id_, set_L_list[q_i][c_i].distance_);
+//            }
+//        }
+//    }
 }
 
 } // namespace PANNS

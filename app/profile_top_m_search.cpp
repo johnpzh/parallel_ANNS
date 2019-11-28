@@ -103,7 +103,8 @@ int main(int argc, char **argv)
 //        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
-        for (unsigned value_M = 1; value_M <= M_max; value_M *= 2) {
+//        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
+            unsigned value_M = M_max;
             unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
@@ -168,13 +169,13 @@ int main(int argc, char **argv)
 
                     printf("M: %u "
                            "searching_time(s.): %f "
-                           "P@100: %f "
-                           "count_distance_computation: %'lu\n",
+                           "P@100: %f\n",
+//                           "count_distance_computation: %'lu\n",
                            value_M,
                            diff.count(),
-                           recalls[100],
-                           engine.count_distance_computation);
-                    engine.count_distance_computation = 0;
+                           recalls[100]);
+//                           engine.count_distance_computation);
+//                    engine.count_distance_computation = 0;
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
 //            }
                 PANNS::save_result(argv[6], set_K_list);
             }
-        }
+//        }
     }
 
     return 0;

@@ -13,7 +13,8 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
 }
 
@@ -57,7 +58,7 @@ void usage(char *argv[])
 
 int main(int argc, char **argv)
 {
-    if (argc != 11) {
+    if (argc != 9) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -66,17 +67,18 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
-    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
-    if (engine.num_queries_ > query_num_max) {
-        engine.num_queries_ = query_num_max;
-    }
+//    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
+//    if (engine.num_queries_ > query_num_max) {
+//        engine.num_queries_ = query_num_max;
+//    }
     engine.load_nsg_graph(argv[3]);
 
 //    engine.build_opt_graph();
 
     unsigned L = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
-    unsigned M_max = strtoull(argv[9], nullptr, 0);
+    unsigned M_max = strtoull(argv[7], nullptr, 0);
+    unsigned batch_size_max = strtoull(argv[8], nullptr, 0);
     if (L < K) {
         fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
         exit(EXIT_FAILURE);
@@ -86,10 +88,10 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    std::vector< std::vector<PANNS::idi> > true_nn_list;
-    engine.load_true_NN(
-            argv[8],
-            true_nn_list);
+//    std::vector< std::vector<PANNS::idi> > true_nn_list;
+//    engine.load_true_NN(
+//            argv[8],
+//            true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
@@ -100,102 +102,100 @@ int main(int argc, char **argv)
 //        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
-        for (unsigned value_M = 1; value_M <= M_max; value_M *= 2) {
+//        for (unsigned value_M = 128; value_M <= M_max; value_M *= 2) {
+//            for (unsigned query_batch_size = 128; query_batch_size <= batch_size_max; query_batch_size *= 2) {
+//                unsigned query_batch_size = 16;
+                unsigned value_M = M_max;
+                unsigned query_batch_size = batch_size_max;
+                unsigned warmup_max = 1;
+                for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
+                    std::vector< std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
+//                    for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
-            unsigned query_batch_size = 16;
-            unsigned warmup_max = 1;
-            for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
-                std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
-                for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
-
-                std::vector<PANNS::idi> init_ids(L);
+                    std::vector<PANNS::idi> init_ids(L);
 //                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector< std::vector<PANNS::Candidate> > set_L_list(query_batch_size, std::vector<PANNS::Candidate>(L + 1));
+                    std::vector<std::vector<PANNS::Candidate> > set_L_list(query_batch_size,
+                                                                           std::vector<PANNS::Candidate>(L + 1));
 //                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
-                unsigned remain = query_num % query_batch_size;
-                unsigned q_i_bound = query_num - remain;
-                auto s = std::chrono::high_resolution_clock::now();
+                    unsigned remain = query_num % query_batch_size;
+                    unsigned q_i_bound = query_num - remain;
+                    auto s = std::chrono::high_resolution_clock::now();
+                    engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
-//                for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
-//                    engine.search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i],
-//                            queries_top_m_list[q_i]);
-                    engine.search_with_top_m_in_batch(
-                            value_M,
-                            q_i,
-                            query_batch_size,
-                            K,
-                            L,
-                            set_L_list,
-                            init_ids,
-                            set_K_list);
-                }
-                if (remain) {
-                    engine.search_with_top_m_in_batch(
-                            value_M,
-                            q_i_bound,
-                            query_batch_size,
-                            K,
-                            L,
-                            set_L_list,
-                            init_ids,
-                            set_K_list);
-                }
-                auto e = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> diff = e - s;
-                {// Basic output
-//                printf("M: %u "
-//                        "L: %u "
-//                       "search_time(s.): %f "
-//                       "K: %u "
-//                       "Volume: %u "
-//                       "Dimension: %u "
-//                       "query_num: %u "
-//                       "query_per_sec: %f "
-//                       "average_latency(ms.): %f\n",
-//                       value_M,
-//                       L,
-//                       diff.count(),
-//                       K,
-//                       points_num,
-//                       data_dimension,
-//                       query_num,
-//                       query_num / diff.count(),
-//                       diff.count() * 1000 / query_num);
-                }
-                { // Recall values
-                    std::unordered_map<unsigned, double> recalls;
-
-                    engine.get_recall_for_all_queries(
-                            true_nn_list,
-                            set_K_list,
-                            recalls);
-//                printf("P@5: %f "
-//                       "P@10: %f "
-//                       "P@20: %f "
-//                       "P@50: %f "
-//                       "P@100: %f\n",
-//                       recalls[5],
-//                       recalls[10],
-//                       recalls[20],
-//                       recalls[50],
-//                       recalls[100]);
-
-                    printf("M: %u "
-                           "searching_time(s.): %f "
-                           "P@100: %f\n",
-                           value_M,
-                           diff.count(),
-                           recalls[100]);
-                }
+                    for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
+//                        printf("q_i: %u\n", q_i);//test
+                        engine.search_with_top_m_in_batch(
+                                value_M,
+                                q_i,
+                                query_batch_size,
+                                K,
+                                L,
+                                set_L_list,
+                                init_ids,
+                                set_K_list);
+                    }
+                    if (remain) {
+//                        printf("q_i_bound: %u\n", q_i_bound);//test
+                        engine.search_with_top_m_in_batch(
+                                value_M,
+                                q_i_bound,
+                                remain,
+                                K,
+                                L,
+                                set_L_list,
+                                init_ids,
+                                set_K_list);
+                    }
+                    auto e = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> diff = e - s;
+                    {// Basic output
+                        printf("M: %u "
+                               "batch_size: %u "
+                               "L: %u "
+                               "search_time(s.): %f "
+                               "K: %u "
+                               "Volume: %u "
+                               "Dimension: %u "
+                               "query_num: %u "
+                               "query_per_sec: %f "
+                               "average_latency(ms.): %f\n",
+                               value_M,
+                               query_batch_size,
+                               L,
+                               diff.count(),
+                               K,
+                               points_num,
+                               data_dimension,
+                               query_num,
+                               query_num / diff.count(),
+                               diff.count() * 1000 / query_num);
+                    }
+//                { // Recall values
+//                    std::unordered_map<unsigned, double> recalls;
+//
+//                    engine.get_recall_for_all_queries(
+//                            true_nn_list,
+//                            set_K_list,
+//                            recalls);
+////                printf("P@5: %f "
+////                       "P@10: %f "
+////                       "P@20: %f "
+////                       "P@50: %f "
+////                       "P@100: %f\n",
+////                       recalls[5],
+////                       recalls[10],
+////                       recalls[20],
+////                       recalls[50],
+////                       recalls[100]);
+//
+//                    printf("M: %u "
+//                           "searching_time(s.): %f "
+//                           "P@100: %f\n",
+//                           value_M,
+//                           diff.count(),
+//                           recalls[100]);
+//                }
 //                { // Percentage of Sharing
 //                    unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
 //                    for (unsigned q_i = 0; q_i < num_measure_quries; q_i += 2) {
@@ -210,10 +210,11 @@ int main(int argc, char **argv)
 //                               q_i, q_i + 1, pcnt_has_shared_iterations, avg_pcnt_shared_top_m);
 //                    }
 //                }
-                PANNS::save_result(argv[6], set_K_list);
+                    PANNS::save_result(argv[6], set_K_list);
+                }
             }
-        }
-    }
+//        }
+//    }
 
     return 0;
 }

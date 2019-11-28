@@ -13,12 +13,13 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: ./%s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max>\n", argv[0]);
+            "Usage: ./%s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path>\n", argv[0]);
+//            "Usage: ./%s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max>\n", argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 8) {
+    if (argc != 7) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -27,10 +28,10 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
-    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
-    if (engine.num_queries_ > query_num_max) {
-        engine.num_queries_ = query_num_max;
-    }
+//    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
+//    if (engine.num_queries_ > query_num_max) {
+//        engine.num_queries_ = query_num_max;
+//    }
     engine.load_nsg_graph(argv[3]);
 
 //    engine.build_opt_graph();
@@ -72,6 +73,7 @@ int main(int argc, char **argv)
 //                    L);
 //            engine.cache_miss_kernel.measure_stop();
 
+            engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
             for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 //                is_visited = is_visited_master;
