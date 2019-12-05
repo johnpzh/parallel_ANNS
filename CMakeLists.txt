@@ -46,14 +46,22 @@ add_executable(app_seq_searching app/app_seq_searching.cpp)
 target_compile_options(app_seq_searching PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(app_seq_searching PRIVATE PANNS ${LIBPAPI})
 
+add_executable(app_top_m_batch_search app/app_top_m_batch_search.cpp)
+target_compile_options(app_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(app_top_m_batch_search PRIVATE PANNS ${LIBPAPI})
+
 add_executable(test_nsg_optimized_search app/test_nsg_optimized_search.cpp)
 target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(test_nsg_optimized_search NSG ${LIBPAPI})
+target_link_libraries(test_nsg_optimized_search PRIVATE NSG ${LIBPAPI})
 
 add_executable(profile_top_m_search app/profile_top_m_search.cpp)
 target_compile_options(profile_top_m_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_top_m_search PANNS)
+target_link_libraries(profile_top_m_search PRIVATE PANNS)
 
 add_executable(profile_top_m_batch_search app/profile_top_m_batch_search.cpp)
 target_compile_options(profile_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_top_m_batch_search PANNS)
+target_link_libraries(profile_top_m_batch_search PRIVATE PANNS)
+
+add_executable(profile_nsg_optimized_search app/profile_nsg_optimized_search.cpp)
+target_compile_options(profile_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_nsg_optimized_search PRIVATE NSG PANNS ${LIBPAPI})

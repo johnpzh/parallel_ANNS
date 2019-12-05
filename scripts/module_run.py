@@ -1,13 +1,14 @@
 #! python3
-import os
+# import os
 import sys
+import subprocess
 
 if len(sys.argv) < 3:
     print(F'{sys.argv[0]} <bin> <sift|gist|deep> [additional]')
-    exit(-1)
+    exit()
 elif sys.argv[2] not in ['sift', 'gist', 'deep']:
     print(F'Error: does not support data mode {sys.argv[2]} (support only sift|gist|deep)')
-    exit(-1)
+    exit()
 
 sift_args = '/scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs ' \
             '/scratch/zpeng/sift1m/sift.nsg 200 200 output.ivecs'
@@ -26,7 +27,11 @@ elif sys.argv[2] == 'deep':
     command.append(deep_args)
 else:
     print(F'Error: data mode {sys.argv[2]} not found.')
-    exit(-1)
+    exit()
 command.extend(sys.argv[3:])
 
-os.system(' '.join(command))
+# os.system(' '.join(command))
+subprocess.run(' '.join(command), shell=True, check=True)
+# result = subprocess.run(' '.join(command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# print(result.stdout)
+# print(result.stderr)

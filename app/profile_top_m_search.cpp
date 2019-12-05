@@ -84,8 +84,9 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
     if (K < M_max) {
-        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
-        exit(EXIT_FAILURE);
+//        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
+//        exit(EXIT_FAILURE);
+        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
     }
 
 

@@ -36,8 +36,8 @@ public:
 //    std::vector< std::vector<dataf> > data_load_;
 //    std::vector< std::vector<dataf> > queries_load_;
 //    std::vector<distf> norms_;
-    dataf *data_load_;
-    dataf *queries_load_;
+    dataf *data_load_ = nullptr;
+    dataf *queries_load_ = nullptr;
 //    dataf *norms_;
 //    std::vector< std::vector<idi> > nsg_graph_;
 
@@ -46,7 +46,7 @@ public:
 
 //    std::vector< std::vector<idi> > edge_list_;
 
-    char *opt_nsg_graph_;
+    char *opt_nsg_graph_ = nullptr;
     uint64_t data_bytes_;
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
@@ -82,19 +82,21 @@ public:
 public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
-//    uint64_t count_distance_computation = 0;
+    uint64_t count_distance_computation = 0;
 
     ~Searching()
     {
-//        free(data_load_);
+        free(data_load_);
+        data_load_ = nullptr;
 //        free(queries_load_);
 //        _mm_free(data_load_);
         free(queries_load_);
+        queries_load_ = nullptr;
 //        free(norms_);
 //        free(nsg_graph_indices_);
 //        free(nsg_graph_out_edges_);
-
         free(opt_nsg_graph_);
+        opt_nsg_graph_ = nullptr;
     }
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
@@ -160,7 +162,7 @@ public:
             PANNS::idi L,
             std::vector< std::vector<Candidate> > &set_L_list,
             const std::vector<idi> &init_ids,
-            std::vector< std::vector<idi> > &set_K_list) const;
+            std::vector< std::vector<idi> > &set_K_list);
 
     void load_true_NN(
             const char *filename,
@@ -168,7 +170,7 @@ public:
     void get_recall_for_all_queries(
             const std::vector< std::vector<idi> > &true_nn_list,
             const std::vector<std::vector<unsigned>> &set_K_list,
-            std::unordered_map<unsigned, double> &recalls);
+            std::unordered_map<unsigned, double> &recalls) const;
 }; // Class Searching
 
 /**
@@ -187,13 +189,23 @@ inline void Searching::prepare_init_ids(
 //    for (; tmp_l < L && tmp_l < num_ngbrs; tmp_l++) {
 //        init_ids[tmp_l] = nsg_graph_out_edges_[edge_start + tmp_l];
 //    }
-    std::unordered_set<idi> visited_ids;
+//    std::unordered_set<idi> visited_ids;
+    boost::dynamic_bitset<> is_selected(num_v_);
     idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-    unsigned out_degree = *out_edges++;
-    idi tmp_l = 0;
-    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
-        init_ids[tmp_l] = out_edges[tmp_l];
-        visited_ids.insert(init_ids[tmp_l]);
+    idi out_degree = *out_edges++;
+    idi init_ids_end = 0;
+//    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
+    for (idi e_i = 0; e_i < out_degree && init_ids_end < L; ++e_i) {
+//        idi v_id = out_edges[tmp_l];
+        idi v_id = out_edges[e_i];
+        if(is_selected[v_id]) {
+            continue;
+        }
+        is_selected[v_id] = true;
+//        init_ids[tmp_l] = v_id;
+        init_ids[init_ids_end++] = v_id;
+//        init_ids[tmp_l] = out_edges[tmp_l];
+//        visited_ids.insert(init_ids[tmp_l]);
     }
 
 //    for (idi i = 0; i < tmp_l; ++i) {
@@ -202,19 +214,19 @@ inline void Searching::prepare_init_ids(
 
     // If ep_'s neighbors are not enough, add other random vertices
     idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
-    while (tmp_l < L) {
+    while (init_ids_end < L) {
         tmp_id %= num_v_;
-        unsigned id = tmp_id++;
-//        if (is_visited[id]) {
-//            continue;
-//        }
-        if (visited_ids.find(id) != visited_ids.end()) {
+        idi v_id = tmp_id++;
+        if (is_selected[v_id]) {
             continue;
         }
-//        is_visited[id] = true;
-        visited_ids.insert(id);
-        init_ids[tmp_l] = id;
-        tmp_l++;
+//        if (visited_ids.find(id) != visited_ids.end()) {
+//            continue;
+//        }
+        is_selected[v_id] = true;
+//        visited_ids.insert(id);
+        init_ids[init_ids_end++] = v_id;
+//        tmp_l++;
     }
 }
 

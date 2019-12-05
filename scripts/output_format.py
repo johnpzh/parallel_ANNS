@@ -3,9 +3,9 @@ import sys
 
 if len(sys.argv) < 4:
     print(f'{sys.argv[0]} <input_file> <output_file> <index_list>')
-    exit(-1)
+    exit()
 with open(sys.argv[1]) as fin, \
-    open(sys.argv[2], 'w') as fout:
+        open(sys.argv[2], 'w') as fout:
     # selected_indices = [0, 1, 2, 3]
     # Get indices selected
     selected_indices = []
@@ -13,7 +13,7 @@ with open(sys.argv[1]) as fin, \
     is_first_line = True
     for line in fin:
         line = line.strip()
-        if line[0] in ['%', '#', '-', '=']:
+        if line[0] in ['%', '#', '-', '=', '+']:
             is_first_line = True
             continue
 

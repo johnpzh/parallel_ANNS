@@ -304,6 +304,7 @@ void Searching::load_nsg_graph(char *filename)
         exit(EXIT_FAILURE);
     }
     free(data_load_);
+    data_load_ = nullptr;
 //    ////////////////////////
 //    idi v_id = 0;
 //    num_e_ = 0;
@@ -388,7 +389,7 @@ void Searching::load_true_NN(
 void Searching::get_recall_for_all_queries(
         const std::vector< std::vector<idi> > &true_nn_list,
         const std::vector<std::vector<unsigned>> &set_K_list,
-        std::unordered_map<unsigned, double> &recalls)
+        std::unordered_map<unsigned, double> &recalls) const
 {
 //    if (t_K < 100) {
 //        fprintf(stderr, "Error: t_K %u is smaller than 100.\n", t_K);
@@ -615,7 +616,7 @@ void Searching::search_with_top_m_in_batch(
         const PANNS::idi L,
         std::vector< std::vector<Candidate> > &set_L_list,
         const std::vector<idi> &init_ids,
-        std::vector< std::vector<idi> > &set_K_list) const
+        std::vector< std::vector<idi> > &set_K_list)
 {
     std::vector< boost::dynamic_bitset<> > is_visited_list(batch_size, boost::dynamic_bitset<> (num_v_));
 
@@ -664,6 +665,7 @@ void Searching::search_with_top_m_in_batch(
                 idi v_id = init_ids[i];
                 auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
                 dataf norm = *v_data++;
+                ++count_distance_computation;
                 distf dist = compute_distance_with_norm(v_data, query_data, norm);
                 set_L_list[q_i][i] = Candidate(v_id, dist, false); // False means not checked.
             }
@@ -726,6 +728,9 @@ void Searching::search_with_top_m_in_batch(
                     idi cand_id = set_L[c_i].id_;
                     // Record which query selected cand_id
                     query_ids_selecting_candidates[cand_id][query_ids_selecting_candidates_ends[cand_id]++] = q_local_id;
+                    {// test
+                        if (is_finished) goto PARADISE;
+                    }
                     // Add candidate cand_id into the joint queue
                     if (is_in_joint_queue[cand_id]) {
                         continue;
@@ -733,11 +738,17 @@ void Searching::search_with_top_m_in_batch(
                     is_in_joint_queue[cand_id] = true;
                     joint_queue[joint_queue_end++] = cand_id;
                 }
+                {// test
+                    if (is_finished) goto PARADISE;
+                }
             }
             queries_not_finished_end = 0; // Clear queries_not_finished
 //            if (!joint_queue_end) {
 //                break;
 //            }
+            {// test
+                if (is_finished) goto PARADISE;
+            }
 
             // Traverse every shared candidate
             for (idi c_i = 0; c_i < joint_queue_end; ++c_i) {
@@ -762,6 +773,7 @@ void Searching::search_with_top_m_in_batch(
                         auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                         dataf norm = *nb_data++;
                         dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
+                        ++count_distance_computation;
                         distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                         if (dist > set_L[L-1].distance_) {
                             continue;
@@ -795,6 +807,8 @@ void Searching::search_with_top_m_in_batch(
                 is_finished = true;
             }
         }
+        PARADISE:
+        ;
     }
 
     {

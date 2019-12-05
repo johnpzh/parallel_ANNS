@@ -54,9 +54,9 @@ void save_result(const char *filename,
 
 int main(int argc, char **argv)
 {
-    if (argc != 7) {
+    if (argc != 8) {
         std::cout << argv[0]
-                  << " data_file query_file nsg_path search_L search_K result_path"
+                  << " data_file query_file nsg_path search_L search_K result_path true_NN_file"
 //                  << " data_file query_file nsg_path search_L search_K result_path query_num_max"
                   << std::endl;
         exit(-1);
@@ -99,6 +99,13 @@ int main(int argc, char **argv)
     efanna2e::Parameters paras;
     paras.Set<unsigned>("L_search", L);
     paras.Set<unsigned>("P_search", L);
+
+    PANNS::Searching engine;
+    engine.num_queries_ = query_num;
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[7],
+            true_nn_list);
 
     int num_threads_max = 1;
     for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
@@ -146,6 +153,17 @@ int main(int argc, char **argv)
                        diff.count() * 1000 / query_num);
 //                index.time_distance_computation = 0.0;
                 index.count_distance_computation = 0;
+            }
+            { // Recall values
+                std::unordered_map<unsigned, double> recalls;
+                engine.get_recall_for_all_queries(
+                        true_nn_list,
+                        res,
+                        recalls);
+                printf("searching_time(s.): %f "
+                       "P@100: %f\n",
+                       diff.count(),
+                       recalls[100]);
             }
             // Ended by Johnpzh
 
