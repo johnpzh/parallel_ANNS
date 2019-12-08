@@ -25,7 +25,8 @@ set(LIBPAPI /usr/local/lib/libpapi.a)
 
 # Build Library
 add_library(PANNS
-        ./core/Searching.cpp
+#        ./core/Searching.cpp
+        ./core/Searching.201912061447.parallel_in_a_batch.cpp
         ./include/utils.cpp)
 target_compile_options(PANNS PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(PANNS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
@@ -58,9 +59,17 @@ add_executable(profile_top_m_search app/profile_top_m_search.cpp)
 target_compile_options(profile_top_m_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(profile_top_m_search PRIVATE PANNS)
 
-add_executable(profile_top_m_batch_search app/profile_top_m_batch_search.cpp)
-target_compile_options(profile_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_top_m_batch_search PRIVATE PANNS)
+add_executable(profile_top_m_batch_search_value_m app/profile_top_m_batch_search_value_m.cpp)
+target_compile_options(profile_top_m_batch_search_value_m PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_batch_search_value_m PRIVATE PANNS)
+
+#add_executable(profile_top_m_batch_search_batch_size app/deprecated/profile_top_m_batch_search_batch_size.cpp)
+#target_compile_options(profile_top_m_batch_search_batch_size PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(profile_top_m_batch_search_batch_size PRIVATE PANNS)
+
+add_executable(profile_top_m_batch_search_find_L app/profile_top_m_batch_search_find_L.cpp)
+target_compile_options(profile_top_m_batch_search_find_L PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_batch_search_find_L PRIVATE PANNS)
 
 add_executable(profile_nsg_optimized_search app/profile_nsg_optimized_search.cpp)
 target_compile_options(profile_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)

@@ -9,8 +9,6 @@ with open(sys.argv[1]) as fin, \
     # Get indices selected
     attributes = []
     attributes.extend(sys.argv[3:])
-    tmp_atts = list(attributes)
-    tmp_atts.append('count_distance_computation:')
 
     for line in fin:
         line = line.strip()
@@ -22,7 +20,7 @@ with open(sys.argv[1]) as fin, \
         # Print column titles
         if is_first_line:
             is_first_line = False
-            fout.write(' '.join(tmp_atts) + '\n')
+            fout.write(' '.join(attributes) + '\n')
 
         # Get all columns
         columns = line.split()

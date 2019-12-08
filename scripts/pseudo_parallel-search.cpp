@@ -2,6 +2,103 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
+
+// Searching algorithm: expand top-M candidates in every iteration
+// Output: K nearest neighbors for Query Q.
+Queue Top-M-Searching(
+        Graph G,
+        Vertex P, // The start/entry point
+        Query Q, // The query
+        Int M, // Value of M
+        Int L, // Candidate pool/queue size
+        Int K // Return pool/queue size
+        )
+{
+    Candidate Queue S whose size is L;
+    // Select initial vertices to fill Queue S.
+    Queue S = Neighbors of Query Q and other random vertices;
+    Sort Queue S according to distances to Query Q;
+
+    Index i is the index of the first unchecked candidate in Queue S;
+    Index i = 0;
+    Index last_i is the index of M-th unchecked candidate in Queue S;
+    Index last_i = L;
+    Index new_i is the index of the top inserted candidate in Queue S;
+    Index new_i = L;
+
+    while (i < L) {
+        Set top_m_cands = First M unchecked candidates in Queue S starting from Index i;
+        last_i = the index of M-th unchecked candidate in Queue S;
+        new_i = L;
+        for-in-parallel (every Candidate C in Set top_m_cands){
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Insert Neighbor N into Queue S according to its distance to Query Q; // Qeueu S is sorted all the time.
+                Index new_i = the index of Candidate N in Queue S;
+            }
+        }
+        if (new_i <= last_i) {
+            i = new_i;
+        } else {
+            i = last_i + 1;
+        }
+    }
+
+    S = First K candidates of S;
+    return S;
+}
+
+// Searching algorithm: based on Top-M-Searching, and processes a batch of queries
+// Output: K nearest neighbors for every query in the batch
+QueueSet Top-M-Searching-in-A-Batch-of-Queries(
+        Graph G,
+        Vertex P, // The start/entry point
+        QuerySet QS, // The batch of Queries
+        Int BS, // The batch size
+        Int M, // Value of M
+        Int L, // Candidate pool/queue size
+        Int K // Return pool/queue size
+        )
+{
+    Candidate QueueSet SS whose size is BS;
+    for-in-parallel (every Candidate Queue S in QueueSet SS) {
+        Queue S is of size L;
+        Queue S = Neighbors of Query Q and other random vertices;
+        Sort Queue S according to distances to Query Q in QuerySet QS;
+    }
+
+    Flag not_finished = true;
+    while (not_finished) {
+        not_finished = false;
+        // Build the joint queue
+        Queue JQ is to store all top-M candidates from QueueSet SS;
+        for-in-parallel (every Queue S in QueueSet SS) {
+            Put into Queue JQ the first M unchecked candidates in Queue S;
+            Record those M candidates are selected and checked by Query Q;
+        }
+
+        // Expand candidates in the joint queue
+        for-in-parallel (every Candidate C in Queue JQ) {
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                for (every Query Q that selected Candidate C) {
+                    Mark Neighbor N as visied by Query Q;
+                    Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+                    if (Index of Neighbor N in Queue S < L) {
+                        not_finished = true;
+                    }
+                }
+            }
+        }
+    }
+
+    for-in-parallel (every Queue S in QueueSet SS) {
+        S = First K candidates of S;
+    }
+
+    return SS;
+}
+
 // Input is a group of queries, not the whole query set.
 // Output is that every query (q) in the group get a queue (QS[q]) as its final nearest candidates.
 void parallel_searching_2(

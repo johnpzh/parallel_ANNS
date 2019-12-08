@@ -5,11 +5,11 @@ set -x
 cd ../cmake-build-release || exit
 
 echo "---- SIFT1M ----"
-python3 ../scripts/module_run.py ./profile_top_m_batch_search sift 256 256 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 0.993029
+python3 ../scripts/module_run.py ./profile_top_m_batch_search_find_L sift 256 256 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 0.993029
 echo "---- GIST1M ----"
-python3 ../scripts/module_run.py ./profile_top_m_batch_search gist 512 256 /scratch/zpeng/gist1m/gist.true-100_NN.q-1000.binary 0.980970
+python3 ../scripts/module_run.py ./profile_top_m_batch_search_find_L gist 512 256 /scratch/zpeng/gist1m/gist.true-100_NN.q-1000.binary 0.980970
 echo "---- DEEP10M ----"
-python3 ../scripts/module_run.py ./profile_top_m_batch_search deep 512 256 /scratch/zpeng/deep1b/deep10M.true-100_NN.q-10000.binary 0.995195
+python3 ../scripts/module_run.py ./profile_top_m_batch_search_find_L deep 512 256 /scratch/zpeng/deep1b/deep10M.true-100_NN.q-10000.binary 0.995195
 
 
 #

@@ -13,6 +13,7 @@
 #include <immintrin.h>
 #include <cstring>
 #include <unordered_set>
+#include <omp.h>
 #include "../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
 #include "../include/utils.h"
@@ -69,10 +70,10 @@ public:
 //        PANNS::idi q_start,
             dataf vertex_norm) const;
 //        idi dimension)
-    idi insert_into_queue(
+    static idi insert_into_queue(
             std::vector<Candidate> &c_queue,
             idi c_queue_top,
-            Candidate cand) const;
+            Candidate cand);
 //    idi insert_into_queue_nsg(
 //            std::vector< Candidate > &c_queue,
 //            idi c_queue_top,
@@ -340,7 +341,7 @@ inline dataf Searching::compute_distance_with_norm(
 inline idi Searching::insert_into_queue(
         std::vector<PANNS::Candidate> &c_queue,
         PANNS::idi c_queue_top,
-        PANNS::Candidate cand) const
+        PANNS::Candidate cand)
 {
 
     if (c_queue[0].distance_ > cand.distance_) {

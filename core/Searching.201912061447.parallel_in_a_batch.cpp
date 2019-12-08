@@ -3,7 +3,7 @@
 //
 
 
-#include "Searching.h"
+#include "Searching.201912061447.parallel_in_a_batch.h"
 
 namespace PANNS {
 
@@ -147,7 +147,7 @@ namespace PANNS {
 ////                    efanna2e::Neighbor nn(id, dist, true);
 //                    Candidate nn(dist, id);
 ////                    unsigned r = InsertIntoPool(retset.data(), L, nn); // insert location
-//                    idi r = insert_into_queue_panns(retset, L, nn);
+//                    idi r = insert_into_queue(retset, L, nn);
 ////                    idi r = insert_into_queue_nsg(retset, L, nn);
 //                    if (r < nk) nk = r;
 //                }
@@ -545,7 +545,7 @@ void Searching::search_with_top_m(
 //                    continue;
 //                }
                 Candidate cand(nb_id, dist, false);
-                idi r = insert_into_queue_panns(set_L, L, cand);
+                idi r = insert_into_queue(set_L, L, cand);
                 if (r < nk) {
                     nk = r;
                 }
@@ -583,7 +583,7 @@ void Searching::search_with_top_m(
 //                    continue;
 //                }
 //                Candidate cand(nb_id, dist, false);
-//                idi r = insert_into_queue_panns(set_L, L, cand);
+//                idi r = insert_into_queue(set_L, L, cand);
 //                if (r < nk) {
 //                    nk = r;
 //                }
@@ -622,33 +622,7 @@ void Searching::search_with_top_m_in_batch(
 
     // Prepare the init_ids
     {
-//        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-//        unsigned out_degree = *out_edges++;
-//        idi tmp_l = 0;
-//        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
-//            init_ids[tmp_l] = out_edges[tmp_l];
-//        }
-//
-//        for (idi q_i = 0; q_i < batch_size; ++q_i) {
-//            for (idi i = 0; i < tmp_l; ++i) {
-//                is_visited_list[q_i][init_ids[i]] = true;
-//            }
-//        }
-//
-//        // If ep_'s neighbors are not enough, add other random vertices
-//        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
-//        while (tmp_l < L) {
-//            tmp_id %= num_v_;
-//            unsigned id = tmp_id++;
-//            if (is_visited_list[0][id]) {
-//                continue;
-//            }
-//            for (idi q_i = 0; q_i < batch_size; ++q_i) {
-//                is_visited_list[q_i][id] = true;
-//            }
-//            init_ids[tmp_l] = id;
-//            tmp_l++;
-//        }
+#pragma omp parallel for
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
             auto &is_visited = is_visited_list[q_i];
             for (idi c_i = 0; c_i < L; ++c_i) {
@@ -659,6 +633,7 @@ void Searching::search_with_top_m_in_batch(
 
     // Initialize set_L_list
     {
+#pragma omp parallel for
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
             const dataf *query_data = queries_load_ + (q_i + batch_start) * dimension_;
             for (idi i = 0; i < L; i++) {
@@ -677,21 +652,8 @@ void Searching::search_with_top_m_in_batch(
         std::vector<idi> joint_queue(M * batch_size); // Joint queue for all shared top-M candidates
         idi joint_queue_end = 0;
         boost::dynamic_bitset<> is_in_joint_queue(num_v_);
-        std::vector< std::vector<idi> > top_m_query_ids(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in top_m_query_ids[cand_id].
-        std::vector<idi> top_m_query_ids_ends(num_v_, 0);
-
-//        for (idi q_i = 0; q_i < batch_size; ++q_i) {
-//            // First M are candidates
-//            for (idi v_i = 0; v_i < M; ++v_i) {
-//                idi cand_id = set_L_list[q_i][v_i].id_;
-//                if (is_in_joint_queue[cand_id]) {
-//                    continue;
-//                }
-//                is_in_joint_queue[cand_id] = true;
-//                joint_queue[joint_queue_end++] = cand_id;
-//                top_m_query_ids[cand_id][top_m_query_ids_ends[cand_id]++] = q_i;
-//            }
-//        }
+        std::vector< std::vector<idi> > cands_query_ids(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in cands_query_ids[cand_id].
+        std::vector<idi> cands_query_ids_ends(num_v_, 0);
 
         std::vector<idi> ks(batch_size, 0); // Indices of every queue's first unchekced candidate.
         std::vector<idi> nks(batch_size, L); // Indices of highest candidate inserted
@@ -723,7 +685,7 @@ void Searching::search_with_top_m_in_batch(
                     ++top_m_count;
                     idi cand_id = set_L[c_i].id_;
                     // Record which query selected cand_id
-                    top_m_query_ids[cand_id][top_m_query_ids_ends[cand_id]++] = q_local_id;
+                    cands_query_ids[cand_id][cands_query_ids_ends[cand_id]++] = q_local_id;
                     // Add candidate cand_id into the joint queue
                     if (is_in_joint_queue[cand_id]) {
                         continue;
@@ -740,9 +702,10 @@ void Searching::search_with_top_m_in_batch(
                 is_in_joint_queue[cand_id] = false; // Reset is_in_joint_queue
                 idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
                 idi out_degree = *out_edges++;
-                const auto &query_local_ids = top_m_query_ids[cand_id];
+                const auto &query_local_ids = cands_query_ids[cand_id];
                 // Push neighbors to every queue of the queries that selected cand_id.
-                idi &q_i_bound = top_m_query_ids_ends[cand_id];
+                // TODO: the order of for-loop needs change.
+                idi &q_i_bound = cands_query_ids_ends[cand_id];
                 for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
                     idi q_local_id = query_local_ids[q_i];
                     auto &is_visited = is_visited_list[q_local_id];
@@ -766,13 +729,13 @@ void Searching::search_with_top_m_in_batch(
 //                            continue;
 //                        }
                         Candidate new_cand(nb_id, dist, false);
-                        idi insert_loc = insert_into_queue_panns(set_L, L, new_cand);
+                        idi insert_loc = insert_into_queue(set_L, L, new_cand);
                         if (insert_loc < nks[q_local_id]) {
                             nks[q_local_id] = insert_loc;
                         }
                     }
                 }
-                q_i_bound = 0; // Clear top_m_query_ids[cand_id]
+                q_i_bound = 0; // Clear cands_query_ids[cand_id]
             }
             joint_queue_end = 0; //  Clear joint_queue
             for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {

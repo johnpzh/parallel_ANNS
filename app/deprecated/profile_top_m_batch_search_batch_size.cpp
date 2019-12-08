@@ -1,12 +1,12 @@
 //
-// Created by Zhen Peng on 11/23/19.
+// Created by Zhen Peng on 12/05/19.
 //
 
 #include <iostream>
 #include <cstdio>
 #include <vector>
 #include <chrono>
-#include "../core/Searching.h"
+#include "../../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
@@ -28,7 +28,8 @@ void do_searching(
         const std::vector<std::vector<PANNS::idi> > &true_nn_list,
 //        const char *output_filename,
         double &recall,
-        uint64_t &distance_computation)
+        uint64_t &distance_computation,
+        double &runtime)
 {
     std::vector<std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
 
@@ -74,6 +75,8 @@ void do_searching(
                 set_K_list,
                 recalls);
         recall = recalls[100];
+        distance_computation = engine.count_distance_computation;
+        runtime = diff.count();
         printf("M: %u "
                "batch_size: %u "
                "L: %u "
@@ -86,7 +89,6 @@ void do_searching(
                diff.count(),
                engine.count_distance_computation,
                recall);
-        distance_computation = engine.count_distance_computation;
         engine.count_distance_computation = 0;
     }
 
@@ -146,9 +148,11 @@ int main(int argc, char **argv)
         double recall_expected = strtod(argv[10], nullptr);
         double recall_output = 0;
         uint64_t distance_computation_output = 0;
+        double runtime = 0.0;
         double min_above_recall = 1;
         unsigned min_above_L = L_max;
         uint64_t min_above_distance_computation = 0;
+        double min_above_runtime = 0.0;
         bool is_found = false;
         while (left <= right) {
             mid = (right - left) / 2 + left;
@@ -161,7 +165,8 @@ int main(int argc, char **argv)
                     query_batch_size,
                     true_nn_list,
                     recall_output,
-                    distance_computation_output);
+                    distance_computation_output,
+                    runtime);
 //            {//test
 //                break;
 //            }
@@ -173,6 +178,7 @@ int main(int argc, char **argv)
                     min_above_recall = recall_output;
                     min_above_L = mid;
                     min_above_distance_computation = distance_computation_output;
+                    min_above_runtime = runtime;
                 }
             } else {
                 is_found = true;
@@ -183,22 +189,26 @@ int main(int argc, char **argv)
             printf("Found: M: %u "
                    "L_output: %u "
                    "distance_computation: %'lu "
+                   "searching_time(s.): %f "
                    "recall_output: %f "
                    "recall_expected: %f\n",
                    value_M,
                    mid,
                    distance_computation_output,
+                   runtime,
                    recall_output,
                    recall_expected);
         } else {
             printf("Not found: M: %u "
                    "L_output: %u "
                    "distance_computation: %'lu "
+                   "searching_time(s.): %f "
                    "recall_output: %f "
                    "recall_expected: %f\n",
                    value_M,
                    min_above_L,
                    min_above_distance_computation,
+                   min_above_runtime,
                    min_above_recall,
                    recall_expected);
 //            printf("Not found: M: %u L_output: %u recall_output: %f recall_expected: %f\n",

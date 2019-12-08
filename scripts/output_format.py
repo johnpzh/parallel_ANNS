@@ -13,8 +13,9 @@ with open(sys.argv[1]) as fin, \
     is_first_line = True
     for line in fin:
         line = line.strip()
-        if line[0] in ['%', '#', '-', '=', '+']:
+        if line[0] in ['%', '#', '-', '=', '+', 'F', 'N']:
             is_first_line = True
+            fout.write(line + '\n')
             continue
 
         # Get all columns

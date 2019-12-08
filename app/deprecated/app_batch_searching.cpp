@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <vector>
 #include <chrono>
-#include "../core/Searching.h"
-#include "../include/utils.h"
+#include "../../core/Searching.h"
+#include "../../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
