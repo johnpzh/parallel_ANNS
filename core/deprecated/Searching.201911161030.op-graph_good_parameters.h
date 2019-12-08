@@ -11,10 +11,10 @@
 #include <fstream>
 #include <immintrin.h>
 #include <cstring>
-#include "../include/definitions.h"
+#include "../../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
-#include "../include/utils.h"
-#include "../include/Candidate.h"
+#include "../../include/utils.h"
+#include "../../include/Candidate.h"
 
 namespace PANNS {
 

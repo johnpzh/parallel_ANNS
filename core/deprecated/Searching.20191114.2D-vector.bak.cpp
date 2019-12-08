@@ -6,8 +6,8 @@
 #include <fstream>
 #include <immintrin.h>
 #include <string.h>
-#include "Searching.h"
-#include "../include/utils.h"
+#include "../Searching.h"
+#include "../../include/utils.h"
 //#include "../include/efanna2e/neighbor.h"
 
 namespace PANNS {

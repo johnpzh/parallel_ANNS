@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <boost/dynamic_bitset.hpp>
-#include "../include/definitions.h"
+#include "../../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
 
 namespace PANNS {
