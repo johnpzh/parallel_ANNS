@@ -3,7 +3,7 @@
 //
 
 
-#include "Searching.201912061447.parallel_in_a_batch.h"
+#include "Searching.201912091448.map_for_queries_ids.h"
 
 namespace PANNS {
 
@@ -622,7 +622,7 @@ void Searching::search_with_top_m_in_batch(
 
     // Prepare the init_ids
     {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
             auto &is_visited = is_visited_list[q_i];
             for (idi c_i = 0; c_i < L; ++c_i) {
@@ -633,7 +633,7 @@ void Searching::search_with_top_m_in_batch(
 
     // Initialize set_L_list
     {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (idi q_i = 0; q_i < batch_size; ++q_i) {
             const dataf *query_data = queries_load_ + (q_i + batch_start) * dimension_;
             for (idi i = 0; i < L; i++) {
@@ -652,9 +652,9 @@ void Searching::search_with_top_m_in_batch(
         std::vector<idi> joint_queue(M * batch_size); // Joint queue for all shared top-M candidates
         idi joint_queue_end = 0;
         boost::dynamic_bitset<> is_in_joint_queue(num_v_);
-        std::vector< std::vector<idi> > cands_query_ids(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in cands_query_ids[cand_id].
-        std::vector<idi> cands_query_ids_ends(num_v_, 0);
-
+//        std::vector< std::vector<idi> > cands_query_ids(num_v_, std::vector<idi>(batch_size)); // If candidate cand_id is selected by query q_i, q_i should be in cands_query_ids[cand_id].
+//        std::vector<idi> cands_query_ids_ends(num_v_, 0);
+        std::unordered_map< idi, std::vector<idi> > cands_query_ids(batch_size * M);
         std::vector<idi> ks(batch_size, 0); // Indices of every queue's first unchekced candidate.
         std::vector<idi> nks(batch_size, L); // Indices of highest candidate inserted
         std::vector<idi> last_ks(batch_size, L); // Indices of lowest candidate unchecked
@@ -685,7 +685,15 @@ void Searching::search_with_top_m_in_batch(
                     ++top_m_count;
                     idi cand_id = set_L[c_i].id_;
                     // Record which query selected cand_id
-                    cands_query_ids[cand_id][cands_query_ids_ends[cand_id]++] = q_local_id;
+                    auto tmp_c = cands_query_ids.find(cand_id);
+                    if (tmp_c != cands_query_ids.end()) {
+                        tmp_c->second.push_back(q_local_id);
+                    } else {
+                        cands_query_ids.emplace(cand_id, std::vector<idi>());
+                        cands_query_ids[cand_id].reserve(batch_size);
+                        cands_query_ids[cand_id].push_back(q_local_id);
+                    }
+//                    cands_query_ids[cand_id][cands_query_ids_ends[cand_id]++] = q_local_id;
                     // Add candidate cand_id into the joint queue
                     if (is_in_joint_queue[cand_id]) {
                         continue;
@@ -703,17 +711,13 @@ void Searching::search_with_top_m_in_batch(
                 idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
                 idi out_degree = *out_edges++;
                 const auto &query_local_ids = cands_query_ids[cand_id];
-                idi &q_i_bound = cands_query_ids_ends[cand_id];
                 // Push neighbors to every queue of the queries that selected cand_id.
-                // TODO: the order of for-loop needs change.
                 // Traverse cand_id's neighbors
-//                for (idi e_i = 0; e_i < out_degree; ++e_i) {
-//                    idi nb_id = out_edges[e_i];
-//                    auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-//                    dataf norm = *nb_data++;
 //                idi &q_i_bound = cands_query_ids_ends[cand_id];
-                for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
-                    idi q_local_id = query_local_ids[q_i];
+
+//                for (idi q_i = 0; q_i < q_i_bound; ++q_i) {
+//                    idi q_local_id = query_local_ids[q_i];
+                for (idi q_local_id : query_local_ids) {
                     dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
                     auto &is_visited = is_visited_list[q_local_id];
                     auto &set_L = set_L_list[q_local_id];
@@ -726,8 +730,6 @@ void Searching::search_with_top_m_in_batch(
                         is_visited[nb_id] = true;
                         auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                         dataf norm = *nb_data++;
-//                        auto &set_L = set_L_list[q_local_id];
-//                        dataf *query_data = queries_load_ + (q_local_id + batch_start) * dimension_;
                         ++count_distance_computation;
                         distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                         if (dist > set_L[L-1].distance_) {
@@ -743,7 +745,8 @@ void Searching::search_with_top_m_in_batch(
                         }
                     }
                 }
-                q_i_bound = 0; // Clear cands_query_ids[cand_id]
+                cands_query_ids.erase(cand_id);
+//                q_i_bound = 0; // Clear cands_query_ids[cand_id]
             }
             joint_queue_end = 0; //  Clear joint_queue
             for (idi q_local_id = 0; q_local_id < batch_size; ++q_local_id) {

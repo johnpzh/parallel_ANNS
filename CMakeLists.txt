@@ -26,7 +26,8 @@ set(LIBPAPI /usr/local/lib/libpapi.a)
 # Build Library
 add_library(PANNS
 #        ./core/Searching.cpp
-        ./core/Searching.201912061447.parallel_in_a_batch.cpp
+#        ./core/Searching.201912061447.parallel_in_a_batch.cpp
+        ./core/Searching.201912091448.map_for_queries_ids.cpp
         ./include/utils.cpp)
 target_compile_options(PANNS PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(PANNS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

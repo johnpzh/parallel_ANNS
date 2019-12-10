@@ -11,7 +11,7 @@
 #include <omp.h>
 //#include  "extras/utils.h"
 //#include "../include/utils.h"
-#include "../core/Searching.h"
+//#include "../core/Searching.h"
 // Ended by Johnpzh
 
 void load_data(char *filename, float *&data, unsigned &num,
