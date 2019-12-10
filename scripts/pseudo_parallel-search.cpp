@@ -16,7 +16,7 @@ Queue Top-M-Searching(
 {
     Candidate Queue S whose size is L;
     // Select initial vertices to fill Queue S.
-    Queue S = Neighbors of Query Q and other random vertices;
+    Queue S = Neighbors of Query P and other random vertices;
     Sort Queue S according to distances to Query Q;
 
     Index i is the index of the first unchecked candidate in Queue S;
@@ -34,8 +34,9 @@ Queue Top-M-Searching(
             Mark Candidate C as checked;
             for (every unvisited Neighbor N of Candidate C in Graph G) {
                 Mark Neighbor N as visited;
-                Insert Neighbor N into Queue S according to its distance to Query Q; // Qeueu S is sorted all the time.
-                Index new_i = the index of Candidate N in Queue S;
+                Compute the distance between Neighbor N and Query Q;
+                Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+                new_i = the index of Candidate N newly inserted in Queue S;
             }
         }
         if (new_i <= last_i) {
@@ -64,7 +65,7 @@ QueueSet Top-M-Searching-in-A-Batch-of-Queries(
     Candidate QueueSet SS whose size is BS;
     for-in-parallel (every Candidate Queue S in QueueSet SS) {
         Queue S is of size L;
-        Queue S = Neighbors of Query Q and other random vertices;
+        Queue S = Neighbors of Query P and other random vertices;
         Sort Queue S according to distances to Query Q in QuerySet QS;
     }
 
@@ -83,8 +84,9 @@ QueueSet Top-M-Searching-in-A-Batch-of-Queries(
             for (every unvisited Neighbor N of Candidate C in Graph G) {
                 for (every Query Q that selected Candidate C) {
                     Mark Neighbor N as visied by Query Q;
+                    Compute the distance between Neighbor N and Query Q;
                     Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
-                    if (Index of Neighbor N in Queue S < L) {
+                    if (Index of Neighbor N newly inserted in Queue S < L) {
                         not_finished = true;
                     }
                 }
