@@ -75,8 +75,8 @@ QueueSet Top-M-Searching-in-A-Batch-of-Queries(
         // Build the joint queue
         Queue JQ is to store all top-M candidates from QueueSet SS;
         for-in-parallel (every Queue S in QueueSet SS) {
-            Put into Queue JQ the first M unchecked candidates in Queue S;
             Record those M candidates are selected and checked by Query Q;
+            Put into Queue JQ the first M unchecked candidates in Queue S;
         }
 
         // Expand candidates in the joint queue
