@@ -7,23 +7,58 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
-#include "../core/Searching.201912161559.set_for_queue.h"
-//#include "../core/Searching.201912091448.map_for_queries_ids.h"
-//#include "../core/Searching.h"
+#include "../../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file>\n",
-//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
+}
+
+void get_percentage_of_sharing_in_top_m(
+        const std::vector< std::vector<PANNS::idi> > &top_m_list_a,
+        const std::vector< std::vector<PANNS::idi> > &top_m_list_b,
+        double &pcnt_has_shared_iterations,
+        double &avg_pcnt_shared_top_m)
+{
+    avg_pcnt_shared_top_m = 0.0;
+    size_t iter_a = top_m_list_a.size();
+    size_t iter_b = top_m_list_b.size();
+    size_t num_iters = iter_a < iter_b ? iter_a : iter_b;
+    size_t count_of_has_shared_iterations = 0;
+    for (size_t i_i = 0; i_i < num_iters; ++i_i) {
+        size_t num_tops_a = top_m_list_a[i_i].size();
+        size_t num_tops_b = top_m_list_b[i_i].size();
+        bool has_shared = false;
+        size_t count_of_shared = 0;
+        for (size_t a_t_i = 0; a_t_i < num_tops_a; ++a_t_i) {
+            PANNS::idi a_top = top_m_list_a[i_i][a_t_i];
+            for (size_t b_t_i = 0; b_t_i < num_tops_b; ++b_t_i) {
+                PANNS::idi b_top = top_m_list_b[i_i][b_t_i];
+                if (a_top == b_top) {
+                    // Shared
+                    has_shared = true;
+                    ++count_of_shared;
+                }
+            }
+        }
+        double pcnt_shared_tops = 2.0 * count_of_shared / (double) (num_tops_a + num_tops_b);
+//        printf("%lu %f\n", i_i, pcnt_shared_tops);
+        avg_pcnt_shared_top_m += pcnt_shared_tops;
+        if (has_shared) {
+            ++count_of_has_shared_iterations;
+        }
+    }
+    pcnt_has_shared_iterations = 2.0 * count_of_has_shared_iterations / (double) (iter_a + iter_b);
+    avg_pcnt_shared_top_m /= num_iters;
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 9) {
+    if (argc != 11) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -33,13 +68,17 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
+    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
+    if (engine.num_queries_ > query_num_max) {
+        engine.num_queries_ = query_num_max;
+    }
     engine.load_nsg_graph(argv[3]);
 
 //    engine.build_opt_graph();
 
     unsigned L = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
-    unsigned M_max = strtoull(argv[7], nullptr, 0);
+    unsigned M_max = strtoull(argv[9], nullptr, 0);
     if (L < K) {
         fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
         exit(EXIT_FAILURE);
@@ -77,7 +116,6 @@ int main(int argc, char **argv)
                 std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
-                engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
                     engine.search_with_top_m(
@@ -87,8 +125,8 @@ int main(int argc, char **argv)
                             L,
                             set_L,
                             init_ids,
-                            set_K_list[q_i]);
-//                            queries_top_m_list[q_i]);
+                            set_K_list[q_i],
+                            queries_top_m_list[q_i]);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -131,12 +169,10 @@ int main(int argc, char **argv)
 //                       recalls[100]);
 
                     printf("M: %u "
-                           "L: %u "
                            "searching_time(s.): %f "
                            "P@100: %f\n",
 //                           "count_distance_computation: %'lu\n",
                            value_M,
-                           L,
                            diff.count(),
                            recalls[100]);
 //                           engine.count_distance_computation);

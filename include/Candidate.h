@@ -16,9 +16,14 @@ struct Candidate {
     Candidate() = default;
     Candidate(idi id, distf dist, bool is_checked) : id_(id), distance_(dist), is_checked_(is_checked)
     {}
-    bool operator<(const Candidate &b)
+    bool operator<(const Candidate &b) const
     {
-        return this->distance_ < b.distance_;
+//        return this->distance_ < b.distance_;
+        if (this->distance_ != b.distance_) {
+            return this->distance_ < b.distance_;
+        } else {
+            return this->id_ < b.id_;
+        }
     }
 };
 

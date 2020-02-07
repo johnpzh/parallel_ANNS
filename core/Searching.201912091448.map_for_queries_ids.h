@@ -152,9 +152,9 @@ public:
             idi K,
             idi L,
             std::vector<Candidate> &set_L,
-            std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector< std::vector<idi> > &top_m_list);
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K);
+//            std::vector< std::vector<idi> > &top_m_list);
     void search_with_top_m_in_batch(
             PANNS::idi M,
             PANNS::idi batch_start,

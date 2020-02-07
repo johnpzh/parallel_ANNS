@@ -2,8 +2,8 @@
 // Created by 付聪 on 2017/6/21.
 //
 
-#include "../include/efanna2e/index_nsg.h"
-#include "../include/efanna2e/util.h"
+#include "../../include/efanna2e/index_nsg.h"
+#include "../../include/efanna2e/util.h"
 #include <chrono>
 #include <string>
 #include <clocale>
@@ -11,7 +11,7 @@
 #include <omp.h>
 //#include  "extras/utils.h"
 //#include "../include/utils.h"
-#include "../core/Searching.h"
+#include "../../core/Searching.h"
 // Ended by Johnpzh
 
 void load_data(char *filename, float *&data, unsigned &num,

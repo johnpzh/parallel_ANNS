@@ -36,7 +36,10 @@ Queue Top-M-Searching(
                 Mark Neighbor N as visited;
                 Compute the distance between Neighbor N and Query Q;
                 Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
-                new_i = the index of Candidate N newly inserted in Queue S;
+                tmp_i = the index of Candidate N newly inserted in Queue S;
+                if (tmp_i < new_i) {
+                    new_i = tmp_i;
+                }
             }
         }
         if (new_i <= last_i) {

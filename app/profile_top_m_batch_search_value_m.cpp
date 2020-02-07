@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <vector>
 #include <chrono>
-
-#include "../core/Searching.201912061447.parallel_in_a_batch.h"
+#include "../core/Searching.201912161559.set_for_queue.h"
+//#include "../core/Searching.201912091448.map_for_queries_ids.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
@@ -15,7 +15,8 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file> <recall_expected>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file> <recall_expected>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
 }
@@ -100,7 +101,7 @@ void do_searching(
 
 int main(int argc, char **argv)
 {
-    if (argc != 11) {
+    if (argc != 10) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
