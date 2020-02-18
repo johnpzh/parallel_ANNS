@@ -1,7 +1,11 @@
 # Build
-cmake-build*/
+cmake-build-*/
+cmake-build-debug-remote/
 .idea/
 venv/
+
+# MacOS
+.DS_Store
 
 # Prerequisites
 *.d

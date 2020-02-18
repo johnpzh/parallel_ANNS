@@ -6,7 +6,8 @@
 #include <cstdio>
 #include <vector>
 #include <chrono>
-#include "../core/Searching.h"
+//#include "../core/Searching.h"
+#include "../core/Searching.202002101535.reorganization.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
@@ -124,7 +125,7 @@ int main(int argc, char **argv)
 //                    index.count_distance_computation = 0;
             }
 
-            PANNS::save_result(argv[6], set_K_list);
+            PANNS::DiskIO::save_result(argv[6], set_K_list);
         }
     }
 

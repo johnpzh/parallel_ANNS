@@ -86,7 +86,7 @@ QueueSet Top-M-Searching-in-A-Batch-of-Queries(
         for-in-parallel (every Candidate C in Queue JQ) {
             for (every unvisited Neighbor N of Candidate C in Graph G) {
                 for (every Query Q that selected Candidate C) {
-                    Mark Neighbor N as visied by Query Q;
+                    Mark Neighbor N as visited by Query Q;
                     Compute the distance between Neighbor N and Query Q;
                     Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
                     if (Index of Neighbor N newly inserted in Queue S < L) {

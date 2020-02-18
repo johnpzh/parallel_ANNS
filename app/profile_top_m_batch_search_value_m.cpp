@@ -6,7 +6,8 @@
 #include <cstdio>
 #include <vector>
 #include <chrono>
-#include "../core/Searching.201912161559.set_for_queue.h"
+#include "../core/Searching.202002101535.reorganization.h"
+//#include "../core/Searching.201912161559.set_for_queue.h"
 //#include "../core/Searching.201912091448.map_for_queries_ids.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
@@ -96,7 +97,7 @@ void do_searching(
         engine.count_distance_computation = 0;
     }
 
-    PANNS::save_result(output_filename, set_K_list);
+    PANNS::DiskIO::save_result(output_filename, set_K_list);
 }
 
 int main(int argc, char **argv)

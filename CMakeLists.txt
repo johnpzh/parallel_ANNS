@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(batch_searching LANGUAGES CXX)
+project(PANNS LANGUAGES CXX)
 
 # Verbose Makefile
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -23,19 +23,20 @@ endif()
 #set(CXX_OPTION ${CXX_OPTION} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
 set(LIBPAPI /usr/local/lib/libpapi.a)
 
-# Build Library
-add_library(PANNS
-#        ./core/Searching.cpp
-#        ./core/Searching.201912061447.parallel_in_a_batch.cpp
-#        ./core/Searching.201912091448.map_for_queries_ids.cpp
-        ./core/Searching.201912161559.set_for_queue.cpp
-        ./include/utils.cpp)
-target_compile_options(PANNS PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(PANNS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+## Build Library
+#add_library(PANNS
+##        ./core/Searching.cpp
+##        ./core/Searching.201912061447.parallel_in_a_batch.cpp
+##        ./core/Searching.201912091448.map_for_queries_ids.cpp
+##        ./core/Searching.201912161559.set_for_queue.cpp
+##        ./core/Searching.202002101535.reorganization.cpp)
+##        ./include/utils.cpp)
+#target_compile_options(PANNS PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(PANNS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_library(NSG
         include/efanna2e/index_nsg.cpp
-        ./include/efanna2e/index.cpp)
+        include/efanna2e/index.cpp)
 target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
@@ -47,7 +48,8 @@ target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(app_seq_searching app/app_seq_searching.cpp)
 target_compile_options(app_seq_searching PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(app_seq_searching PRIVATE PANNS ${LIBPAPI})
+target_link_libraries(app_seq_searching PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(app_seq_searching PRIVATE PANNS ${LIBPAPI})
 
 #add_executable(app_top_m_batch_search app/deprecated/app_top_m_batch_search.cpp)
 #target_compile_options(app_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
@@ -59,11 +61,17 @@ target_link_libraries(test_nsg_optimized_search PRIVATE NSG ${LIBPAPI})
 
 add_executable(profile_top_m_search app/profile_top_m_search.cpp)
 target_compile_options(profile_top_m_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_top_m_search PRIVATE PANNS)
+target_link_libraries(profile_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(profile_top_m_search PRIVATE PANNS)
 
 add_executable(profile_top_m_batch_search_value_m app/profile_top_m_batch_search_value_m.cpp)
 target_compile_options(profile_top_m_batch_search_value_m PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_top_m_batch_search_value_m PRIVATE PANNS)
+target_link_libraries(profile_top_m_batch_search_value_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(profile_top_m_batch_search_value_m PRIVATE PANNS)
+
+add_executable(profile_para_single_query_top_m_search app/profile_para_single_query_top_m_search.cpp)
+target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 #add_executable(profile_top_m_batch_search_batch_size app/deprecated/profile_top_m_batch_search_batch_size.cpp)
 #target_compile_options(profile_top_m_batch_search_batch_size PRIVATE ${CXX_OPTION} -march=native)
@@ -77,6 +85,6 @@ target_link_libraries(profile_top_m_batch_search_value_m PRIVATE PANNS)
 #target_compile_options(profile_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(profile_nsg_optimized_search PRIVATE NSG PANNS ${LIBPAPI})
 
-add_executable(profile_seq_searching_with_set_queue app/profile_seq_searching_with_set_queue.cpp)
-target_compile_options(profile_seq_searching_with_set_queue PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_seq_searching_with_set_queue PRIVATE PANNS ${LIBPAPI})
+#add_executable(profile_seq_searching_with_set_queue app/profile_seq_searching_with_set_queue.cpp)
+#target_compile_options(profile_seq_searching_with_set_queue PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(profile_seq_searching_with_set_queue PRIVATE PANNS ${LIBPAPI})
