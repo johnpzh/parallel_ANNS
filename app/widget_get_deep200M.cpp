@@ -17,6 +17,15 @@
 //#include "../include/efanna2e/index_nsg.h"
 #include "../core/Searching.202002181409.local_queue_and_merge.h"
 
+
+void generate(
+        char *directory_input,
+        char *filename_output
+        )
+{
+
+}
+
 void usage(char *argv[])
 {
     fprintf(stderr,
@@ -32,6 +41,11 @@ int main(int argc, char **argv)
     }
     setbuf(stdout, nullptr); // Remove stdout buffer.
     setlocale(LC_NUMERIC, ""); // For comma number format
+
+    int num_files = 36;
+
+    char *filename_output;
+
 
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
@@ -66,7 +80,6 @@ int main(int argc, char **argv)
     int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-    engine.num_threads_ = num_threads_max;
     omp_set_num_threads(num_threads_max);
 //        int warmup_max = 1;
 
@@ -86,9 +99,6 @@ int main(int argc, char **argv)
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                    {//test
-//                        printf("q_i: %u\n", q_i);
-//                    }
                     engine.para_search_with_top_m(
                             value_M,
                             q_i,

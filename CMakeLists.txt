@@ -4,8 +4,10 @@ project(PANNS LANGUAGES CXX)
 # Verbose Makefile
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-# C++14
-set(CMAKE_CXX_STANDARD 14)
+# C++20
+set(CMAKE_CXX_STANDARD 20)
+## C++14
+#set(CMAKE_CXX_STANDARD 14)
 
 # Boost
 find_package(Boost)
