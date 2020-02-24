@@ -75,6 +75,10 @@ add_executable(profile_para_single_query_top_m_search app/profile_para_single_qu
 target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(profile_para_single_query_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
+add_executable(widget_get_deep200M app/widget_get_deep200M.cpp)
+target_compile_options(widget_get_deep200M PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(widget_get_deep200M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
 #add_executable(profile_top_m_batch_search_batch_size app/deprecated/profile_top_m_batch_search_batch_size.cpp)
 #target_compile_options(profile_top_m_batch_search_batch_size PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(profile_top_m_batch_search_batch_size PRIVATE PANNS)

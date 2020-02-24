@@ -52,7 +52,8 @@ public:
 //        std::vector< std::vector<dataf> > &data,
             dataf *&data,
             idi &number,
-            uint64_t &dimension)
+            int &dimension)
+//            uint64_t &dimension)
     {
         std::ifstream fin(filename);
         if (!fin.is_open()) {

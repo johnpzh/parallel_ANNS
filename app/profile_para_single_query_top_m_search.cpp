@@ -15,7 +15,8 @@
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
-#include "../core/Searching.202002181409.local_queue_and_merge.h"
+//#include "../core/Searching.202002181409.local_queue_and_merge.h"
+#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
 
 void usage(char *argv[])
 {
@@ -105,6 +106,9 @@ int main(int argc, char **argv)
 //                            set_L,
 //                            init_ids,
 //                            set_K_list[q_i]);
+//                    {
+//                        exit(1);
+//                    }
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;

@@ -80,16 +80,20 @@ public:
     static idi add_into_queue(
             std::vector<PANNS::Candidate> &queue,
             idi &queue_top,
+            const idi queue_size,
             const PANNS::Candidate &cand);
 //    idi insert_into_queue_nsg(
 //            std::vector< Candidate > &c_queue,
 //            idi c_queue_top,
 //            Candidate cand);
-    template<typename T>
+//    template<typename T>
     static void insert_one_element_at(
-            const T &cand,
-            T *queue_base,
-            const idi dest_index,
+//        const T &cand,
+//        T *queue_base,
+            const Candidate &cand,
+            std::vector<Candidate> &queue_base,
+            const idi insert_index,
+            const idi queue_start,
             const idi queue_size);
     static idi merge_two_queues_into_1st_queue_seq(
             std::vector<Candidate> &queue1,
@@ -99,6 +103,18 @@ public:
             const idi queue2_start,
             const idi queue2_size);
 //            const idi limit_size);
+    static idi merge_two_queues_into_1st_queue_para(
+            std::vector<Candidate> &queue1,
+            const idi queue1_start,
+            const idi queue1_size,
+            std::vector<Candidate> &queue2,
+            const idi queue2_start,
+            const idi queue2_size);
+    idi merge_all_queues_para(
+            std::vector< std::vector<Candidate> > &local_queues_list,
+            std::vector<idi> &local_queues_ends,
+            std::vector<Candidate> &set_L,
+            const idi L);
 
 public:
     // For Profiling
@@ -769,6 +785,7 @@ inline idi Searching::insert_into_queue(
 inline idi Searching::add_into_queue(
         std::vector<PANNS::Candidate> &queue,
         idi &queue_top,
+        const idi queue_size,
         const PANNS::Candidate &cand)
 {
     if (0 == queue_top) {
@@ -779,28 +796,49 @@ inline idi Searching::add_into_queue(
     // Find the insert location
     auto it_loc = std::lower_bound(queue.begin(), queue.begin() + queue_top, cand);
     idi insert_loc = it_loc - queue.begin();
+    if (insert_loc == queue_size) {
+        return queue_size;
+    }
 
     // Insert
+    if (queue_top == queue_size) {
+        // If full already
+        --queue_top;
+    }
     memmove(reinterpret_cast<char *>(queue.data() + insert_loc + 1),
             reinterpret_cast<char *>(queue.data() + insert_loc),
             (queue_top - insert_loc) * sizeof(Candidate));
-    *it_loc = cand;
+//    for (idi q_i = queue_top; q_i > insert_loc; --q_i) {
+//        queue.at(q_i) = queue.at(q_i - 1);
+//    }
+    queue[insert_loc] = cand;
     ++queue_top;
     return insert_loc;
 }
 
-// TODO: need verification.
-template<typename T>
+//template<typename T>
 inline void Searching::insert_one_element_at(
-        const T &cand,
-        T *queue_base,
-        const idi dest_index,
+//        const T &cand,
+//        T *queue_base,
+        const Candidate &cand,
+        std::vector<Candidate> &queue,
+        const idi insert_index,
+        const idi queue_start,
         const idi queue_size)
 {
-    memmove(reinterpret_cast<char *>(queue_base + dest_index + 1),
-            reinterpret_cast<char *>(queue_base + dest_index),
-            (queue_size - dest_index) * sizeof(T));
-    queue_base[dest_index] = cand;
+    const idi dest_index = queue_start + insert_index;
+    memmove(reinterpret_cast<char *>(queue.data() + dest_index + 1),
+            reinterpret_cast<char *>(queue.data() + dest_index),
+            (queue_size - insert_index - 1) * sizeof(Candidate));
+    queue[dest_index] = cand;
+//    memmove(reinterpret_cast<char *>(queue_base + dest_index + 1),
+//            reinterpret_cast<char *>(queue_base + dest_index),
+//            (queue_size - insert_index - 1) * sizeof(T));
+
+//    for (idi q_i = queue_size - 1; q_i > insert_index; --q_i) {
+//        queue_base.at(q_i + queue_start) = queue_base.at(q_i - 1 + queue_start);
+//    }
+//    queue_base[dest_index] = cand;
 }
 
 inline idi Searching::merge_two_queues_into_1st_queue_seq(
@@ -818,27 +856,39 @@ inline idi Searching::merge_two_queues_into_1st_queue_seq(
             queue1.begin() + queue1_start,
             queue1.begin() + queue1_start + queue1_size,
             queue2[queue2_start]);
-    idi insert_loc = it_loc - (queue1.begin() + queue1_start);
+    idi insert_index = it_loc - (queue1.begin() + queue1_start);
+    if (insert_index == queue1_size) {
+        return insert_index;
+    } else if (insert_index == queue1_size - 1) {
+        queue1[queue1_start + insert_index] = queue2[queue2_start];
+        return insert_index;
+    }
 
-    auto *queue1_base = queue1.data() + queue1_start;
+//    auto *queue1_base = queue1.data() + queue1_start;
     // Insert the 1st of queue2
     insert_one_element_at(
             queue2[queue2_start],
-            queue1_base,
-            insert_loc,
+//            queue1.data(),
+            queue1,
+            insert_index,
+            queue1_start,
             queue1_size);
-//    memmove(reinterpret_cast<char *>(queue1_base + insert_loc + 1),
-//            reinterpret_cast<char *>(queue1_base + insert_loc),
-//            (queue1_size - insert_loc) * sizeof(Candidate));
-//    queue1[insert_loc] = queue2[queue2_start];
+    if (queue2_size == 1) {
+        return insert_index;
+    }
+//    memmove(reinterpret_cast<char *>(queue1_base + insert_index + 1),
+//            reinterpret_cast<char *>(queue1_base + insert_index),
+//            (queue1_size - insert_index) * sizeof(Candidate));
+//    queue1[insert_index] = queue2[queue2_start];
 
     // Insert
-    idi q_i_1 = insert_loc + 1;
+    idi q_i_1 = insert_index + 1 + queue1_start;
     idi q_i_2 = queue2_start + 1;
     const idi q_i_1_bound = queue1_start + queue1_size;
     const idi q_i_2_bound = queue2_start + queue2_size;
 //    const idi insert_i_bound = queue1_start + limit_size;
-    for (idi insert_i = insert_loc + 1; insert_i < q_i_1_bound; ++insert_i) {
+    for (idi insert_i = insert_index + 1; insert_i < queue1_size; ++insert_i) {
+//    for (idi insert_i = insert_index + 1; insert_i < q_i_1_bound; ++insert_i) {
         if (q_i_1 >= q_i_1_bound || q_i_2 >= q_i_2_bound) {
             // queue1 or queue2 finished traverse. Rest o
             break;
@@ -848,8 +898,10 @@ inline idi Searching::merge_two_queues_into_1st_queue_seq(
             // Insert queue2[q_i_2] into queue1
             insert_one_element_at(
                     queue2[q_i_2++],
-                    queue1_base,
+//                    queue1.data(),
+                    queue1,
                     insert_i,
+                    queue1_start,
                     queue1_size);
             ++q_i_1;
         }
@@ -868,7 +920,7 @@ inline idi Searching::merge_two_queues_into_1st_queue_seq(
 //    // Swap queue1 and tmp_queue
 //    queue1.swap(tmp_queue);
 
-    return insert_loc;
+    return insert_index;
 }
 
 //// Backup
@@ -904,6 +956,188 @@ inline idi Searching::merge_two_queues_into_1st_queue_seq(
 //
 //    return insert_loc;
 //}
+
+inline idi Searching::merge_two_queues_into_1st_queue_para(
+        std::vector<Candidate> &queue1,
+        const idi queue1_start,
+        const idi queue1_size,
+        std::vector<Candidate> &queue2,
+        const idi queue2_start,
+        const idi queue2_size)
+//        const idi limit_size)
+{
+    assert(queue1_size && queue2_size);
+
+    if (queue2_size < 16) {
+//    if (true) {
+//    if (queue2_size < 1024) {
+        return merge_two_queues_into_1st_queue_seq(
+                queue1,
+                queue1_start,
+                queue1_size,
+                queue2,
+                queue2_start,
+                queue2_size);
+    } else {
+        auto it1_begin = queue1.begin() + queue1_start;
+        auto it1_end = it1_begin + queue1_size;
+//    auto it2_begin = queue2.begin() + queue2_start;
+//    auto it2_end = it2_begin + queue2_size;
+
+        // Record the lowest insert location.
+        idi lowest_insert_loc;
+        {
+            auto it_loc = std::lower_bound(
+                    it1_begin,
+                    it1_end,
+                    queue2[queue2_start]);
+            lowest_insert_loc = it_loc - it1_begin;
+            if (lowest_insert_loc == queue1_size) {
+                return lowest_insert_loc;
+            } else if (lowest_insert_loc == queue1_size - 1) {
+                queue1[queue1_start + lowest_insert_loc] = queue2[queue2_start];
+                return lowest_insert_loc;
+            }
+        }
+        // Partition queue2 and queue1
+        const idi stride = log2(static_cast<double>(queue2_size));
+        const idi num_partitions = (queue2_size - 1) / stride + 1;
+        // Partitions in queue1
+        std::vector<idi> parts_in_q1(num_partitions);
+        parts_in_q1[0] = 0;
+#pragma omp parallel for
+        for (idi p_i = 1; p_i < num_partitions; ++p_i) {
+            idi q_i = p_i * stride + queue2_start;
+            auto it_loc = std::lower_bound(
+                    it1_begin,
+                    it1_end,
+                    queue2[q_i]);
+            parts_in_q1[p_i] = it_loc - it1_begin;
+        }
+        // Partitions in queue2
+        std::vector<idi> parts_in_q2(num_partitions);
+        parts_in_q2[0] = 0;
+#pragma omp parallel for
+        for (idi p_i = 1; p_i < num_partitions; ++p_i) {
+            parts_in_q2[p_i] = p_i * stride;
+        }
+
+        // Merge
+        // Find partitions needed.
+        std::vector<idi> offsets_queue3; // For the tmp_queue when merging.
+        offsets_queue3.push_back(0);
+        idi elements_count = 0;
+        idi p_i_bound = 0;
+        while (elements_count < queue1_size && p_i_bound < num_partitions) {
+            idi q1_size;
+            idi q2_size;
+            if (p_i_bound != num_partitions - 1) {
+                q1_size = parts_in_q1[p_i_bound + 1] - parts_in_q1[p_i_bound];
+                q2_size = parts_in_q2[p_i_bound + 1] - parts_in_q2[p_i_bound];
+            } else {
+                q1_size = queue1_size - parts_in_q1[p_i_bound];
+                q2_size = queue2_size - parts_in_q2[p_i_bound];
+            }
+            ++p_i_bound;
+            idi tmp_size = q1_size + q2_size;
+            elements_count += tmp_size;
+            offsets_queue3.push_back(*offsets_queue3.rbegin() + tmp_size);
+        }
+        // Merge into tmp_queue in parallel
+        std::vector<Candidate> tmp_queue(elements_count);
+#pragma omp parallel for
+        for (idi p_i = 0; p_i < p_i_bound; ++p_i) {
+            idi q1_start = parts_in_q1[p_i] + queue1_start;
+            idi q2_start = parts_in_q2[p_i] + queue2_start;
+            idi q1_end;
+            idi q2_end;
+            if (p_i != num_partitions - 1) {
+                q1_end = parts_in_q1[p_i + 1] + queue1_start;
+                q2_end = parts_in_q2[p_i + 1] + queue1_start;
+            } else {
+                q1_end = queue1_size + queue1_start;
+                q2_end = queue2_size + queue2_start;
+            }
+            std::merge(
+                    queue1.begin() + q1_start,
+                    queue1.begin() + q1_end,
+                    queue2.begin() + q2_start,
+                    queue2.begin() + q2_end,
+                    tmp_queue.begin() + offsets_queue3[p_i]);
+        }
+        if (elements_count > queue1_size) {
+            tmp_queue.resize(queue1_size);
+        }
+        tmp_queue.swap(queue1);
+//// Deprecated. Wrong implementation.
+////#pragma omp parallel for
+//        for (idi p_i = 0; p_i < num_partitions; ++p_i) {
+//            idi q1_start = parts_in_q1[p_i] + queue1_start;
+//            idi q2_start = parts_in_q2[p_i] + queue2_start;
+//            idi q1_size;
+//            idi q2_size;
+//            if (p_i != num_partitions - 1) {
+//                q1_size = parts_in_q1[p_i + 1] - parts_in_q1[p_i];
+//                q2_size = parts_in_q2[p_i + 1] - parts_in_q2[p_i];
+//            } else {
+//                q1_size = queue1_size - parts_in_q1[p_i];
+//                q2_size = queue2_size - parts_in_q2[p_i];
+//            }
+//            if (0 == q1_size || 0 == q2_size) continue;
+//            merge_two_queues_into_1st_queue_seq(
+//                    queue1,
+//                    q1_start,
+//                    q1_size,
+//                    queue2,
+//                    q2_start,
+//                    q2_size);
+//        }
+        return lowest_insert_loc;
+    }
+
+
+//    //////////////////////////////////////////
+//    //// Backup
+//    // Record the lowest insert location.
+//    auto it_loc = std::lower_bound(
+//            queue1.begin() + queue1_start,
+//            queue1.begin() + queue1_start + queue1_size,
+//            queue2[queue2_start]);
+//    idi insert_loc = it_loc - (queue1.begin() + queue1_start);
+//
+//    auto *queue1_base = queue1.data() + queue1_start;
+//    // Insert the 1st of queue2
+//    insert_one_element_at(
+//            queue2[queue2_start],
+//            queue1_base,
+//            insert_loc,
+//            queue1_size);
+//
+//    // Insert
+//    idi q_i_1 = insert_loc + 1;
+//    idi q_i_2 = queue2_start + 1;
+//    const idi q_i_1_bound = queue1_start + queue1_size;
+//    const idi q_i_2_bound = queue2_start + queue2_size;
+////    const idi insert_i_bound = queue1_start + limit_size;
+//    for (idi insert_i = insert_loc + 1; insert_i < q_i_1_bound; ++insert_i) {
+//        if (q_i_1 >= q_i_1_bound || q_i_2 >= q_i_2_bound) {
+//            // queue1 or queue2 finished traverse. Rest o
+//            break;
+//        } else if (queue1[q_i_1] < queue2[q_i_2]) {
+//            ++q_i_1;
+//        } else {
+//            // Insert queue2[q_i_2] into queue1
+//            insert_one_element_at(
+//                    queue2[q_i_2++],
+//                    queue1_base,
+//                    insert_i,
+//                    queue1_size);
+//            ++q_i_1;
+//        }
+//    }
+//
+//    return insert_loc;
+}
 
 //inline void Searching::cand_pushes_ngbrs_into_queue(
 //        idi cand_id,
@@ -1516,6 +1750,116 @@ inline void Searching::search_with_top_m_in_batch(
 //    }
 }
 
+inline idi Searching::merge_all_queues_para(
+        std::vector< std::vector<Candidate> > &local_queues_list,
+        std::vector<idi> &local_queues_ends,
+        std::vector<Candidate> &set_L,
+        const idi L)
+{
+    int size = 1 << (static_cast<idi>(log2(num_threads_)));
+    idi log2size = static_cast<idi>(log2(size));
+    for (idi d = 0; d < log2size; ++d) {
+        uint32_t by = 1 << (d + 1);
+#pragma omp parallel for
+        for (int i = 0; i < size; i += by) {
+            idi ai = i + (1 << (d + 1)) - 1; // i + 2^(d+1) - 1
+            idi bi = i + (1 << d) - 1; // i + 2^d - 1
+            if (0 == local_queues_ends[bi]) {
+                continue;
+            }
+            if (local_queues_ends[ai] == 0) {
+                local_queues_list[ai].swap(local_queues_list[bi]);
+                std::swap(local_queues_ends[ai], local_queues_ends[bi]);
+                continue;
+            }
+//            else if (local_queues_ends[ai] < L && local_queues_ends[bi] >= L) {
+//                local_queues_list[ai].swap(local_queues_list[bi]);
+//                std::swap(local_queues_ends[ai], local_queues_ends[bi]);
+//            }
+//            merge_two_queues_into_1st_queue_seq(
+//                    local_queues_list[ai],
+//                    0,
+//                    local_queues_ends[ai],
+//                    local_queues_list[bi],
+//                    0,
+//                    local_queues_ends[bi]);
+            idi tmp_length = local_queues_ends[ai] + local_queues_ends[bi];
+            std::vector<Candidate> tmp_queue(tmp_length);
+            std::merge(
+                    local_queues_list[ai].begin(),
+                    local_queues_list[ai].begin() + local_queues_ends[ai],
+                    local_queues_list[bi].begin(),
+                    local_queues_list[bi].begin() + local_queues_ends[bi],
+                    tmp_queue.begin());
+            if (tmp_length > L) {
+                tmp_queue.resize(L);
+                tmp_length = L;
+            } else if (tmp_length < L) {
+                tmp_queue.resize(L);
+            }
+            local_queues_list[ai].swap(tmp_queue);
+            local_queues_ends[ai] = tmp_length;
+        }
+    }
+    // Remain, prefix-sum-like merge
+    if (size != num_threads_) {
+        for (int i = size; i < num_threads_; ++i) {
+            idi ai = i;
+            idi bi = i - 1;
+            if (0 == local_queues_ends[bi]) {
+                continue;
+            }
+            if (local_queues_ends[ai] == 0) {
+                local_queues_list[ai].swap(local_queues_list[bi]);
+                std::swap(local_queues_ends[ai], local_queues_ends[bi]);
+                continue;
+            }
+//            else if (local_queues_ends[ai] < L && local_queues_ends[bi] >= L) {
+//                local_queues_list[ai].swap(local_queues_list[bi]);
+//                std::swap(local_queues_ends[ai], local_queues_ends[bi]);
+//            }
+//            merge_two_queues_into_1st_queue_seq(
+//                    local_queues_list[ai],
+//                    0,
+//                    local_queues_ends[ai],
+//                    local_queues_list[bi],
+//                    0,
+//                    local_queues_ends[bi]);
+            idi tmp_length = local_queues_ends[ai] + local_queues_ends[bi];
+            std::vector<Candidate> tmp_queue(tmp_length);
+            std::merge(
+                    local_queues_list[ai].begin(),
+                    local_queues_list[ai].begin() + local_queues_ends[ai],
+                    local_queues_list[bi].begin(),
+                    local_queues_list[bi].begin() + local_queues_ends[bi],
+                    tmp_queue.begin());
+            if (tmp_length > L) {
+                tmp_queue.resize(L);
+                tmp_length = L;
+            } else if (tmp_length < L) {
+                tmp_queue.resize(L);
+            }
+            local_queues_list[ai].swap(tmp_queue);
+            local_queues_ends[ai] = tmp_length;
+        }
+    }
+    // Merge into set_L
+    idi r = L;
+    if (local_queues_ends[num_threads_ - 1]) {
+        r = merge_two_queues_into_1st_queue_seq(
+                set_L,
+                0,
+                L,
+                local_queues_list[num_threads_ - 1],
+                0,
+                local_queues_ends[num_threads_ - 1]);
+    }
+    // Reset local_queues_ends
+    std::fill(local_queues_ends.begin(), local_queues_ends.end(), 0);
+
+    return r;
+}
+
 //// Using local queue and then merge.
 inline void Searching::para_search_with_top_m(
         const PANNS::idi M,
@@ -1527,7 +1871,8 @@ inline void Searching::para_search_with_top_m(
         std::vector<idi> &set_K)
 //        std::vector< std::vector<idi> > &top_m_list)
 {
-    const idi local_queue_length = ((L - 1) / num_threads_ + 1) * width_;
+//    const idi local_queue_length = ((M - 1) / num_threads_ + 1) * width_;
+    const idi local_queue_length = L;
     std::vector< std::vector<Candidate> > local_queues_list(num_threads_, std::vector<Candidate>(local_queue_length));
     std::vector<idi> local_queues_ends(num_threads_, 0);
     std::vector<uint8_t> is_visited(num_v_, 0);
@@ -1585,16 +1930,18 @@ inline void Searching::para_search_with_top_m(
         }
 
         // Push M candidates' neighbors into the queue.
+//        std::vector< std::vector<Candidate> > local_queues_list(num_threads_, std::vector<Candidate>(local_queue_length));
+//        std::vector<idi> local_queues_ends(num_threads_, 0);
 #pragma omp parallel for
         for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
             int tid = omp_get_thread_num();
             idi cand_id = top_m_candidates[c_i];
-            _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+//            _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
             idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
             idi out_degree = *out_edges++;
-            for (idi n_i = 0; n_i < out_degree; ++n_i) {
-                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
-            }
+//            for (idi n_i = 0; n_i < out_degree; ++n_i) {
+//                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+//            }
             for (idi e_i = 0; e_i < out_degree; ++e_i) {
                 idi nb_id = out_edges[e_i];
 //                if (is_visited[nb_id]) {
@@ -1628,30 +1975,95 @@ inline void Searching::para_search_with_top_m(
 //                    }
 //                }
                 // Add to the local queue.
-                add_into_queue(local_queues_list[tid], local_queues_ends[tid], cand);
+                add_into_queue(local_queues_list[tid], local_queues_ends[tid], local_queue_length, cand);
+//                if (local_queues_ends[tid] < local_queue_length) {
+//                    add_into_queue(local_queues_list[tid], local_queues_ends[tid], cand);
+//                } else {
+//                    add_into_queue(local_queues_list[tid], --local_queues_ends[tid], cand);
+//                }
             }
         }
+//        {
+//            printf("num_threads_: %u\n", num_threads_);
+//            for (int tid = 0; tid < num_threads_; ++tid) {
+//                for (idi q_i = 0; q_i < local_queues_ends[tid]; ++q_i) {
+//                    printf("tmp_count: %u "
+//                           "local_queues_ends[%u]: %u "
+//                           "local_queues_lists[%u][%u]: id: %u dist: %f\n",
+//                           tmp_count,
+//                           tid, local_queues_ends[tid],
+//                           tid, q_i, local_queues_list[tid][q_i].id_, local_queues_list[tid][q_i].distance_);
+//                }
+//            }
+//        }
         top_m_candidates_end = 0; // Clear top_m_candidates
 
         idi nk = L;
-        // Merge
+//        // Merge. Parallel merging in every two queues.
+//        {
+//            for (int tid = 0; tid < num_threads_; ++tid) {
+//                if (0 == local_queues_ends[tid]) continue;
+//                idi r = merge_two_queues_into_1st_queue_para(
+//                        set_L,
+//                        0,
+//                        L,
+//                        local_queues_list[tid],
+//                        0,
+//                        local_queues_ends[tid]);
+////                idi r = merge_two_queues_into_1st_queue_seq(
+////                        set_L,
+////                        0,
+////                        L,
+////                        local_queues_list[tid],
+////                        0,
+////                        local_queues_ends[tid]);
+//                local_queues_ends[tid] = 0; // Reset the local queue
+//                if (r < nk) {
+//                    nk = r;
+//                }
+//            }
+//        }
+        // Merge. Merge all queues in parallel.
         {
-            for (int tid = 0; tid < num_threads_; ++tid) {
-                if (0 == local_queues_ends[tid]) continue;
-                idi r = merge_two_queues_into_1st_queue_seq(
+            if (num_threads_ > 1) {
+                idi r = merge_all_queues_para(
+                        local_queues_list,
+                        local_queues_ends,
                         set_L,
-                        0,
-                        L,
-                        local_queues_list[tid],
-                        0,
-                        local_queues_ends[tid]);
-//                        L + 1);
-                local_queues_ends[tid] = 0; // Reset the local queue
+                        L);
                 if (r < nk) {
                     nk = r;
                 }
+            } else {
+                if (local_queues_ends[0]) {
+                    idi r = merge_two_queues_into_1st_queue_seq(
+                            set_L,
+                            0,
+                            L,
+                            local_queues_list[0],
+                            0,
+                            local_queues_ends[0]);
+                    local_queues_ends[0] = 0;
+                    if (r < nk) {
+                        nk = r;
+                    }
+                }
             }
         }
+
+//        {//test
+//            for (idi i = 0; i < L; ++i) {
+//                printf("tmp_count: %u "
+//                       "set_L[%u]: "
+//                       "id: %u "
+//                       "dist: %f\n",
+//                       tmp_count,
+//                       i,
+//                       set_L[i].id_,
+//                       set_L[i].distance_);
+//            }
+////            exit(1);
+//        }
 
         if (nk <= last_k) {
             k = nk;
@@ -1667,9 +2079,14 @@ inline void Searching::para_search_with_top_m(
 //
 //    {//test
 //        for (idi k_i = 0; k_i < K; ++k_i) {
-//            printf("%u: %u: %u %f\n",
+//            printf("query_id: %u "
+//                   "set_L[%u]: "
+//                   "id: %u "
+//                   "dist: %f\n",
 //                    query_id,
-//                    k_i, set_L[k_i].id_, set_L[k_i].distance_);
+//                    k_i,
+//                    set_L[k_i].id_,
+//                    set_L[k_i].distance_);
 //        }
 //        exit(1);
 //    }
