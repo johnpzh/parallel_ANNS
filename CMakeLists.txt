@@ -71,9 +71,9 @@ target_compile_options(profile_top_m_batch_search_value_m PRIVATE ${CXX_OPTION} 
 target_link_libraries(profile_top_m_batch_search_value_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 #target_link_libraries(profile_top_m_batch_search_value_m PRIVATE PANNS)
 
-add_executable(profile_para_single_query_top_m_search app/profile_para_single_query_top_m_search.cpp)
-target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_para_single_query_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#add_executable(profile_para_single_query_top_m_search app/profile_para_single_query_top_m_search.cpp)
+#target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(profile_para_single_query_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(widget_get_deep200M app/widget_get_deep200M.cpp)
 target_compile_options(widget_get_deep200M PRIVATE ${CXX_OPTION} -march=native)
@@ -94,3 +94,7 @@ target_link_libraries(widget_get_deep200M PRIVATE ${Boost_LIBRARIES} OpenMP::Ope
 #add_executable(profile_seq_searching_with_set_queue app/profile_seq_searching_with_set_queue.cpp)
 #target_compile_options(profile_seq_searching_with_set_queue PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(profile_seq_searching_with_set_queue PRIVATE PANNS ${LIBPAPI})
+
+add_executable(profile_para_single_query_top_m_search.202002250815.buckets_equal_width app/profile_para_single_query_top_m_search.202002250815.buckets_equal_width.cpp)
+target_compile_options(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

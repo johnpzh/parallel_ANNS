@@ -7,11 +7,14 @@
 
 #include <utility>
 #include <stdint.h>
+#include <limits>
 
 namespace PANNS {
 
 using dataf = float;
 using distf = float;
+const distf DISTF_MAX = std::numeric_limits<distf>::max();
+const distf DISTF_MIN = std::numeric_limits<distf>::min();
 using idi = uint32_t;
 using edgei = uint64_t;
 //using edgei = uint32_t;
