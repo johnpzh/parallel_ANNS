@@ -29,7 +29,7 @@ public:
     idi num_v_ = 0;
     edgei num_e_ = 0;
     idi num_queries_ = 0;
-    uint64_t dimension_ = 0;
+    int dimension_ = 0;
 
     idi width_ = 0; // NSG largest degree
     idi ep_ = 0; // Start point
@@ -54,6 +54,8 @@ public:
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
 
+    // For multithreads
+    int num_threads_ = 1;
 
     dataf compute_norm(
             const dataf *data) const;
@@ -85,7 +87,7 @@ public:
 public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
-    uint64_t count_distance_computation = 0;
+    uint64_t count_distance_computation_ = 0;
 
     ~Searching()
     {
@@ -946,39 +948,6 @@ inline void Searching::search_with_top_m(
     boost::dynamic_bitset<> is_visited(num_v_);
 
     {
-//        idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-//        unsigned out_degree = *out_edges++;
-//        idi tmp_l = 0;
-//        for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
-//            init_ids[tmp_l] = out_edges[tmp_l];
-//        }
-//
-//        for (idi i = 0; i < tmp_l; ++i) {
-//            is_visited[init_ids[i]] = true;
-//        }
-//
-//        // If ep_'s neighbors are not enough, add other random vertices
-//        idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
-//        while (tmp_l < L) {
-//            tmp_id %= num_v_;
-//            unsigned id = tmp_id++;
-//            if (is_visited[id]) {
-//                continue;
-//            }
-//            is_visited[id] = true;
-//            init_ids[tmp_l] = id;
-//            tmp_l++;
-//        }
-//
-////        while (tmp_l < L) {
-////            unsigned id = rand() % num_v_;
-////            if (is_visited[id]) {
-////                continue;
-////            }
-////            is_visited[id] = true;
-////            init_ids[tmp_l] = id;
-////            tmp_l++;
-////        }
         for (idi c_i = 0; c_i < L; ++c_i) {
             is_visited[init_ids[c_i]] = true;
         }
@@ -1070,17 +1039,6 @@ inline void Searching::search_with_top_m(
                 dataf norm = *nb_data++;
 //                ++count_distance_computation;
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-//                {//test
-//                    if (180955 == nb_id) {
-//                        printf("dist: %f "
-//                               "set_L[L-1].distance_: %f "
-//                               "e_i: %u\n",
-//                               dist,
-//                               set_L[L-1].distance_,
-//                               e_i);
-//                        exit(1);
-//                    }
-//                }
                 if (dist > set_L[L-1].distance_) {
                     continue;
                 }
@@ -1089,26 +1047,10 @@ inline void Searching::search_with_top_m(
 //                }
                 Candidate cand(nb_id, dist, false);
                 idi r = insert_into_queue(set_L, L, cand);
-                {
-//                    {//test
-//                        if (nb_id == 180955) {
-//                            printf("dist: %f "
-//                                   "r: %u\n",
-//                                   dist,
-//                                   r);
-//                            exit(1);
-//                        }
-//                    }
-                }
                 if (r < nk) {
                     nk = r;
                 }
             }
-//            {//test
-//                if (793600 == cand_id) {
-//                    exit(1);
-//                }
-//            }
         }
         top_m_candidates_end = 0; // Clear top_m_candidates
 
@@ -1117,16 +1059,6 @@ inline void Searching::search_with_top_m(
         } else {
             k = last_k + 1;
         }
-//        {//test
-//            printf("nk: %u "
-//                   "last_k: %u "
-//                   "k: %u "
-//                   "tmp_count: %u\n",
-//                   nk,
-//                   last_k,
-//                   k,
-//                   tmp_count);
-//        }
 
 //        /////////////////////////////////////////
 //        Candidate &top_cand = set_L[k];
@@ -1211,7 +1143,7 @@ inline void Searching::search_with_top_m_in_batch(
                 idi v_id = init_ids[i];
                 auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
                 dataf norm = *v_data++;
-                ++count_distance_computation;
+//                ++count_distance_computation_;
                 distf dist = compute_distance_with_norm(v_data, query_data, norm);
                 set_L_list[q_i][i] = Candidate(v_id, dist, false); // False means not checked.
             }
@@ -1301,7 +1233,7 @@ inline void Searching::search_with_top_m_in_batch(
                         is_visited[nb_id] = true;
                         auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                         dataf norm = *nb_data++;
-                        ++count_distance_computation;
+//                        ++count_distance_computation_;
                         distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                         if (dist > set_L[L-1].distance_) {
                             continue;
@@ -1371,19 +1303,19 @@ inline void Searching::para_search_with_top_m(
 //    boost::dynamic_bitset<> is_visited(num_v_);
 
     {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (idi c_i = 0; c_i < L; ++c_i) {
             is_visited[init_ids[c_i]] = 1;
         }
     }
 
     const dataf *query_data = queries_load_ + query_id  * dimension_;
-//    for (idi v_i = 0; v_i < L; ++v_i) {
-//        idi v_id = init_ids[v_i];
-//        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
-//    }
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        idi v_id = init_ids[v_i];
+        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+    }
     // Get the distances of all candidates, store in the set set_L.
-#pragma omp parallel for
+//#pragma omp parallel for
     for (unsigned i = 0; i < L; i++) {
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
@@ -1416,7 +1348,8 @@ inline void Searching::para_search_with_top_m(
         }
 
         // Push M candidates' neighbors into the queue.
-#pragma omp parallel for
+        // OpenMP reduction(min : nk) has a problem if nk is unsigned. nk might end up with being MAX_UINT.
+//#pragma omp parallel for
 //#pragma omp parallel for reduction(min : nk)
         for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
             idi cand_id = top_m_candidates[c_i];
@@ -1451,7 +1384,7 @@ inline void Searching::para_search_with_top_m(
 //                }
                 Candidate cand(nb_id, dist, false);
                 idi r;
-#pragma omp critical
+//#pragma omp critical
                 {
                     r = insert_into_queue(set_L, L, cand);
                     if (r < nk) {

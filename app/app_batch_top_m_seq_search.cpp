@@ -23,93 +23,20 @@ void usage(char *argv[])
             argv[0]);
 }
 
-void do_searching(
-        const unsigned L,
-        const unsigned K,
-        PANNS::Searching &engine,
-        const unsigned value_M,
-        const unsigned query_num,
-        const unsigned query_batch_size,
-        const std::vector<std::vector<PANNS::idi> > &true_nn_list,
-        const char *output_filename,
-        double &recall,
-        uint64_t &distance_computation,
-        double &runtime)
+//void do_searching(
+//        const unsigned L,
+//        const unsigned K,
+//        PANNS::Searching &engine,
+//        const unsigned value_M,
+//        const unsigned query_num,
+//        const unsigned query_batch_size,
+//        const std::vector<std::vector<PANNS::idi> > &true_nn_list,
+//        const char *output_filename,
+//        double &recall,
+//        uint64_t &distance_computation,
+//        double &runtime)
+void do_searching(char *argv[])
 {
-    std::vector<std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
-
-    std::vector<PANNS::idi> init_ids(L);
-    std::vector<std::vector<PANNS::Candidate> > set_L_list(query_batch_size,
-                                                           std::vector<PANNS::Candidate>(L + 1));
-
-    unsigned remain = query_num % query_batch_size;
-    unsigned q_i_bound = query_num - remain;
-    auto s = std::chrono::high_resolution_clock::now();
-    engine.prepare_init_ids(init_ids, L);
-//#pragma omp parallel for
-//    omp_set_num_threads(omp_get_max_threads());
-    for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
-//                        printf("q_i: %u\n", q_i);//test
-        engine.search_with_top_m_in_batch(
-                value_M,
-                q_i,
-                query_batch_size,
-                K,
-                L,
-                set_L_list,
-                init_ids,
-                set_K_list);
-    }
-    if (remain) {
-//                        printf("q_i_bound: %u\n", q_i_bound);//test
-        engine.search_with_top_m_in_batch(
-                value_M,
-                q_i_bound,
-                remain,
-                K,
-                L,
-                set_L_list,
-                init_ids,
-                set_K_list);
-    }
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-    { // Recall values
-        std::unordered_map<unsigned, double> recalls;
-        engine.get_recall_for_all_queries(
-                true_nn_list,
-                set_K_list,
-                recalls);
-        recall = recalls[100];
-        distance_computation = engine.count_distance_computation;
-        runtime = diff.count();
-        printf("M: %u "
-               "batch_size: %u "
-               "L: %u "
-               "searching_time(s.): %f "
-               "count_distance_computation: %'lu "
-               "P@100: %f\n",
-               value_M,
-               query_batch_size,
-               L,
-               diff.count(),
-               engine.count_distance_computation,
-               recall);
-        engine.count_distance_computation = 0;
-    }
-
-    PANNS::DiskIO::save_result(output_filename, set_K_list);
-}
-
-int main(int argc, char **argv)
-{
-    if (argc != 10) {
-        usage(argv);
-        exit(EXIT_FAILURE);
-    }
-    setbuf(stdout, nullptr); // Remove stdout buffer.
-    setlocale(LC_NUMERIC, ""); // For comma number format
-
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
@@ -121,10 +48,137 @@ int main(int argc, char **argv)
 
 //    engine.build_opt_graph();
 
-    unsigned L_max = strtoull(argv[4], nullptr, 0);
+    unsigned L = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
-    unsigned M_max = strtoull(argv[7], nullptr, 0);
-    unsigned batch_size_max = strtoull(argv[8], nullptr, 0);
+    unsigned M = strtoull(argv[7], nullptr, 0);
+    unsigned query_batch_size = strtoull(argv[8], nullptr, 0);
+    unsigned query_num = engine.num_queries_;
+
+    std::vector<std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
+
+    std::vector<PANNS::idi> init_ids(L);
+    std::vector<std::vector<PANNS::Candidate> > set_L_list(query_batch_size,
+                                                           std::vector<PANNS::Candidate>(L + 1));
+
+//    double recall_output = 0.0;
+//    uint64_t distance_computation_output = 0;
+//    double runtime = 0.0;
+
+    unsigned data_dimension = engine.dimension_;
+    unsigned points_num = engine.num_v_;
+
+    unsigned remain = query_num % query_batch_size;
+    unsigned q_i_bound = query_num - remain;
+    auto s = std::chrono::high_resolution_clock::now();
+    engine.prepare_init_ids(init_ids, L);
+//#pragma omp parallel for
+//    omp_set_num_threads(omp_get_max_threads());
+    for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
+//                        printf("q_i: %u\n", q_i);//test
+        engine.search_with_top_m_in_batch(
+                M,
+                q_i,
+                query_batch_size,
+                K,
+                L,
+                set_L_list,
+                init_ids,
+                set_K_list);
+    }
+    if (remain) {
+//                        printf("q_i_bound: %u\n", q_i_bound);//test
+        engine.search_with_top_m_in_batch(
+                M,
+                q_i_bound,
+                remain,
+                K,
+                L,
+                set_L_list,
+                init_ids,
+                set_K_list);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+
+    std::unordered_map<unsigned, double> recalls;
+    { // Recall values
+        std::vector<std::vector<PANNS::idi> > true_nn_list;
+        engine.load_true_NN(
+                argv[9],
+                true_nn_list);
+
+        engine.get_recall_for_all_queries(
+                true_nn_list,
+                set_K_list,
+                recalls);
+//        recall = recalls[100];
+//        distance_computation = engine.count_distance_computation;
+//        runtime = diff.count();
+//        printf("M: %u "
+//               "batch_size: %u "
+//               "L: %u "
+//               "searching_time(s.): %f "
+//               "count_distance_computation: %'lu "
+//               "P@100: %f\n",
+//               M,
+//               query_batch_size,
+//               L,
+//               diff.count(),
+//               engine.count_distance_computation,
+//               recalls[100]);
+
+    }
+    {// Basic output
+        printf("M: %u "
+               "L: %u "
+               "search_time(s.): %f "
+               "K: %u "
+               "Volume: %u "
+               "Dimension: %u "
+               "query_num: %u "
+               "query_per_sec: %f "
+               "average_latency(ms.): %f "
+               "P@100: %f\n",
+               M,
+               L,
+               diff.count(),
+               K,
+               points_num,
+               data_dimension,
+               query_num,
+               query_num / diff.count(),
+               diff.count() * 1000 / query_num,
+               recalls[100]);
+//        engine.count_distance_computation = 0;
+    }
+
+    PANNS::DiskIO::save_result(argv[6], set_K_list);
+}
+
+int main(int argc, char **argv)
+{
+    if (argc != 10) {
+        usage(argv);
+        exit(EXIT_FAILURE);
+    }
+    setbuf(stdout, nullptr); // Remove stdout buffer.
+    setlocale(LC_NUMERIC, ""); // For comma number format
+
+//    PANNS::Searching engine;
+//    engine.load_data_load(argv[1]);
+//    engine.load_queries_load(argv[2]);
+////    unsigned query_num_max = strtoull(argv[7], nullptr, 0); // Limit of number of queries.
+////    if (engine.num_queries_ > query_num_max) {
+////        engine.num_queries_ = query_num_max;
+////    }
+//    engine.load_nsg_graph(argv[3]);
+
+//    engine.build_opt_graph();
+
+//    unsigned L_max = strtoull(argv[4], nullptr, 0);
+//    unsigned K = strtoull(argv[5], nullptr, 0);
+//    unsigned M_max = strtoull(argv[7], nullptr, 0);
+//    unsigned batch_size_max = strtoull(argv[8], nullptr, 0);
 //    if (L_max < K) {
 //        fprintf(stderr, "Warning: search_L %u is smaller than search_K %u\n.", L_max, K);
 ////        fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L_max, K);
@@ -136,32 +190,33 @@ int main(int argc, char **argv)
 ////        exit(EXIT_FAILURE);
 //    }
 
-    std::vector<std::vector<PANNS::idi> > true_nn_list;
-    engine.load_true_NN(
-            argv[9],
-            true_nn_list);
+//    std::vector<std::vector<PANNS::idi> > true_nn_list;
+//    engine.load_true_NN(
+//            argv[9],
+//            true_nn_list);
 
 //    unsigned data_dimension = engine.dimension_;
 //    unsigned points_num = engine.num_v_;
-    unsigned query_num = engine.num_queries_;
+//    unsigned query_num = engine.num_queries_;
 
     {
-        double recall_output = 0.0;
-        uint64_t distance_computation_output = 0;
-        double runtime = 0.0;
+//        double recall_output = 0.0;
+//        uint64_t distance_computation_output = 0;
+//        double runtime = 0.0;
 
-        do_searching(
-                L_max,
-                K,
-                engine,
-                M_max,
-                query_num,
-                batch_size_max,
-                true_nn_list,
-                argv[6],
-                recall_output,
-                distance_computation_output,
-                runtime);
+        do_searching(argv);
+//        do_searching(
+//                L_max,
+//                K,
+//                engine,
+//                M_max,
+//                query_num,
+//                batch_size_max,
+//                true_nn_list,
+//                argv[6],
+//                recall_output,
+//                distance_computation_output,
+//                runtime);
     }
 
 //    {// For different value M, find the value L to achieve the same accuracy.

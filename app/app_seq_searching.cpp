@@ -8,24 +8,26 @@
 #include <chrono>
 //#include "../core/Searching.h"
 //#include "../core/Searching.202002101535.reorganization.h"
-#include "../core/Searching.202002181409.local_queue_and_merge.h"
+//#include "../core/Searching.202002181409.local_queue_and_merge.h"
+#include "../core/Searching.202002250815.buckets_equal_width.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: ./%s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path>\n", argv[0]);
-//            "Usage: ./%s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max>\n", argv[0]);
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <true_NN_file>\n", argv[0]);
+//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max>\n", argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 7) {
+    if (argc != 8) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
     setbuf(stdout, nullptr); // Remove stdout buffer.
+    setlocale(LC_NUMERIC, ""); // For comma number format
 
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
@@ -101,31 +103,46 @@ int main(int argc, char **argv)
 //            cache_miss.print();
 //            engine.cache_miss_kernel.print();
             std::chrono::duration<double> diff = e - s;
+
+            std::unordered_map<unsigned, double> recalls;
+            {// Recall values
+                std::vector< std::vector<PANNS::idi> > true_nn_list;
+                engine.load_true_NN(
+                        argv[7],
+                        true_nn_list);
+                engine.get_recall_for_all_queries(
+                        true_nn_list,
+                        set_K_list,
+                        recalls);
+            }
             {// Basic output
                 printf("L: %u "
                        "search_time(s.): %f "
                        //                       "time_distance_computation: %f "
-                       //                           "count_distance_computation: %lu "
+                       "count_distance_computation: %'lu "
                        "K: %u "
                        "Volume: %u "
                        "Dimension: %u "
                        "query_num: %u "
                        "query_per_sec: %f "
-                       "average_latency(ms.): %f\n",
+                       "average_latency(ms.): %f "
+                       "P@100: %f\n",
                        L,
                        diff.count(),
 //                       index.time_distance_computation,
 //                           index.count_distance_computation,
+                       engine.count_distance_computation_,
                        K,
                        points_num,
                        data_dimension,
                        query_num,
                        query_num / diff.count(),
-                       diff.count() * 1000 / query_num);
+                       diff.count() * 1000 / query_num,
+                       recalls[100]);
 //                index.time_distance_computation = 0.0;
 //                    index.count_distance_computation = 0;
+                engine.count_distance_computation_ = 0;
             }
-
             PANNS::DiskIO::save_result(argv[6], set_K_list);
         }
     }

@@ -5,9 +5,9 @@
 cd ../cmake-build-release || exit
 
 ##
-./profile_top_m_seq_search /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 200 200 output.ivecs 128 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 1
-./profile_top_m_seq_search /scratch/zpeng/gist1m/gist_base.fvecs /scratch/zpeng/gist1m/gist_query.fvecs /scratch/zpeng/gist1m/gist.nsg 400 400 output.ivecs 128 /scratch/zpeng/gist1m/gist.true-100_NN.q-1000.binary 1
-./profile_top_m_seq_search /scratch/zpeng/deep1b/deep10M_base.fvecs /scratch/zpeng/deep1b/deep10M_query.fvecs /scratch/zpeng/deep1b/deep10M.nsg 400 400 output.ivecs 128 /scratch/zpeng/deep1b/deep10M.true-100_NN.q-10000.binary 1
+./profile_no_omp_top_m_seq_search /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 200 200 output.ivecs 128 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 1
+./profile_no_omp_top_m_seq_search /scratch/zpeng/gist1m/gist_base.fvecs /scratch/zpeng/gist1m/gist_query.fvecs /scratch/zpeng/gist1m/gist.nsg 400 400 output.ivecs 128 /scratch/zpeng/gist1m/gist.true-100_NN.q-1000.binary 1
+./profile_no_omp_top_m_seq_search /scratch/zpeng/deep1b/deep10M_base.fvecs /scratch/zpeng/deep1b/deep10M_query.fvecs /scratch/zpeng/deep1b/deep10M.nsg 400 400 output.ivecs 128 /scratch/zpeng/deep1b/deep10M.true-100_NN.q-10000.binary 1
 
 
 ## Distance Computation

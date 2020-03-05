@@ -7,11 +7,13 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
-//#include "../core/Searching.202002101535.reorganization.h"
-//#include "../core/Searching.202002141745.critical_omp_top_m.h"
-#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.201912161559.set_for_queue.h"
 //#include "../core/Searching.201912091448.map_for_queries_ids.h"
+//#include "../core/Searching.202002101535.reorganization.h"
+//#include "../core/Searching.202002141745.critical_omp_top_m.h"
+//#include "../core/Searching.202002181409.local_queue_and_merge.h"
+//#include "../core/Searching.202002250815.buckets_equal_width.h"
+#include "../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
@@ -19,14 +21,14 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 9) {
+    if (argc != 10) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -54,18 +56,16 @@ int main(int argc, char **argv)
     }
 
 
-    std::vector< std::vector<PANNS::idi> > true_nn_list;
-    engine.load_true_NN(
-            argv[8],
-            true_nn_list);
+
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-    int num_threads_max = 1;
+//    int num_threads_max = 1;
+    int num_threads_max = strtoull(argv[9], nullptr, 0);
     for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-//        omp_set_num_threads(num_threads);
+        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
@@ -83,7 +83,15 @@ int main(int argc, char **argv)
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.search_with_top_m(
+//                    engine.para_search_with_top_m_merge_queues(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i]);
+                    engine.para_search_with_top_m_critical_area(
                             value_M,
                             q_i,
                             K,
@@ -91,32 +99,24 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i]);
-//                            queries_top_m_list[q_i]);
+//                    engine.search_with_top_m(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i]);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
-                {// Basic output
-//                printf("M: %u "
-//                        "L: %u "
-//                       "search_time(s.): %f "
-//                       "K: %u "
-//                       "Volume: %u "
-//                       "Dimension: %u "
-//                       "query_num: %u "
-//                       "query_per_sec: %f "
-//                       "average_latency(ms.): %f\n",
-//                       value_M,
-//                       L,
-//                       diff.count(),
-//                       K,
-//                       points_num,
-//                       data_dimension,
-//                       query_num,
-//                       query_num / diff.count(),
-//                       diff.count() * 1000 / query_num);
-                }
+
+                std::unordered_map<unsigned, double> recalls;
                 { // Recall values
-                    std::unordered_map<unsigned, double> recalls;
+                    std::vector< std::vector<PANNS::idi> > true_nn_list;
+                    engine.load_true_NN(
+                            argv[8],
+                            true_nn_list);
 
                     engine.get_recall_for_all_queries(
                             true_nn_list,
@@ -133,17 +133,42 @@ int main(int argc, char **argv)
 //                       recalls[50],
 //                       recalls[100]);
 
+//                    printf("M: %u "
+//                           "L: %u "
+//                           "searching_time(s.): %f "
+//                           "P@100: %f\n",
+////                           "count_distance_computation: %'lu\n",
+//                           value_M,
+//                           L,
+//                           diff.count(),
+//                           recalls[100]);
+//                           engine.count_distance_computation);
+//                    engine.count_distance_computation = 0;
+                }
+                {// Basic output
                     printf("M: %u "
-                           "L: %u "
-                           "searching_time(s.): %f "
+                            "L: %u "
+                           "search_time(s.): %f "
+                           "count_distance_computation: %'lu "
+                           "K: %u "
+                           "Volume: %u "
+                           "Dimension: %u "
+                           "query_num: %u "
+                           "query_per_sec: %f "
+                           "average_latency(ms.): %f "
                            "P@100: %f\n",
-//                           "count_distance_computation: %'lu\n",
                            value_M,
                            L,
                            diff.count(),
+                           engine.count_distance_computation_,
+                           K,
+                           points_num,
+                           data_dimension,
+                           query_num,
+                           query_num / diff.count(),
+                           diff.count() * 1000 / query_num,
                            recalls[100]);
-//                           engine.count_distance_computation);
-//                    engine.count_distance_computation = 0;
+                    engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
