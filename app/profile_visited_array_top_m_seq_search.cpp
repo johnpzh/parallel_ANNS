@@ -15,7 +15,7 @@
 //#include "../core/Searching.202002250815.buckets_equal_width.h"
 #include "../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.h"
-#include "../include/utils.h"
+//#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
@@ -78,39 +78,23 @@ int main(int argc, char **argv)
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
                 std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
+                std::vector<uint8_t> is_visited(points_num, 0);
 
-                PANNS::L3CacheMissRate profiler;
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
-//                profiler.measure_start();
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                    engine.para_search_with_top_m_merge_queues(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
-                    engine.para_search_with_top_m_critical_area_no_omp(
+                    engine.para_search_with_top_m_visited_array(
                             value_M,
                             q_i,
                             K,
                             L,
                             set_L,
                             init_ids,
-                            set_K_list[q_i]);
-//                    engine.search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
+                            set_K_list[q_i],
+                            is_visited);
+                    std::fill(is_visited.begin(), is_visited.end(), 0);
                 }
-//                profiler.measure_stop();
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
 
@@ -172,7 +156,6 @@ int main(int argc, char **argv)
                            diff.count() * 1000 / query_num,
                            recalls[100]);
                     engine.count_distance_computation_ = 0;
-//                    profiler.print();
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);

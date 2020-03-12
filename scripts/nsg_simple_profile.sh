@@ -3,7 +3,7 @@
 #set -x
 
 cd ../cmake-build-release || exit
-bin_panns=./app_para_searching
+bin_panns=./test_nsg_optimized_search_para
 
 #
 ## SIFT
@@ -13,7 +13,7 @@ k=200
 l=298
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= 32; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${num_t}
 done
 
 ## GIST
@@ -23,7 +23,7 @@ k=400
 l=477
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= 32; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${num_t}
 done
 
 ## DEEP10M
@@ -33,7 +33,7 @@ k=400
 l=489
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= 32; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${num_t}
 done
 
 ###

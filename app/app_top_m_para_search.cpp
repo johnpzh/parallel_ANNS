@@ -7,15 +7,15 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
+#include <omp.h>
 //#include "../core/Searching.201912161559.set_for_queue.h"
 //#include "../core/Searching.201912091448.map_for_queries_ids.h"
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
-//#include "../core/Searching.202002250815.buckets_equal_width.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../core/Searching.202002250815.buckets_equal_width.h"
 //#include "../core/Searching.h"
-#include "../include/utils.h"
+//#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
@@ -63,9 +63,9 @@ int main(int argc, char **argv)
     unsigned query_num = engine.num_queries_;
 
 //    int num_threads_max = 1;
-    int num_threads_max = strtoull(argv[9], nullptr, 0);
-    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-        omp_set_num_threads(num_threads);
+//    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
+            int num_threads = strtoull(argv[9], nullptr, 0);
+            omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
@@ -76,41 +76,29 @@ int main(int argc, char **argv)
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+                std::vector< std::vector<PANNS::Candidate> > set_L_list(query_num, std::vector<PANNS::Candidate>(L + 1));
                 std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
-                PANNS::L3CacheMissRate profiler;
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
-//#pragma omp parallel for
-//                profiler.measure_start();
+#pragma omp parallel for
+//#pragma omp parallel
+////#pragma omp for nowait
+//#pragma omp for nowait schedule(dynamic)
+//#pragma omp parallel for default(shared)
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                    engine.para_search_with_top_m_merge_queues(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
-                    engine.para_search_with_top_m_critical_area_no_omp(
+                    engine.search_with_top_m(
                             value_M,
                             q_i,
                             K,
                             L,
-                            set_L,
+                            set_L_list[q_i],
+//                            set_L,
                             init_ids,
                             set_K_list[q_i]);
-//                    engine.search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
+//                            queries_top_m_list[q_i]);
                 }
-//                profiler.measure_stop();
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
 
@@ -149,7 +137,8 @@ int main(int argc, char **argv)
 //                    engine.count_distance_computation = 0;
                 }
                 {// Basic output
-                    printf("M: %u "
+                    printf("num_threads: %d "
+                           "M: %u "
                             "L: %u "
                            "search_time(s.): %f "
                            "count_distance_computation: %'lu "
@@ -160,6 +149,7 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
+                           num_threads,
                            value_M,
                            L,
                            diff.count(),
@@ -172,7 +162,6 @@ int main(int argc, char **argv)
                            diff.count() * 1000 / query_num,
                            recalls[100]);
                     engine.count_distance_computation_ = 0;
-//                    profiler.print();
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
@@ -191,7 +180,7 @@ int main(int argc, char **argv)
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
 //        }
-    }
+//    }
 
     return 0;
 }

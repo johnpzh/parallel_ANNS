@@ -599,7 +599,7 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
         float norm_x = *x;
         x++;
 //        time_distance_computation -= efanna2e::Utils::get_time_mark();
-        ++count_distance_computation;
+//        ++count_distance_computation;
         float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
 //        time_distance_computation += efanna2e::Utils::get_time_mark();
         retset[i] = Neighbor(id, dist, true);
@@ -633,7 +633,7 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
                 float norm = *data;
                 data++;
 //                time_distance_computation -= efanna2e::Utils::get_time_mark();
-                ++count_distance_computation;
+//                ++count_distance_computation;
                 float dist = dist_fast->compare(query, data, norm, (unsigned) dimension_);
 //                time_distance_computation += efanna2e::Utils::get_time_mark();
                 if (dist >= retset[L - 1].distance) continue;

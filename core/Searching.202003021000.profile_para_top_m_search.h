@@ -218,6 +218,15 @@ public:
             std::vector<Candidate> &set_L,
             const std::vector<idi> &init_ids,
             std::vector<idi> &set_K);
+    void para_search_with_top_m_visited_array(
+            const PANNS::idi M,
+            const PANNS::idi query_id,
+            const PANNS::idi K,
+            const PANNS::idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            std::vector<uint8_t> &is_visited);
     void para_search_with_top_m_merge_queues(
             idi M,
             idi query_id,
@@ -1672,7 +1681,7 @@ inline void Searching::para_search_with_top_m_critical_area(
 //    boost::dynamic_bitset<> is_visited(num_v_);
 
     {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (idi c_i = 0; c_i < L; ++c_i) {
             is_visited[init_ids[c_i]] = 1;
         }
@@ -2013,6 +2022,137 @@ inline void Searching::para_search_with_top_m_critical_area_yes_omp(
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i].id_;
     }
+}
+
+inline void Searching::para_search_with_top_m_visited_array(
+        const PANNS::idi M,
+        const PANNS::idi query_id,
+        const PANNS::idi K,
+        const PANNS::idi L,
+        std::vector<Candidate> &set_L,
+        const std::vector<idi> &init_ids,
+        std::vector<idi> &set_K,
+        std::vector<uint8_t> &is_visited)
+//        std::vector< std::vector<idi> > &top_m_list)
+{
+//    uint64_t count_visited = 0;
+
+//    std::vector<uint8_t> is_visited(num_v_, 0);
+//    boost::dynamic_bitset<> is_visited(num_v_);
+
+    {
+//#pragma omp parallel for
+        for (idi c_i = 0; c_i < L; ++c_i) {
+            is_visited[init_ids[c_i]] = 1;
+//            ++count_visited;
+        }
+    }
+
+    const dataf *query_data = queries_load_ + query_id  * dimension_;
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        idi v_id = init_ids[v_i];
+        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+    }
+    // Get the distances of all candidates, store in the set set_L.
+//#pragma omp parallel for
+    for (unsigned i = 0; i < L; i++) {
+        unsigned v_id = init_ids[i];
+        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+        dataf norm = *v_data++;
+        ++count_distance_computation_;
+        distf dist = compute_distance_with_norm(v_data, query_data, norm);
+        set_L[i] = Candidate(v_id, dist, false); // False means not checked.
+    }
+    std::sort(set_L.begin(), set_L.begin() + L);
+
+    std::vector<idi> top_m_candidates(M);
+    idi top_m_candidates_end = 0;
+    idi k = 0; // Index of first unchecked candidate.
+    idi tmp_count = 0; // for debug
+    while (k < L) {
+        ++tmp_count;
+
+        unsigned nk = L;
+//        int nk = L;
+
+        // Select M candidates
+        idi last_k = L;
+        for (idi c_i = k; c_i < L && top_m_candidates_end < M; ++c_i) {
+            if (set_L[c_i].is_checked_) {
+                continue;
+            }
+            last_k = c_i; // Record the location of the last candidate selected.
+            set_L[c_i].is_checked_ = true;
+            top_m_candidates[top_m_candidates_end++] = set_L[c_i].id_;
+        }
+
+        // Push M candidates' neighbors into the queue.
+        // OpenMP reduction(min : nk) has a problem if nk is unsigned. nk might end up with being MAX_UINT.
+//#pragma omp parallel for
+//#pragma omp parallel for reduction(min : nk)
+        for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
+            idi cand_id = top_m_candidates[c_i];
+            _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+            idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+            idi out_degree = *out_edges++;
+            for (idi n_i = 0; n_i < out_degree; ++n_i) {
+                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+            }
+            for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                idi nb_id = out_edges[e_i];
+//                if (is_visited[nb_id]) {
+//                    continue;
+//                }
+//                is_visited[nb_id] = 1;
+
+                if (!AtomicOps::CAS(is_visited.data() + nb_id,
+                                    static_cast<uint8_t>(0),
+                                    static_cast<uint8_t>(1))) {
+                    continue;
+                }
+//                ++count_visited;
+                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+                dataf norm = *nb_data++;
+                ++count_distance_computation_;
+                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+                if (dist > set_L[L-1].distance_) {
+                    continue;
+                }
+//                if (dist >= set_L[L-1].distance_) {
+//                    continue;
+//                }
+                Candidate cand(nb_id, dist, false);
+                idi r;
+//#pragma omp critical
+                {
+                    r = insert_into_queue(set_L, L, cand);
+                    if (r < nk) {
+                        nk = r;
+                    }
+                }
+            }
+        }
+        top_m_candidates_end = 0; // Clear top_m_candidates
+
+        if (nk <= last_k) {
+            k = nk;
+        } else {
+            k = last_k + 1;
+        }
+    }
+
+//#pragma omp parallel for
+    for (idi k_i = 0; k_i < K; ++k_i) {
+        set_K[k_i] = set_L[k_i].id_;
+    }
+
+//    {
+//        printf("query_id: %u "
+//               "count_visited: %lu %f%%\n",
+//               query_id,
+//               count_visited,
+//               100.0 * count_visited / num_v_);
+//    }
 }
 
 inline void Searching::para_search_with_top_m_merge_queues(
