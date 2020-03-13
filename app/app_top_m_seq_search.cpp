@@ -12,7 +12,8 @@
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
-#include "../core/Searching.202002250815.buckets_equal_width.h"
+//#include "../core/Searching.202002250815.buckets_equal_width.h"
+#include "../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
@@ -68,14 +69,13 @@ int main(int argc, char **argv)
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            unsigned warmup_max = 3;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
@@ -89,7 +89,6 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i]);
-//                            queries_top_m_list[q_i]);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;

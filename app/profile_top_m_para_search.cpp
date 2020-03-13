@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
+//                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);

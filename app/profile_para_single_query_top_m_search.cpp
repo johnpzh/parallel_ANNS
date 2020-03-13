@@ -14,9 +14,10 @@
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
-#include "../core/Searching.202002141745.critical_omp_top_m.h"
+//#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
+#include "../core/Searching.202003021000.profile_para_top_m_search.h"
 
 void usage(char *argv[])
 {
@@ -55,25 +56,22 @@ int main(int argc, char **argv)
     }
 
 
-    std::vector< std::vector<PANNS::idi> > true_nn_list;
-    engine.load_true_NN(
-            argv[8],
-            true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-    int num_threads_max = strtoull(argv[9], nullptr, 0);
+//    int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-    engine.num_threads_ = num_threads_max;
-    omp_set_num_threads(num_threads_max);
+    int num_threads = strtoull(argv[9], nullptr, 0);
+    engine.num_threads_ = num_threads;
+    omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            unsigned warmup_max = 3;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -90,7 +88,7 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_with_top_m(
+                    engine.para_search_with_top_m_merge_queues(
                             value_M,
                             q_i,
                             K,
@@ -98,6 +96,14 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i]);
+//                    engine.para_search_with_top_m(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i]);
 //                    engine.search_with_top_m(
 //                            value_M,
 //                            q_i,
@@ -132,8 +138,12 @@ int main(int argc, char **argv)
 //                       query_num / diff.count(),
 //                       diff.count() * 1000 / query_num);
                 }
+                std::unordered_map<unsigned, double> recalls;
                 { // Recall values
-                    std::unordered_map<unsigned, double> recalls;
+                    std::vector< std::vector<PANNS::idi> > true_nn_list;
+                    engine.load_true_NN(
+                            argv[8],
+                            true_nn_list);
 
                     engine.get_recall_for_all_queries(
                             true_nn_list,
@@ -150,19 +160,46 @@ int main(int argc, char **argv)
 //                       recalls[50],
 //                       recalls[100]);
 
-                    printf("num_threads: %u "
+//                    printf("num_threads: %u "
+//                           "M: %u "
+//                           "L: %u "
+//                           "searching_time(s.): %f "
+//                           "P@100: %f\n",
+////                           "count_distance_computation: %'lu\n",
+//                           num_threads_max,
+//                           value_M,
+//                           L,
+//                           diff.count(),
+//                           recalls[100]);
+////                           engine.count_distance_computation);
+////                    engine.count_distance_computation = 0;
+                }
+                {// Basic output
+                    printf("num_threads: %d "
                            "M: %u "
                            "L: %u "
-                           "searching_time(s.): %f "
+                           "search_time(s.): %f "
+                           "count_distance_computation: %'lu "
+                           "K: %u "
+                           "Volume: %u "
+                           "Dimension: %u "
+                           "query_num: %u "
+                           "query_per_sec: %f "
+                           "average_latency(ms.): %f "
                            "P@100: %f\n",
-//                           "count_distance_computation: %'lu\n",
-                           num_threads_max,
+                           num_threads,
                            value_M,
                            L,
                            diff.count(),
+                           engine.count_distance_computation_,
+                           K,
+                           points_num,
+                           data_dimension,
+                           query_num,
+                           query_num / diff.count(),
+                           diff.count() * 1000 / query_num,
                            recalls[100]);
-//                           engine.count_distance_computation);
-//                    engine.count_distance_computation = 0;
+                    engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
