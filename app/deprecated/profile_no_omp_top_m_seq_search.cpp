@@ -13,9 +13,9 @@
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002250815.buckets_equal_width.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.h"
-#include "../include/utils.h"
+#include "../../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
 void usage(char *argv[])
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
                 std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
-                PANNS::L3CacheMissRate profiler;
+//                PANNS::L3CacheMissRate profiler;
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for

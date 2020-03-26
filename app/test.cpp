@@ -193,6 +193,10 @@ int main(int argc, char *argv[])
         printf("Usage: %s <num_threads>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
+
+    setbuf(stdout, nullptr); // Remove stdout buffer.
+//    setlocale(LC_NUMERIC, ""); // For comma number format
+
     int num_threads = strtoull(argv[1], nullptr, 0);
     omp_set_num_threads(num_threads);
 //    printf("num_threads: %d\n", num_threads);
@@ -206,75 +210,94 @@ int main(int argc, char *argv[])
     C = (double*)malloc(sizeof(double)*n*n);
     for(i=0; i<n*n; i++) { A[i] = 1.0 * rand()/RAND_MAX; B[i] = 1.0 * rand()/RAND_MAX;}
 
-    dtime = omp_get_wtime();
-    gemm(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f gemm: %f\n",
-            print_c(C, n),
-            dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    int warmup_max = 4;
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemm(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_thread: %d gemm: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemm_omp(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemm_omp: %f\n",
-            print_c(C, n),
-            num_threads,
-            dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemm_omp(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemm_omp: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemm_omp_combined(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemm_omp_combined: %f\n",
-           print_c(C, n),
-           num_threads,
-           dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemm_omp_combined(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemm_omp_combined: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemm_omp_combined_inside(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemm_omp_combined_inside: %f\n",
-           print_c(C, n),
-           num_threads,
-           dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemm_omp_combined_inside(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemm_omp_combined_inside: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemmT(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f gemmT: %f\n",
-            print_c(C, n),
-            dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemmT(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemmT: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemmT_omp(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemmT_omp: %f\n",
-            print_c(C, n),
-            num_threads,
-            dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemmT_omp(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemmT_omp: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemmT_omp_combined(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemmT_omp_combined: %f\n",
-           print_c(C, n),
-           num_threads,
-           dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemmT_omp_combined(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemmT_omp_combined: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
-    dtime = omp_get_wtime();
-    gemmT_omp_combined_inside(A,B,C, n);
-    dtime = omp_get_wtime() - dtime;
-    printf("result: %f num_threads: %d gemmT_omp_combined_inside: %f\n",
-           print_c(C, n),
-           num_threads,
-           dtime);
-    memset(C, 0, sizeof(double) * n * n);
+    for (int warmup = 0; warmup < warmup_max; ++warmup) {
+        dtime = omp_get_wtime();
+        gemmT_omp_combined_inside(A, B, C, n);
+        dtime = omp_get_wtime() - dtime;
+        printf("num_threads: %d gemmT_omp_combined_inside: %f result: %f\n",
+               num_threads,
+               dtime,
+               print_c(C, n));
+        memset(C, 0, sizeof(double) * n * n);
+    }
 
     return 0;
 }

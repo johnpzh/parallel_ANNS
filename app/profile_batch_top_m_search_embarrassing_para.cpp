@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 11/23/19.
+// Created by Zhen Peng on 03/19/2020.
 //
 
 #include <iostream>
@@ -18,7 +18,7 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file> <num_threads>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <batch_size_max> <true_NN_file> <recall_expected>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
@@ -57,26 +57,32 @@ void do_searching(char *argv[])
     unsigned K = strtoull(argv[5], nullptr, 0);
     unsigned M = strtoull(argv[7], nullptr, 0);
     unsigned query_batch_size = strtoull(argv[8], nullptr, 0);
+    int num_threads = static_cast<int>(strtoull(argv[10], nullptr, 0));
     unsigned query_num = engine.num_queries_;
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
+    engine.num_threads_ = num_threads;
 
     unsigned warmup_max = 4;
     for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
-        std::vector<std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
         std::vector<PANNS::idi> init_ids(L);
+
+        std::vector<std::vector<PANNS::idi> > set_K_list(query_num, std::vector<PANNS::idi>(K));
         std::vector<std::vector<PANNS::Candidate> > set_L_list(query_batch_size,
                                                                std::vector<PANNS::Candidate>(L + 1));
-
+        std::vector< boost::dynamic_bitset<> > is_visited_list(query_batch_size, boost::dynamic_bitset<> (points_num));
         unsigned remain = query_num % query_batch_size;
         unsigned q_i_bound = query_num - remain;
+//        unsigned num_batch =
+//        std::vector< std::vector<std::vector<PANNS::idi> > > set_K_table()
+
         auto s = std::chrono::high_resolution_clock::now();
         engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
 //    omp_set_num_threads(omp_get_max_threads());
         for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
 //                        printf("q_i: %u\n", q_i);//test
-            engine.search_with_top_m_in_batch(
+            engine.para_search_with_top_m_in_batch_embarassing_para(
                     M,
                     q_i,
                     query_batch_size,
@@ -84,11 +90,12 @@ void do_searching(char *argv[])
                     L,
                     set_L_list,
                     init_ids,
-                    set_K_list);
+                    set_K_list,
+                    is_visited_list);
         }
         if (remain) {
 //                        printf("q_i_bound: %u\n", q_i_bound);//test
-            engine.search_with_top_m_in_batch(
+            engine.para_search_with_top_m_in_batch_embarassing_para(
                     M,
                     q_i_bound,
                     remain,
@@ -96,7 +103,8 @@ void do_searching(char *argv[])
                     L,
                     set_L_list,
                     init_ids,
-                    set_K_list);
+                    set_K_list,
+                    is_visited_list);
         }
         auto e = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> diff = e - s;
@@ -161,7 +169,7 @@ void do_searching(char *argv[])
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         usage(argv);
         exit(EXIT_FAILURE);
     }

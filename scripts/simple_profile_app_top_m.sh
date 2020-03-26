@@ -1,6 +1,8 @@
 #! /bin/bash
 
 #set -x
+## OpenMP Affinity for ICC
+export KMP_AFFINITY="granularity=fine,compact,1,0"
 
 cd ../cmake-build-release || exit
 bin_panns=./app_top_m_para_search

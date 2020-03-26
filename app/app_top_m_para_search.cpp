@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 3;
+            unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
-#pragma omp parallel for
+#pragma omp parallel for default(shared)
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
                     engine.search_with_top_m(
                             value_M,

@@ -50,7 +50,8 @@ target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(app_seq_searching app/app_seq_searching.cpp)
 target_compile_options(app_seq_searching PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(app_seq_searching PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(app_seq_searching PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(app_seq_searching PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 #target_link_libraries(app_seq_searching PRIVATE PANNS ${LIBPAPI})
 
 add_executable(app_para_searching app/app_para_searching.cpp)
@@ -62,21 +63,26 @@ target_link_libraries(app_para_searching PRIVATE ${Boost_LIBRARIES} OpenMP::Open
 #target_link_libraries(app_top_m_batch_search PRIVATE PANNS ${LIBPAPI})
 
 add_executable(test_nsg_optimized_search app/test_nsg_optimized_search.cpp)
+#set_property(TARGET test_nsg_optimized_search PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(test_nsg_optimized_search PRIVATE NSG ${LIBPAPI})
+target_link_libraries(test_nsg_optimized_search PRIVATE NSG)
+#target_link_libraries(test_nsg_optimized_search PRIVATE NSG ${LIBPAPI})
+
 
 add_executable(test_nsg_optimized_search_para app/test_nsg_optimized_search_para.cpp)
 target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(test_nsg_optimized_search_para PRIVATE NSG ${LIBPAPI} OpenMP::OpenMP_CXX)
+target_link_libraries(test_nsg_optimized_search_para PRIVATE NSG OpenMP::OpenMP_CXX)
+#target_link_libraries(test_nsg_optimized_search_para PRIVATE NSG ${LIBPAPI} OpenMP::OpenMP_CXX)
 
 add_executable(app_top_m_seq_search app/app_top_m_seq_search.cpp)
 target_compile_options(app_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
-#target_compile_options(app_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(app_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(app_top_m_para_search app/app_top_m_para_search.cpp)
+#target_compile_options(app_top_m_para_search PRIVATE ${CXX_OPTION} -march=native -S -o tmp.ass)
+#target_compile_options(app_top_m_para_search PRIVATE ${CXX_OPTION} -march=native -S -o tmp.ass)
+#target_compile_options(app_top_m_para_search PRIVATE ${CXX_OPTION} -march=native -qopt-report=5)
 target_compile_options(app_top_m_para_search PRIVATE ${CXX_OPTION} -march=native)
-#target_compile_options(app_top_m_para_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(app_top_m_para_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 #add_executable(profile_top_m_search app/profile_top_m_search.cpp)
@@ -117,9 +123,9 @@ target_link_libraries(widget_get_deep200M PRIVATE ${Boost_LIBRARIES} OpenMP::Ope
 #target_compile_options(profile_seq_searching_with_set_queue PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(profile_seq_searching_with_set_queue PRIVATE PANNS ${LIBPAPI})
 
-add_executable(profile_para_single_query_top_m_search.202002250815.buckets_equal_width app/profile_para_single_query_top_m_search.202002250815.buckets_equal_width.cpp)
-target_compile_options(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#add_executable(profile_para_single_query_top_m_search.202002250815.buckets_equal_width app/profile_para_single_query_top_m_search.202002250815.buckets_equal_width.cpp)
+#target_compile_options(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(profile_para_single_query_top_m_search.202002250815.buckets_equal_width PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(profile_para_single_query_top_m_search app/profile_para_single_query_top_m_search.cpp)
 target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
@@ -132,23 +138,49 @@ target_link_libraries(profile_seq_searching_find_value_L PRIVATE ${Boost_LIBRARI
 add_executable(profile_top_m_para_search app/profile_top_m_para_search.cpp)
 target_compile_options(profile_top_m_para_search PRIVATE ${CXX_OPTION} -march=native)
 #target_compile_options(profile_top_m_para_search PRIVATE ${CXX_OPTION} -march=native -qopt-report)
-target_link_libraries(profile_top_m_para_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(profile_top_m_para_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(profile_top_m_para_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_no_omp_top_m_seq_search app/profile_no_omp_top_m_seq_search.cpp)
-target_compile_options(profile_no_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
-#target_compile_options(profile_no_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native -qopt-report)
-target_link_libraries(profile_no_omp_top_m_seq_search PRIVATE  ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-
-add_executable(profile_yes_omp_top_m_seq_search app/profile_yes_omp_top_m_seq_search.cpp)
-target_compile_options(profile_yes_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
-#target_compile_options(profile_yes_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native -qopt-report)
-target_link_libraries(profile_yes_omp_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#add_executable(profile_no_omp_top_m_seq_search app/profile_no_omp_top_m_seq_search.cpp)
+#target_compile_options(profile_no_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
+##target_compile_options(profile_no_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native -qopt-report)
+#target_link_libraries(profile_no_omp_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+##target_link_libraries(profile_no_omp_top_m_seq_search PRIVATE  ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#
+#add_executable(profile_yes_omp_top_m_seq_search app/profile_yes_omp_top_m_seq_search.cpp)
+#target_compile_options(profile_yes_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
+##target_compile_options(profile_yes_omp_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native -qopt-report)
+#target_link_libraries(profile_yes_omp_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+##target_link_libraries(profile_yes_omp_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(profile_visited_array_top_m_seq_search app/profile_visited_array_top_m_seq_search.cpp)
 target_compile_options(profile_visited_array_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(test app/test.cpp)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native)
-target_compile_options(test PRIVATE ${CXX_OPTION} -march=native -qopt-report -no-vec -unroll=0)
-target_link_libraries(test PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_compile_options(test PRIVATE ${CXX_OPTION} -march=native)
+#target_compile_options(test PRIVATE ${CXX_OPTION} -march=native -qopt-report -no-vec -unroll=0)
+#target_link_libraries(test PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(test PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(test_omp_yes app/test_omp_yes.cpp)
+target_compile_options(test_omp_yes PRIVATE ${CXX_OPTION} -march=native -qopt-report)
+target_link_libraries(test_omp_yes PRIVATE OpenMP::OpenMP_CXX)
+
+add_executable(test_omp_no app/test_omp_no.cpp)
+target_compile_options(test_omp_no PRIVATE ${CXX_OPTION} -march=native -qopt-report)
+target_link_libraries(test_omp_no PRIVATE OpenMP::OpenMP_CXX)
+
+add_executable(profile_batch_top_m_search_embarrassing_para app/profile_batch_top_m_search_embarrassing_para.cpp)
+target_compile_options(profile_batch_top_m_search_embarrassing_para PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_batch_top_m_search_embarrassing_para PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_sync_or_not app/profile_para_single_query_top_m_search_sync_or_not.cpp)
+target_compile_options(profile_para_single_query_top_m_search_sync_or_not PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search_sync_or_not PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_top_m_seq_search_bit_CAS app/profile_top_m_seq_search_bit_CAS.cpp)
+target_compile_options(profile_top_m_seq_search_bit_CAS PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_seq_search_bit_CAS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

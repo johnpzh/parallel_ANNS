@@ -5,7 +5,7 @@
 #include "parameters.h"
 #include "neighbor.h"
 #include "index.h"
-#include "../utils.h"
+//#include "../utils.h"
 #include <cassert>
 #include <unordered_map>
 #include <string>
@@ -184,7 +184,7 @@ public:
 //    double time_result_copy = 0.0; // too short
 //    double time_misc_operations = 0.0; // too fine-grained
 
-    PANNS::L3CacheMissRate cache_miss_kernel;
+//    PANNS::L3CacheMissRate cache_miss_kernel;
 
 
     // Ended by Johnpzh

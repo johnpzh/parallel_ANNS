@@ -6,10 +6,7 @@ export KMP_AFFINITY="granularity=fine,compact,1,0"
 
 cd ../cmake-build-release || exit
 #bin_panns=./profile_top_m_para_search
-bin_panns=./profile_para_single_query_top_m_search_sync_or_not
-#bin_panns=./profile_top_m_seq_search_bit_CAS
-num_t_max=32
-value_m=128
+bin_panns=./profile_visited_array_top_m_seq_search
 
 #
 ## SIFT
@@ -18,8 +15,8 @@ data_name=sift
 k=200
 l=200
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+for ((num_t = 1; num_t <= 32; num_t *= 2)); do
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 128 ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 done
 
 ## GIST
@@ -28,8 +25,8 @@ data_name=gist
 k=400
 l=400
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+for ((num_t = 1; num_t <= 32; num_t *= 2)); do
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 128 ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
 done
 
 ## DEEP10M
@@ -38,8 +35,8 @@ data_name=deep10M
 k=400
 l=400
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+for ((num_t = 1; num_t <= 32; num_t *= 2)); do
+    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs 128 ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 done
 
 ###

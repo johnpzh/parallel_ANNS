@@ -22,6 +22,7 @@ void usage(char *argv[])
 {
     fprintf(stderr,
             "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
 }
@@ -62,38 +63,26 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-//    int num_threads_max = 1;
     int num_threads_max = strtoull(argv[9], nullptr, 0);
-    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-        omp_set_num_threads(num_threads);
+//    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
+//        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
-
+        omp_set_num_threads(num_threads_max);
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 
-                PANNS::L3CacheMissRate profiler;
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
-                profiler.measure_start();
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                    engine.para_search_with_top_m_merge_queues(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
-                    engine.para_search_with_top_m_critical_area_yes_omp(
+                    engine.search_with_top_m_profile_bit_CAS(
                             value_M,
                             q_i,
                             K,
@@ -101,16 +90,7 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i]);
-//                    engine.search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
                 }
-                profiler.measure_stop();
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
 
@@ -149,7 +129,8 @@ int main(int argc, char **argv)
 //                    engine.count_distance_computation = 0;
                 }
                 {// Basic output
-                    printf("M: %u "
+                    printf("num_threads: %d "
+                           "M: %u "
                             "L: %u "
                            "search_time(s.): %f "
                            "count_distance_computation: %'lu "
@@ -160,6 +141,7 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
+                           num_threads_max,
                            value_M,
                            L,
                            diff.count(),
@@ -172,7 +154,6 @@ int main(int argc, char **argv)
                            diff.count() * 1000 / query_num,
                            recalls[100]);
                     engine.count_distance_computation_ = 0;
-                    profiler.print();
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
@@ -191,7 +172,7 @@ int main(int argc, char **argv)
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
 //        }
-    }
+//    }
 
     return 0;
 }

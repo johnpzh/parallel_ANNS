@@ -64,13 +64,14 @@ int main(int argc, char **argv)
 
 //    int num_threads_max = 1;
     int num_threads_max = strtoull(argv[9], nullptr, 0);
-    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-        omp_set_num_threads(num_threads);
+//    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
+        engine.num_threads_ = num_threads_max;
+        omp_set_num_threads(num_threads_max);
 //        int warmup_max = 1;
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -78,22 +79,33 @@ int main(int argc, char **argv)
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
                 std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
-                std::vector<uint8_t> is_visited(points_num, 0);
+//                std::vector<uint8_t> is_visited(points_num, 0);
+//                boost::dynamic_bitset<> is_visited(points_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.para_search_with_top_m_visited_array(
+                    engine.para_search_with_top_m_queues_seq_merge(
                             value_M,
                             q_i,
                             K,
                             L,
                             set_L,
                             init_ids,
-                            set_K_list[q_i],
-                            is_visited);
-                    std::fill(is_visited.begin(), is_visited.end(), 0);
+                            set_K_list[q_i]);
+//                            is_visited);
+//                    engine.para_search_with_top_m_visited_array(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            is_visited);
+//                    std::fill(is_visited.begin(), is_visited.end(), 0);
+//                    is_visited.reset();
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -133,7 +145,8 @@ int main(int argc, char **argv)
 //                    engine.count_distance_computation = 0;
                 }
                 {// Basic output
-                    printf("M: %u "
+                    printf("num_threads: %d "
+                           "M: %u "
                             "L: %u "
                            "search_time(s.): %f "
                            "count_distance_computation: %'lu "
@@ -144,6 +157,7 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
+                           num_threads_max,
                            value_M,
                            L,
                            diff.count(),
@@ -174,7 +188,7 @@ int main(int argc, char **argv)
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
 //        }
-    }
+//    }
 
     return 0;
 }

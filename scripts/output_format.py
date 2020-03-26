@@ -2,14 +2,14 @@
 import sys
 
 if len(sys.argv) < 4:
+    # print(f'{sys.argv[0]} <input_file> <output_file> <repeat> <index_list>')
     print(f'{sys.argv[0]} <input_file> <output_file> <index_list>')
     exit()
 with open(sys.argv[1]) as fin, \
         open(sys.argv[2], 'w') as fout:
     # selected_indices = [0, 1, 2, 3]
     # Get indices selected
-    selected_indices = []
-    selected_indices.extend(int(i) for i in sys.argv[3:])
+    selected_indices = [int(i) for i in sys.argv[3:]]
     is_first_line = True
     for line in fin:
         line = line.strip()
