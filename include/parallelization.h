@@ -25,6 +25,8 @@ public:
                     reinterpret_cast<uint8_t *>(&old_val),
                     reinterpret_cast<uint8_t *>(&new_val),
                     false,
+//                    __ATOMIC_RELAXED,
+//                    __ATOMIC_RELAXED);
                     __ATOMIC_SEQ_CST,
                     __ATOMIC_SEQ_CST);
         } else if (2 == sizeof(V_T)) {
@@ -33,6 +35,8 @@ public:
                     reinterpret_cast<uint16_t *>(&old_val),
                     reinterpret_cast<uint16_t *>(&new_val),
                     false,
+//                    __ATOMIC_RELAXED,
+//                    __ATOMIC_RELAXED);
                     __ATOMIC_SEQ_CST,
                     __ATOMIC_SEQ_CST);
         } else if (4 == sizeof(V_T)) {
@@ -41,6 +45,8 @@ public:
                     reinterpret_cast<uint32_t *>(&old_val),
                     reinterpret_cast<uint32_t *>(&new_val),
                     false,
+//                    __ATOMIC_RELAXED,
+//                    __ATOMIC_RELAXED);
                     __ATOMIC_SEQ_CST,
                     __ATOMIC_SEQ_CST);
         } else if (8 == sizeof(V_T)) {
@@ -49,6 +55,8 @@ public:
                     reinterpret_cast<uint64_t *>(&old_val),
                     reinterpret_cast<uint64_t *>(&new_val),
                     false,
+//                    __ATOMIC_RELAXED,
+//                    __ATOMIC_RELAXED);
                     __ATOMIC_SEQ_CST,
                     __ATOMIC_SEQ_CST);
         } else {

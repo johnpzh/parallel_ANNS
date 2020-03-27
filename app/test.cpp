@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <omp.h>
+#include "../include/bitvector.h"
 
 double print_c(double *C, int n)
 {
@@ -187,7 +188,7 @@ void gemmT_omp_combined_inside(double *A, double *B, double *C, int n)
     free(B2);
 }
 
-int main(int argc, char *argv[])
+void test_openmp_performance(int argc, char *argv[])
 {
     if (argc != 2) {
         printf("Usage: %s <num_threads>\n", argv[0]);
@@ -298,6 +299,38 @@ int main(int argc, char *argv[])
                print_c(C, n));
         memset(C, 0, sizeof(double) * n * n);
     }
+}
+
+void test_bitvector(int argc, char *argv[])
+{
+    if (argc != 1) {
+        fprintf(stderr, "Usage: ./%s\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    PANNS::BitVector bv(3);
+    bv.resize(15);
+    int x = 14;
+    printf("bv.is_bit_set(%d): %u (0)\n", x, bv.is_bit_set(x));
+    bv.set_bit(x);
+    printf("bv.atomic_is_bit_set(%d): %u (1)\n", x, bv.atomic_is_bit_set(x));
+    bv.reset_bit(x);
+    printf("bv.is_bit_set(%d): %u (0)\n", x, bv.is_bit_set(x));
+    bv.atomic_set_bit(x);
+    printf("bv.atomic_is_bit_set(%d): %u (1)\n", x, bv.atomic_is_bit_set(x));
+    bv.atomic_reset_bit(x);
+    printf("bv.is_bit_set(%d): %u (0)\n", x, bv.is_bit_set(x));
+    bv.set_bit(x);
+    printf("bv.atomic_is_bit_set(%d): %u (1)\n", x, bv.atomic_is_bit_set(x));
+    bv.clear_all();
+    printf("bv.is_bit_set(%d): %u (0)\n", x, bv.is_bit_set(x));
+}
+
+int main(int argc, char *argv[])
+{
+
+//    test_openmp_performance(argc, argv);
+    test_bitvector(argc, argv);
 
     return 0;
 }

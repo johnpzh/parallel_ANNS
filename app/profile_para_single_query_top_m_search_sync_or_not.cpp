@@ -86,7 +86,8 @@ int main(int argc, char **argv)
 //                std::vector< std::vector<PANNS::Candidate> > local_queues_list(num_threads, std::vector<PANNS::Candidate>(local_queue_length));
                 std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
                 std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
-                std::vector<uint8_t> is_visited(points_num, 0);
+                PANNS::BitVector is_visited(points_num);
+//                std::vector<uint8_t> is_visited(points_num, 0);
 //                boost::dynamic_bitset<> is_visited(points_num);
 
                 auto s = std::chrono::high_resolution_clock::now();

@@ -20,6 +20,7 @@
 #include "../include/utils.h"
 #include "../include/Candidate.h"
 #include "../include/parallelization.h"
+#include "../include/bitvector.h"
 
 namespace PANNS {
 
@@ -315,7 +316,8 @@ public:
 //        std::vector< std::vector<Candidate> > &local_queues_list,
             std::vector<Candidate> &local_queues_array,
             std::vector<idi> &local_queues_ends, // Sizes of local queue
-        std::vector<uint8_t> &is_visited);
+            BitVector &is_visited);
+//        std::vector<uint8_t> &is_visited);
 //            boost::dynamic_bitset<> &is_visited);
 //    void para_prepare_init_ids(
 //            std::vector<unsigned> &init_ids,
@@ -3451,7 +3453,8 @@ inline void Searching::para_search_with_top_m_merge_queues_in_array(
 //        std::vector< std::vector<Candidate> > &local_queues_list,
         std::vector<Candidate> &local_queues_array,
         std::vector<idi> &local_queues_ends, // Sizes of local queue
-        std::vector<uint8_t> &is_visited)
+        BitVector &is_visited)
+//        std::vector<uint8_t> &is_visited)
 //        boost::dynamic_bitset<> &is_visited)
 {
 //    {//test
@@ -3467,7 +3470,8 @@ inline void Searching::para_search_with_top_m_merge_queues_in_array(
     {
 #pragma omp parallel for
         for (idi c_i = 0; c_i < L; ++c_i) {
-            is_visited[init_ids[c_i]] = 1;
+//            is_visited[init_ids[c_i]] = 1;
+            is_visited.atomic_set_bit(init_ids[c_i]);
         }
     }
 
@@ -3525,15 +3529,33 @@ inline void Searching::para_search_with_top_m_merge_queues_in_array(
             }
             for (idi e_i = 0; e_i < out_degree; ++e_i) {
                 idi nb_id = out_edges[e_i];
+//                { // Sequential edition
 //                if (is_visited[nb_id]) {
 //                    continue;
 //                }
 //                is_visited[nb_id] = 1;
+//                }
 
-                if (!AtomicOps::CAS(is_visited.data() + nb_id,
-                                    static_cast<uint8_t>(0),
-                                    static_cast<uint8_t>(1))) {
-                    continue;
+//                { // __ATOMIC_SEQ_CST edition
+//                if (!AtomicOps::CAS(is_visited.data() + nb_id,
+//                                    static_cast<uint8_t>(0),
+//                                    static_cast<uint8_t>(1))) {
+//                    continue;
+//                }
+//                }
+
+//                {// Acquire and Release edition
+//                    if (__atomic_load_n(is_visited.data() + nb_id, __ATOMIC_ACQUIRE)) {
+//                        continue;
+//                    }
+//                    __atomic_store_n(is_visited.data() + nb_id, 1, __ATOMIC_RELEASE);
+//                }
+
+                {// Self-defined BitVector
+                    if (is_visited.atomic_is_bit_set(nb_id)) {
+                        continue;
+                    }
+                    is_visited.atomic_set_bit(nb_id);
                 }
 
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
@@ -3686,7 +3708,8 @@ inline void Searching::para_search_with_top_m_merge_queues_in_array(
 
     {// Reset
 //        is_visited.reset();
-        std::fill(is_visited.begin(), is_visited.end(), 0);
+//        std::fill(is_visited.begin(), is_visited.end(), 0);
+        is_visited.clear_all();
         std::fill(local_queues_ends.begin(), local_queues_ends.end(), 0);
     }
 //    {
