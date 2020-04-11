@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 3/20/2020.
+// Created by Zhen Peng on 4/10/2020.
 //
 
 #include <iostream>
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 //                            local_queues_ends,
 //                            is_visited);
 //                    engine.para_search_with_top_m_merge_queues_in_array(
-                    engine.para_search_with_top_m_merge_queues_new_threshold(
+                    engine.para_search_with_top_m_merge_queues_by_sort(
                             value_M,
                             q_i,
                             K,

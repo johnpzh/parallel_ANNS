@@ -153,10 +153,10 @@ target_link_libraries(profile_top_m_para_search PRIVATE ${Boost_LIBRARIES} OpenM
 #target_link_libraries(profile_yes_omp_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 ##target_link_libraries(profile_yes_omp_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_visited_array_top_m_seq_search app/profile_visited_array_top_m_seq_search.cpp)
-target_compile_options(profile_visited_array_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
-target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-#target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#add_executable(profile_visited_array_top_m_seq_search app/profile_visited_array_top_m_seq_search.cpp)
+#target_compile_options(profile_visited_array_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
+#target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+##target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(test app/test.cpp)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native)
@@ -184,3 +184,15 @@ target_link_libraries(profile_para_single_query_top_m_search_sync_or_not PRIVATE
 add_executable(profile_top_m_seq_search_bit_CAS app/profile_top_m_seq_search_bit_CAS.cpp)
 target_compile_options(profile_top_m_seq_search_bit_CAS PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(profile_top_m_seq_search_bit_CAS PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_top_m_seq_search_myths_M app/profile_top_m_seq_search_myths_M.cpp)
+target_compile_options(profile_top_m_seq_search_myths_M PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_top_m_seq_search_myths_M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_by_sort app/profile_para_single_query_top_m_search_by_sort.cpp)
+target_compile_options(profile_para_single_query_top_m_search_by_sort PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search_by_sort PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_seq_searching_BitVector app/profile_seq_searching_BitVector.cpp)
+target_compile_options(profile_seq_searching_BitVector PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_seq_searching_BitVector PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
