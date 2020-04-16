@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 3/20/2020.
+// Created by Zhen Peng on 4/10/2020.
 //
 
 #include <iostream>
@@ -17,7 +17,7 @@
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../../core/Searching.202003021000.profile_para_top_m_search.h"
 
 void usage(char *argv[])
 {
@@ -86,15 +86,25 @@ int main(int argc, char **argv)
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+                std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
+//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 //                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 //                const PANNS::idi local_queue_length = L;
 //                std::vector< std::vector<PANNS::Candidate> > local_queues_list(num_threads, std::vector<PANNS::Candidate>(local_queue_length));
-                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
+//                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
                 std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
-//                PANNS::BitVector is_visited(points_num);
+                PANNS::BitVector is_visited(points_num);
+                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
+                for (int i_t = 0; i_t < num_threads; ++i_t) {
+                    if (0 == i_t) {
+                        offsets_load_set_L[i_t] = 0;
+                    } else {
+                        offsets_load_set_L[i_t] = L + (i_t - 1) * local_queue_length;
+                    }
+                }
+                std::vector<PANNS::idi> dest_offsets(num_threads, 0);
 //                std::vector<uint8_t> is_visited(points_num, 0);
-                boost::dynamic_bitset<> is_visited(points_num);
+//                boost::dynamic_bitset<> is_visited(points_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
 //                engine.para_prepare_init_ids(init_ids, L);
@@ -118,7 +128,7 @@ int main(int argc, char **argv)
 //                            local_queues_ends,
 //                            is_visited);
 //                    engine.para_search_with_top_m_merge_queues_in_array(
-                    engine.para_search_with_top_m_merge_queues_new_threshold(
+                    engine.para_search_with_top_m_merge_queues_by_sort(
                             value_M,
                             q_i,
                             K,
@@ -127,9 +137,10 @@ int main(int argc, char **argv)
                             init_ids,
                             set_K_list[q_i],
                             local_queue_length,
-//                            local_queues_list,
-                            local_queues_array,
+//                            local_queues_array,
                             local_queues_ends,
+                            dest_offsets,
+                            offsets_load_set_L,
                             is_visited);
 //                    engine.para_search_with_top_m_merge_queues_no_CAS(
 //                            value_M,
@@ -222,7 +233,7 @@ int main(int argc, char **argv)
                            "M: %u "
                            "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %lu "
+                           "count_distance_computation: %'lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "

@@ -63,14 +63,15 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-    int num_threads_max = strtoull(argv[9], nullptr, 0);
+    int num_threads = strtoull(argv[9], nullptr, 0);
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
 //        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
-        omp_set_num_threads(num_threads_max);
+        omp_set_num_threads(num_threads);
+        engine.num_threads_ = num_threads;
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.search_with_top_m_profile_bit_CAS(
+                    engine.search_with_top_m_profile_prune_neighbors(
                             value_M,
                             q_i,
                             K,
@@ -90,6 +91,14 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i]);
+//                    engine.search_with_top_m_profile_bit_CAS(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i]);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -133,7 +142,7 @@ int main(int argc, char **argv)
                            "M: %u "
                             "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %'lu "
+                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
@@ -141,7 +150,7 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
-                           num_threads_max,
+                           num_threads,
                            value_M,
                            L,
                            diff.count(),

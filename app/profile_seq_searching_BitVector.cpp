@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     int num_threads = strtoull(argv[8], nullptr, 0);
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
         omp_set_num_threads(num_threads);
-        int warmup_max = 4;
+        int warmup_max = 1;
         for (int warmup = 0; warmup < warmup_max; ++warmup) {
             std::vector< std::vector<PANNS::idi> > set_K_list(query_num);
             for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -73,6 +73,13 @@ int main(int argc, char **argv)
             engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
             for (unsigned q_i = 0; q_i < query_num; ++q_i) {
+//                engine.search_in_sequential_prune_neighbors(
+//                        q_i,
+//                        K,
+//                        L,
+//                        set_L,
+//                        init_ids,
+//                        set_K_list[q_i]);
                 engine.search_in_sequential_BitVector(
                         q_i,
                         K,

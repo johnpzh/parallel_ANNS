@@ -8,11 +8,12 @@ export KMP_AFFINITY="granularity=fine,compact,1,0"
 cd ../cmake-build-release || exit
 #bin_panns=./profile_top_m_para_search
 #bin_panns=./profile_para_single_query_top_m_search_sync_or_not
-bin_panns=./profile_top_m_seq_search_bit_CAS
+#bin_panns=./profile_top_m_seq_search_bit_CAS
 #bin_panns=./profile_top_m_seq_search_myths_M
 #bin_panns=./profile_para_single_query_top_m_search_by_sort
-#num_t_max=32
-num_t_max=1
+bin_panns=./profile_para_single_query_top_m_search_better_merge
+num_t_max=32
+#num_t_max=1
 value_m=128
 
 #

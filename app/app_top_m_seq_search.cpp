@@ -55,8 +55,10 @@ int main(int argc, char **argv)
         fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
     }
 
-
-
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[8],
+            true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
@@ -95,10 +97,7 @@ int main(int argc, char **argv)
 
                 std::unordered_map<unsigned, double> recalls;
                 { // Recall values
-                    std::vector< std::vector<PANNS::idi> > true_nn_list;
-                    engine.load_true_NN(
-                            argv[8],
-                            true_nn_list);
+
 
                     engine.get_recall_for_all_queries(
                             true_nn_list,

@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <omp.h>
+#include <vector>
 #include "../include/bitvector.h"
 
 double print_c(double *C, int n)
@@ -326,11 +327,33 @@ void test_bitvector(int argc, char *argv[])
     printf("bv.is_bit_set(%d): %u (0)\n", x, bv.is_bit_set(x));
 }
 
+void test_omp_static(int argc, char *argv[])
+{
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <num_threads>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+    int num_threads = strtoull(argv[1], nullptr, 0);
+    omp_set_num_threads(num_threads);
+    int M = 128;
+    std::vector<int> i_to_t(M);
+
+#pragma omp parallel for
+    for (int i = 0; i < M; ++i) {
+        i_to_t[i] = omp_get_thread_num();
+    }
+
+    for (int i = 0; i < M; ++i) {
+        printf("i: %d t: %d\n", i, i_to_t[i]);
+    }
+}
+
 int main(int argc, char *argv[])
 {
 
 //    test_openmp_performance(argc, argv);
-    test_bitvector(argc, argv);
+//    test_bitvector(argc, argv);
+    test_omp_static(argc, argv);
 
     return 0;
 }

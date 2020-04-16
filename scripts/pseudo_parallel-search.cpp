@@ -15,7 +15,7 @@ Queue Top-M-Searching(
 {
     Candidate Queue S whose capacity is L;
     // Select initial vertices to fill Queue S.
-    A Queue S = Neighbors of Query P and other random vertices;
+    A Queue S = Neighbors of Vertex P and other random vertices;
     Sort Queue S according to distances to Query Q;
 
     while (Queue S contains unchecked elements) {
@@ -51,7 +51,7 @@ Queue Top-M-Searching-with-Local-Queues(
     Global Candidate Queue S whose capacity is L;
     Local Queues Ps whose capacity is H;
     // Select initial vertices to fill Queue S.
-    A Queue S = Neighbors of Query P and other random vertices;
+    A Queue S = Neighbors of Vertex P and other random vertices;
     Sort Queue S according to distances to Query Q;
 
     while (Queue S contains unchecked elements) {

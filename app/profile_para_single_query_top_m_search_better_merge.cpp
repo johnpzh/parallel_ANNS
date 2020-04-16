@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 4/10/2020.
+// Created by Zhen Peng on 4/13/2020.
 //
 
 #include <iostream>
@@ -17,7 +17,8 @@
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+//#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../core/Searching.202004131634.better_merge.h"
 
 void usage(char *argv[])
 {
@@ -80,19 +81,33 @@ int main(int argc, char **argv)
                 local_queue_length = 1;
             }
             unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+                std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
+//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 //                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
 //                const PANNS::idi local_queue_length = L;
 //                std::vector< std::vector<PANNS::Candidate> > local_queues_list(num_threads, std::vector<PANNS::Candidate>(local_queue_length));
-                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
+//                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
                 std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
-                PANNS::BitVector is_visited(points_num);
+//                std::vector<uint8_t> is_visited(points_num, 0);
+                boost::dynamic_bitset<> is_visited(points_num);
+//                PANNS::BitVector is_visited(points_num);
+//                std::vector<PANNS::Candidate> top_m_candidates(value_M);
+                std::vector<PANNS::idi> top_m_candidates(value_M);
+//                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
+//                for (int i_t = 0; i_t < num_threads; ++i_t) {
+//                    if (0 == i_t) {
+//                        offsets_load_set_L[i_t] = 0;
+//                    } else {
+//                        offsets_load_set_L[i_t] = L + (i_t - 1) * local_queue_length;
+//                    }
+//                }
+//                std::vector<PANNS::idi> dest_offsets(num_threads, 0);
 //                std::vector<uint8_t> is_visited(points_num, 0);
 //                boost::dynamic_bitset<> is_visited(points_num);
 
@@ -104,7 +119,7 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-//                    engine.para_search_with_top_m_merge_queues_myths(
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v1(
 //                            value_M,
 //                            q_i,
 //                            K,
@@ -112,13 +127,11 @@ int main(int argc, char **argv)
 //                            set_L,
 //                            init_ids,
 //                            set_K_list[q_i],
-//                            local_queue_length,
-////                            local_queues_list,
-//                            local_queues_array,
-//                            local_queues_ends,
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
 //                            is_visited);
-//                    engine.para_search_with_top_m_merge_queues_in_array(
-                    engine.para_search_with_top_m_merge_queues_by_sort(
+                    engine.para_search_with_top_m_merge_queues_better_merge_v0(
                             value_M,
                             q_i,
                             K,
@@ -126,42 +139,10 @@ int main(int argc, char **argv)
                             set_L,
                             init_ids,
                             set_K_list[q_i],
-                            local_queue_length,
-//                            local_queues_list,
-                            local_queues_array,
-                            local_queues_ends,
+                            local_queue_length, // Maximum size of local queue
+                            local_queues_ends, // Sizes of local queue
+                            top_m_candidates,
                             is_visited);
-//                    engine.para_search_with_top_m_merge_queues_no_CAS(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i],
-//                            local_queue_length,
-//                            local_queues_list,
-//                            local_queues_ends,
-//                            is_visited);
-//                    engine.para_search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
-//                    engine.search_with_top_m(
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i]);
-//                    {
-//                        exit(1);
-//                    }
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -217,12 +198,13 @@ int main(int argc, char **argv)
 ////                    engine.count_distance_computation = 0;
                 }
                 {// Basic output
-                    printf("local_queue_length: %u "
+                    printf(
+//                            "local_queue_length: %u "
                            "num_threads: %d "
                            "M: %u "
                            "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %'lu "
+                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
@@ -230,7 +212,7 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
-                           local_queue_length,
+//                           local_queue_length,
                            num_threads,
                            value_M,
                            L,
