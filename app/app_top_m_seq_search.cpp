@@ -49,11 +49,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
         exit(EXIT_FAILURE);
     }
-    if (K < M_max) {
-//        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
-//        exit(EXIT_FAILURE);
-        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
-    }
+//    if (K < M_max) {
+////        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
+////        exit(EXIT_FAILURE);
+//        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
+//    }
 
     std::vector< std::vector<PANNS::idi> > true_nn_list;
     engine.load_true_NN(
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 2;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -130,14 +130,15 @@ int main(int argc, char **argv)
                     printf("M: %u "
                             "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %'lu "
+                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
                            "query_num: %u "
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
-                           "P@100: %f\n",
+                           "P@100: %f "
+                           "P@1: %f \n",
                            value_M,
                            L,
                            diff.count(),
@@ -148,7 +149,8 @@ int main(int argc, char **argv)
                            query_num,
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num,
-                           recalls[100]);
+                           recalls[100],
+                           recalls[1]);
                     engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing

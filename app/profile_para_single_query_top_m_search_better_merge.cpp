@@ -50,11 +50,11 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
         exit(EXIT_FAILURE);
     }
-    if (K < M_max) {
-//        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
-//        exit(EXIT_FAILURE);
-        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
-    }
+//    if (K < M_max) {
+////        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
+////        exit(EXIT_FAILURE);
+//        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
+//    }
 
     std::vector< std::vector<PANNS::idi> > true_nn_list;
     engine.load_true_NN(
@@ -76,7 +76,11 @@ int main(int argc, char **argv)
 //    const PANNS::idi local_queue_length = L;
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
 //        for (unsigned local_queue_length = 0; local_queue_length <= 3 * L; local_queue_length += L/10) {
+//            unsigned local_queue_length = 1;
             unsigned local_queue_length = L;
+//            unsigned local_queue_length = L / num_threads;
+//            unsigned local_queue_length = M_max * engine.width_;
+            unsigned base_set_L = (num_threads - 1) * local_queue_length;
             if (!local_queue_length) {
                 local_queue_length = 1;
             }
@@ -99,7 +103,7 @@ int main(int argc, char **argv)
 //                PANNS::BitVector is_visited(points_num);
 //                std::vector<PANNS::Candidate> top_m_candidates(value_M);
                 std::vector<PANNS::idi> top_m_candidates(value_M);
-                std::vector<PANNS::distf> local_thresholds(num_threads - 1, -FLT_MAX);
+//                std::vector<PANNS::distf> local_thresholds(num_threads - 1, -FLT_MAX);
 //                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
 //                for (int i_t = 0; i_t < num_threads; ++i_t) {
 //                    if (0 == i_t) {
@@ -120,7 +124,7 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_with_top_m_merge_queues_better_merge_v2(
+                    engine.para_search_with_top_m_merge_queues_scale_m_v1(
                             value_M,
                             q_i,
                             K,
@@ -129,10 +133,49 @@ int main(int argc, char **argv)
                             init_ids,
                             set_K_list[q_i],
                             local_queue_length, // Maximum size of local queue
+                            base_set_L,
                             local_queues_ends, // Sizes of local queue
                             top_m_candidates,
-                            is_visited,
-                            local_thresholds);
+                            is_visited);
+//                    engine.para_search_with_top_m_merge_queues_scale_m_v0(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited);
+//                            local_thresholds);
+//                    engine.para_search_with_top_m_merge_queues_less_merge(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited,
+//                            local_thresholds);
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v2(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited,
+//                            local_thresholds);
 //                    engine.para_search_with_top_m_merge_queues_better_merge_v1(
 //                            value_M,
 //                            q_i,
@@ -146,6 +189,18 @@ int main(int argc, char **argv)
 //                            top_m_candidates,
 //                            is_visited);
 //                    engine.para_search_with_top_m_merge_queues_better_merge_v0(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited);
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v0_0(
 //                            value_M,
 //                            q_i,
 //                            K,
@@ -243,7 +298,11 @@ int main(int argc, char **argv)
                            "query_num: %u "
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
-                           "P@100: %f\n",
+                           "P@100: %f "
+                           "P@1: %f "
+                           "G/s: %f "
+                           "GFLOPS: %f "
+                           "local_queue_length: %u\n",
 //                           local_queue_length,
                            num_threads,
                            value_M,
@@ -256,7 +315,11 @@ int main(int argc, char **argv)
                            query_num,
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num,
-                           recalls[100]);
+                           recalls[100],
+                           recalls[1],
+                           data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
+                           data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
+                           local_queue_length);
                     engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing

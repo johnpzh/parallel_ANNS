@@ -9,7 +9,7 @@
 //#include "../core/Searching.h"
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
-#include "../core/Searching.202002250815.buckets_equal_width.h"
+#include "../../core/Searching.202002250815.buckets_equal_width.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 

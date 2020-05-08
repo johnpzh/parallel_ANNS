@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 2/14/2020.
+// Created by Zhen Peng on 4/13/2020.
 //
 
 #include <iostream>
@@ -17,18 +17,19 @@
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+//#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../core/Searching.202004131634.better_merge.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <computation_threshold>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -55,7 +56,10 @@ int main(int argc, char **argv)
         fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
     }
 
-
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[8],
+            true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
@@ -67,9 +71,17 @@ int main(int argc, char **argv)
     int num_threads = strtoull(argv[9], nullptr, 0);
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
+
+    uint64_t computation_threshold = strtoull(argv[10], nullptr, 0);
 //        int warmup_max = 1;
 
+//    const PANNS::idi local_queue_length = L;
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
+//        for (unsigned local_queue_length = 0; local_queue_length <= 3 * L; local_queue_length += L/10) {
+            unsigned local_queue_length = L;
+            if (!local_queue_length) {
+                local_queue_length = 1;
+            }
             unsigned value_M = M_max;
             unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
@@ -77,8 +89,30 @@ int main(int argc, char **argv)
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
+                std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
+//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+//                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
+//                const PANNS::idi local_queue_length = L;
+//                std::vector< std::vector<PANNS::Candidate> > local_queues_list(num_threads, std::vector<PANNS::Candidate>(local_queue_length));
+//                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
+                std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
+//                std::vector<uint8_t> is_visited(points_num, 0);
+                boost::dynamic_bitset<> is_visited(points_num);
+//                PANNS::BitVector is_visited(points_num);
+//                std::vector<PANNS::Candidate> top_m_candidates(value_M);
+                std::vector<PANNS::idi> top_m_candidates(value_M);
+                std::vector<PANNS::distf> local_thresholds(num_threads - 1, -FLT_MAX);
+//                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
+//                for (int i_t = 0; i_t < num_threads; ++i_t) {
+//                    if (0 == i_t) {
+//                        offsets_load_set_L[i_t] = 0;
+//                    } else {
+//                        offsets_load_set_L[i_t] = L + (i_t - 1) * local_queue_length;
+//                    }
+//                }
+//                std::vector<PANNS::idi> dest_offsets(num_threads, 0);
+//                std::vector<uint8_t> is_visited(points_num, 0);
+//                boost::dynamic_bitset<> is_visited(points_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
 //                engine.para_prepare_init_ids(init_ids, L);
@@ -88,33 +122,58 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_with_top_m_merge_queues(
+                    engine.para_search_with_top_m_merge_queues_no_merge(
                             value_M,
                             q_i,
                             K,
                             L,
                             set_L,
                             init_ids,
-                            set_K_list[q_i]);
-//                    engine.para_search_with_top_m(
+                            set_K_list[q_i],
+                            local_queue_length, // Maximum size of local queue
+                            local_queues_ends, // Sizes of local queue
+                            top_m_candidates,
+                            is_visited,
+                            local_thresholds,
+                            computation_threshold);
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v2(
 //                            value_M,
 //                            q_i,
 //                            K,
 //                            L,
 //                            set_L,
 //                            init_ids,
-//                            set_K_list[q_i]);
-//                    engine.search_with_top_m(
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited,
+//                            local_thresholds);
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v1(
 //                            value_M,
 //                            q_i,
 //                            K,
 //                            L,
 //                            set_L,
 //                            init_ids,
-//                            set_K_list[q_i]);
-//                    {
-//                        exit(1);
-//                    }
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited);
+//                    engine.para_search_with_top_m_merge_queues_better_merge_v0(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited);
+
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -140,20 +199,17 @@ int main(int argc, char **argv)
                 }
                 std::unordered_map<unsigned, double> recalls;
                 { // Recall values
-                    std::vector< std::vector<PANNS::idi> > true_nn_list;
-                    engine.load_true_NN(
-                            argv[8],
-                            true_nn_list);
-
                     engine.get_recall_for_all_queries(
                             true_nn_list,
                             set_K_list,
                             recalls);
-//                printf("P@5: %f "
+//                printf("P@1: %f "
+//                       "P@5: %f "
 //                       "P@10: %f "
 //                       "P@20: %f "
 //                       "P@50: %f "
 //                       "P@100: %f\n",
+//                       recalls[1],
 //                       recalls[5],
 //                       recalls[10],
 //                       recalls[20],
@@ -173,20 +229,39 @@ int main(int argc, char **argv)
 //                           recalls[100]);
 ////                           engine.count_distance_computation);
 ////                    engine.count_distance_computation = 0;
+//                    for (PANNS::idi q_i = 0; q_i < query_num; ++q_i) {
+//                        std::sort(set_K_list[q_i].begin(), set_K_list[q_i].end());
+//                        std::sort(true_nn_list[q_i].begin(), true_nn_list[q_i].end());
+//                        for (unsigned t_i = 0; t_i < 100; ++t_i) {
+//                            if (set_K_list[q_i][t_i] == true_nn_list[q_i][t_i]) {
+//                                continue;
+//                            }
+//                            printf("q_i: %u "
+//                                   "set_K[%u]: %u "
+//                                   "true[%u]: %u\n",
+//                                   q_i,
+//                                   t_i, set_K_list[q_i][t_i],
+//                                   t_i, true_nn_list[q_i][t_i]);
+//                        }
+//                    }
                 }
                 {// Basic output
-                    printf("num_threads: %d "
+                    printf(
+//                            "local_queue_length: %u "
+                           "num_threads: %d "
                            "M: %u "
                            "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %'lu "
+                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
                            "query_num: %u "
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
-                           "P@100: %f\n",
+                           "P@100: %f "
+                           "P@1: %f \n",
+//                           local_queue_length,
                            num_threads,
                            value_M,
                            L,
@@ -198,7 +273,8 @@ int main(int argc, char **argv)
                            query_num,
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num,
-                           recalls[100]);
+                           recalls[100],
+                           recalls[1]);
                     engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing
@@ -217,6 +293,10 @@ int main(int argc, char **argv)
 //            }
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
+            if (local_queue_length == 1) {
+                local_queue_length = 0;
+            }
+//        }
 //        }
 //    }
 

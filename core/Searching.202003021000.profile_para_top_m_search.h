@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <boost/dynamic_bitset.hpp>
-#include <boost/sort/sort.hpp>
+//#include <boost/sort/sort.hpp>
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -198,7 +198,7 @@ public:
 //            boost::dynamic_bitset<> is_visited,
 //            std::vector<idi> &init_ids,
             const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K) const;
+            std::vector<idi> &set_K);
     void search_in_sequential_BitVector(
             const idi query_id,
             const idi K,
@@ -606,6 +606,7 @@ inline void Searching::get_recall_for_all_queries(
         fprintf(stderr, "Error: Number of true nearest neighbors of a query is smaller than 100.\n");
         exit(EXIT_FAILURE);
     }
+    recalls[1] = 0.0;
     recalls[5] = 0.0;
     recalls[10] = 0.0;
     recalls[20] = 0.0;
@@ -617,6 +618,7 @@ inline void Searching::get_recall_for_all_queries(
             unsigned true_id = true_nn_list[q_i][top_i];
             for (unsigned n_i = 0; n_i < 100; ++n_i) {
                 if (set_K_list[q_i][n_i] == true_id) {
+                    if (n_i < 1) recalls[1] += 1;
                     if (n_i < 5) recalls[5] += 1;
                     if (n_i < 10) recalls[10] += 1;
                     if (n_i < 20) recalls[20] += 1;
@@ -626,6 +628,7 @@ inline void Searching::get_recall_for_all_queries(
             }
         }
     }
+    recalls[1] /= 1.0 * num_queries_;
     recalls[5] /= 5.0 * num_queries_;
     recalls[10] /= 10.0 * num_queries_;
     recalls[20] /= 20.0 * num_queries_;
@@ -639,7 +642,7 @@ inline void Searching::search_in_sequential(
         const idi L,
         std::vector<Candidate> &set_L,
         const std::vector<idi> &init_ids,
-        std::vector<idi> &set_K) const
+        std::vector<idi> &set_K)
 {
     boost::dynamic_bitset<> is_visited(num_v_);
 
@@ -658,6 +661,7 @@ inline void Searching::search_in_sequential(
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
         dataf norm = *v_data++;
+        ++count_distance_computation_;
         distf dist = compute_distance_with_norm(v_data, query_data, norm);
         set_L[i] = Candidate(v_id, dist, false); // False means not checked.
     }
@@ -685,6 +689,7 @@ inline void Searching::search_in_sequential(
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                 dataf norm = *nb_data++;
                 // Compute the distance
+                ++count_distance_computation_;
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                 if (dist > set_L[L-1].distance_) {
                     continue;

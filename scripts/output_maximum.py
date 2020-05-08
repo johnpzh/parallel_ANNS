@@ -30,11 +30,13 @@ with open(sys.argv[1]) as fin, \
         # Print column titles
         if is_first_line:
             is_first_line = False
-            fout.write(columns[0][0] + " " + columns[0][2 * selected_indices] + '\n')
+            fout.write(columns[0][2 * selected_indices] + '\n')
+            # fout.write(columns[0][0] + " " + columns[0][2 * selected_indices] + '\n')
 
         # Print column values
         if i_rp == num_repeat:
             i_rp = 0
             tmp_list = [float(columns[e_i][2 * selected_indices + 1]) for e_i in range(num_repeat)]
-            min_element = min(tmp_list)
-            fout.write(str(columns[0][1]) + " " + str(min_element) + '\n')
+            max_element = max(tmp_list)
+            fout.write(str(max_element) + '\n')
+            # fout.write(str(columns[0][1]) + " " + str(min_element) + '\n')

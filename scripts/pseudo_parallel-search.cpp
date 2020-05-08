@@ -2,6 +2,133 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
+Queue Scale-Top-M-Searching(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int M_MAX, // Maximum value of M
+            Int L, // Candidate pool/queue size
+            Int K // Return pool/queue size
+)
+{
+    Candidate Queue S whose capacity is L;
+    // Select initial vertices to fill Queue S.
+    A Queue S = Neighbors of Vertex P and other random vertices;
+    Sort Queue S according to distances to Query Q;
+
+    Value M = 1;
+    while (Queue S contains unchecked elements) {
+        A Set T = First M unchecked candidates in Queue S;
+        for (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+            }
+        }
+        if (M < M_MAX) {
+            M = 2 * M;
+        }
+    }
+
+    S = First K candidates of S;
+    return S;
+}
+
+Queue Scale-Top-M-Searching-with-Local-Queues(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int M_MAX, // Maximum value of M
+            Int L, // Candidate pool/queue size
+            Int K, // Return pool/queue size
+            Int H // Capacity of local queues
+)
+{
+    Global Candidate Queue S whose capacity is L;
+    Local Queues Ps whose capacity is H;
+    // Select initial vertices to fill Queue S.
+    A Queue S = Neighbors of Vertex P and other random vertices;
+    Sort Queue S according to distances to Query Q;
+
+    Value M = 1;
+    while (Queue S contains unchecked elements) {
+        A Set T = First M unchecked candidates in Queue S;
+        for-in-parallel (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                Insert Neighbor N into Local Queue Ps[T], where T is thread ID; // Ps[T] is sorted all the time.
+            }
+        }
+        Merge Local Queues Ps into S;
+        Clear all elements in Ps;
+        if (M < M_MAX) {
+            M = 2 * M;
+        }
+    }
+
+    S = First K candidates of S;
+    return S;
+}
+
+Queue Scale-Top-M-Searching-Seq-Then-Par(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int M_MAX, // Maximum value of M
+            Int L, // Candidate pool/queue size
+            Int K // Return pool/queue size
+)
+{
+    Candidate Queue S whose capacity is L;
+    // Select initial vertices to fill Queue S.
+    A Queue S = Neighbors of Vertex P and other random vertices;
+    Sort Queue S according to distances to Query Q;
+
+    Value M = 1;
+    while (Queue S contains unchecked elements && M < M_MAX) {
+        A Set T = First M unchecked candidates in Queue S;
+        for (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+            }
+        }
+        M = 2 * M;
+    }
+
+    Local Queues Ps whose capacity is H;
+    while (Queue S contains unchecked elements) {
+        A Set T = First M unchecked candidates in Queue S;
+        for-in-parallel (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                Insert Neighbor N into Local Queue Ps[T], where T is thread ID; // Ps[T] is sorted all the time.
+            }
+        }
+        Merge Local Queues Ps into S;
+        Clear all elements in Ps;
+    }
+
+    S = First K candidates of S;
+    return S;
+}
+
 // Searching algorithm: expand top-M candidates in every iteration
 // Output: K nearest neighbors for Query Q.
 Queue Top-M-Searching(
@@ -19,8 +146,8 @@ Queue Top-M-Searching(
     Sort Queue S according to distances to Query Q;
 
     while (Queue S contains unchecked elements) {
-        A Set top_m_cands = First M unchecked candidates in Queue S;
-        for-in-parallel (every Candidate C in Set top_m_cands){
+        A Set T = First M unchecked candidates in Queue S;
+        for-in-parallel (every Candidate C in Set T) {
             Mark Candidate C as checked;
             for (every unvisited Neighbor N of Candidate C in Graph G) {
                 Mark Neighbor N as visited;
@@ -55,8 +182,8 @@ Queue Top-M-Searching-with-Local-Queues(
     Sort Queue S according to distances to Query Q;
 
     while (Queue S contains unchecked elements) {
-        A Set top_m_cands = First M unchecked candidates in Queue S;
-        for-in-parallel (every Candidate C in Set top_m_cands){
+        A Set T = First M unchecked candidates in Queue S;
+        for-in-parallel (every Candidate C in Set T) {
             Mark Candidate C as checked;
             for (every unvisited Neighbor N of Candidate C in Graph G) {
                 Mark Neighbor N as visited;
@@ -74,7 +201,36 @@ Queue Top-M-Searching-with-Local-Queues(
     return S;
 }
 
+// Searching algorithm: expand top-M candidates in every iteration
+// Output: K nearest neighbors for Query Q.
+Queue Simple-Searching(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int L, // Candidate pool/queue size
+            Int K // Return pool/queue size
+)
+{
+    Candidate Queue S whose capacity is L;
+    // Select initial vertices to fill Queue S.
+    A Queue S = Neighbors of Vertex P and other random vertices;
+    Sort Queue S according to distances to Query Q;
 
+    while (Queue S contains unchecked elements) {
+        A Candidate C = The 1st unchecked element in Queue S;
+        Mark Candidate C as checked;
+        for (every unvisited Neighbor N of Candidate C in Graph G) {
+            Mark Neighbor N as visited;
+            Compute the distance between Neighbor N and Query Q;
+            if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                continue;
+            Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+        }
+    }
+
+    S = First K candidates of S;
+    return S;
+}
 
 //// Searching algorithm: expand top-M candidates in every iteration
 //// Output: K nearest neighbors for Query Q.
@@ -100,10 +256,10 @@ Queue Top-M-Searching-with-Local-Queues(
 //    Index new_i = L;
 //
 //    while (i < L) {
-//        Set top_m_cands = First M unchecked candidates in Queue S starting from Index i;
+//        Set T = First M unchecked candidates in Queue S starting from Index i;
 //        last_i = the index of M-th unchecked candidate in Queue S;
 //        new_i = L;
-//        for-in-parallel (every Candidate C in Set top_m_cands){
+//        for-in-parallel (every Candidate C in Set T){
 //            Mark Candidate C as checked;
 //            for (every unvisited Neighbor N of Candidate C in Graph G) {
 //                Mark Neighbor N as visited;

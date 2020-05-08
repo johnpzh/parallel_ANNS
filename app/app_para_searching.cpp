@@ -11,7 +11,8 @@
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002250815.buckets_equal_width.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+//#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../core/Searching.202004131634.better_merge.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
 
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
                        "L: %u "
                        "search_time(s.): %f "
                        //                       "time_distance_computation: %f "
-                       "count_distance_computation: %'lu "
+                       "count_distance_computation: %lu "
                        "K: %u "
                        "Volume: %u "
                        "Dimension: %u "

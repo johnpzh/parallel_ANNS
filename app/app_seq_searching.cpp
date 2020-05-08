@@ -48,6 +48,10 @@ int main(int argc, char **argv)
         std::cout << "search_L cannot be smaller than search_K!" << std::endl;
         exit(-1);
     }
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[7],
+            true_nn_list);
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
@@ -55,7 +59,7 @@ int main(int argc, char **argv)
     int num_threads_max = 1;
     for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
 //        omp_set_num_threads(num_threads);
-        int warmup_max = 3;
+        int warmup_max = 2;
         for (int warmup = 0; warmup < warmup_max; ++warmup) {
             std::vector< std::vector<PANNS::idi> > set_K_list(query_num);
             for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -82,10 +86,7 @@ int main(int argc, char **argv)
 
             std::unordered_map<unsigned, double> recalls;
             {// Recall values
-                std::vector< std::vector<PANNS::idi> > true_nn_list;
-                engine.load_true_NN(
-                        argv[7],
-                        true_nn_list);
+
                 engine.get_recall_for_all_queries(
                         true_nn_list,
                         set_K_list,
@@ -95,14 +96,15 @@ int main(int argc, char **argv)
                 printf("L: %u "
                        "search_time(s.): %f "
                        //                       "time_distance_computation: %f "
-                       "count_distance_computation: %'lu "
+                       "count_distance_computation: %lu "
                        "K: %u "
                        "Volume: %u "
                        "Dimension: %u "
                        "query_num: %u "
                        "query_per_sec: %f "
                        "average_latency(ms.): %f "
-                       "P@100: %f\n",
+                       "P@100: %f "
+                       "P@1: %f\n",
                        L,
                        diff.count(),
 //                       index.time_distance_computation,
@@ -114,7 +116,8 @@ int main(int argc, char **argv)
                        query_num,
                        query_num / diff.count(),
                        diff.count() * 1000 / query_num,
-                       recalls[100]);
+                       recalls[100],
+                       recalls[1]);
 //                index.time_distance_computation = 0.0;
 //                    index.count_distance_computation = 0;
                 engine.count_distance_computation_ = 0;

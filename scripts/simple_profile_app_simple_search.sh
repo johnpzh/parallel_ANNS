@@ -1,45 +1,82 @@
-#! /bin/bash
-
-#set -x
-## OpenMP Affinity for ICC
-export KMP_AFFINITY="granularity=fine,compact,1,0"
+#! /usr/local/bin/zsh
+####! /bin/bash
 
 cd ../cmake-build-release || exit
-#bin_panns=./app_para_searching
-bin_panns=./profile_seq_searching_BitVector
+#####################
+## Simple Search
+#####################
+bin=./app_seq_searching
 
-num_t_max=1
-
-#
-## SIFT
-data_path=/scratch/zpeng/sift1m
+# SIFT
+data_path=/data/zpeng/sift1m
+#data_path=/scratch/zpeng/sift1m
 data_name=sift
 k=200
-l=298
+#l=298
+l=200
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-done
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary
 
-## GIST
-data_path=/scratch/zpeng/gist1m
+# GIST
+data_path=/data/zpeng/gist1m
+#data_path=/scratch/zpeng/gist1m
 data_name=gist
 k=400
-l=477
+#l=477
+l=400
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
-done
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary
 
-## DEEP10M
-data_path=/scratch/zpeng/deep1b
+# DEEP10M
+data_path=/data/zpeng/deep1b
+#data_path=/scratch/zpeng/deep1b
 data_name=deep10M
 k=400
-l=489
+#l=489
+l=400
 echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-done
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary
+
+##set -x
+### OpenMP Affinity for ICC
+#export KMP_AFFINITY="granularity=fine,compact,1,0"
+#
+#cd ../cmake-build-release || exit
+##bin_panns=./app_para_searching
+#bin_panns=./profile_seq_searching_BitVector
+#
+#num_t_max=1
+#
+##
+### SIFT
+#data_path=/scratch/zpeng/sift1m
+#data_name=sift
+#k=200
+#l=298
+#echo "----${data_name}----"
+#for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#done
+#
+### GIST
+#data_path=/scratch/zpeng/gist1m
+#data_name=gist
+#k=400
+#l=477
+#echo "----${data_name}----"
+#for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+#done
+#
+### DEEP10M
+#data_path=/scratch/zpeng/deep1b
+#data_name=deep10M
+#k=400
+#l=489
+#echo "----${data_name}----"
+#for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#done
 
 ###
 #./profile_top_m_seq_search /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 200 200 output.ivecs 128 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 1

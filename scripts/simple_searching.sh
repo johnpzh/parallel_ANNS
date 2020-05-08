@@ -1,31 +1,72 @@
-#! /bin/bash
+#! /usr/local/bin/zsh
+####! /bin/bash
 
 cd ../cmake-build-release || exit
-bin=./test_nsg_optimized_search
+#####################
+## Simple Search
+#####################
+bin=./app_seq_searching
 
 # SIFT
-data_path=/scratch/zpeng/sift1m
+data_path=/data/zpeng/sift1m
+#data_path=/scratch/zpeng/sift1m
 data_name=sift
 k=200
 l=298
 echo "====${data_name}===="
-${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary
 
 # GIST
-data_path=/scratch/zpeng/gist1m
+data_path=/data/zpeng/gist1m
+#data_path=/scratch/zpeng/gist1m
 data_name=gist
 k=400
 l=477
 echo "====${data_name}===="
-${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary
 
 # DEEP10M
-data_path=/scratch/zpeng/deep1b
+data_path=/data/zpeng/deep1b
+#data_path=/scratch/zpeng/deep1b
 data_name=deep10M
 k=400
 l=489
 echo "====${data_name}===="
-${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary
+
+
+#####################
+## Top-M Seq Search
+#####################
+bin=./app_top_m_seq_search
+value_m=128
+
+# SIFT
+data_path=/data/zpeng/sift1m
+#data_path=/scratch/zpeng/sift1m
+data_name=sift
+k=200
+l=200
+echo "====${data_name}===="
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary
+
+# GIST
+data_path=/data/zpeng/gist1m
+#data_path=/scratch/zpeng/gist1m
+data_name=gist
+k=400
+l=400
+echo "====${data_name}===="
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary
+
+# DEEP10M
+data_path=/data/zpeng/deep1b
+#data_path=/scratch/zpeng/deep1b
+data_name=deep10M
+k=400
+l=400
+echo "====${data_name}===="
+${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary
 
 ## FAKE
 #data_path=/scratch/zpeng/fake

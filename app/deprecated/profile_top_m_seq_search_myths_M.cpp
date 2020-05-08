@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 11/18/19.
+// Created by Zhen Peng on 3/29/2020.
 //
 
 #include <iostream>
@@ -7,15 +7,13 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
-#include <omp.h>
 //#include "../core/Searching.201912161559.set_for_queue.h"
 //#include "../core/Searching.201912091448.map_for_queries_ids.h"
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002250815.buckets_equal_width.h"
-//#include "../core/Searching.202003021000.profile_para_top_m_search.h"
-#include "../core/Searching.202004131634.better_merge.h"
+#include "../../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
@@ -64,10 +62,9 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-//    int num_threads_max = 1;
-//    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-            int num_threads = strtoull(argv[9], nullptr, 0);
-            omp_set_num_threads(num_threads);
+    int num_threads_max = 1;
+    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
+//        omp_set_num_threads(num_threads);
 //        int warmup_max = 1;
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
@@ -78,20 +75,24 @@ int main(int argc, char **argv)
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-                std::vector< std::vector<PANNS::Candidate> > set_L_list(query_num, std::vector<PANNS::Candidate>(L + 1));
+                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
-#pragma omp parallel for default(shared)
+//#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.search_with_top_m(
+//                    engine.search_with_top_m_to_get_distance_range(
+//                            value_M,
+//                            q_i,
+//                            L,
+//                            set_L,
+//                            init_ids);
+                    engine.search_with_top_m_myths_M(
                             value_M,
                             q_i,
                             K,
                             L,
-                            set_L_list[q_i],
-//                            set_L,
+                            set_L,
                             init_ids,
                             set_K_list[q_i]);
                 }
@@ -133,8 +134,7 @@ int main(int argc, char **argv)
 //                    engine.count_distance_computation = 0;
                 }
                 {// Basic output
-                    printf("num_threads: %d "
-                           "M: %u "
+                    printf("M: %u "
                             "L: %u "
                            "search_time(s.): %f "
                            "count_distance_computation: %'lu "
@@ -145,7 +145,6 @@ int main(int argc, char **argv)
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
                            "P@100: %f\n",
-                           num_threads,
                            value_M,
                            L,
                            diff.count(),
@@ -176,7 +175,7 @@ int main(int argc, char **argv)
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
 //        }
-//    }
+    }
 
     return 0;
 }

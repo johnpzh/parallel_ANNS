@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 3/29/2020.
+// Created by Zhen Peng on 11/18/19.
 //
 
 #include <iostream>
@@ -13,7 +13,8 @@
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002250815.buckets_equal_width.h"
-#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+//#include "../core/Searching.202003021000.profile_para_top_m_search.h"
+#include "../core/Searching.202004131634.better_merge.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"
@@ -21,14 +22,14 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <query_num_max> <true_NN_file> <value_M_max> <num_measure_queries>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 9) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -49,14 +50,16 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
         exit(EXIT_FAILURE);
     }
-    if (K < M_max) {
-//        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
-//        exit(EXIT_FAILURE);
-        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
-    }
+//    if (K < M_max) {
+////        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
+////        exit(EXIT_FAILURE);
+//        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
+//    }
 
-
-
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[8],
+            true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
@@ -69,42 +72,45 @@ int main(int argc, char **argv)
 
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
             unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            unsigned warmup_max = 2;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + 1); // Return set
+                boost::dynamic_bitset<> is_visited(points_num);
+                std::vector<PANNS::idi> top_m_candidates(value_M);
 
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                    engine.search_with_top_m_to_get_distance_range(
-//                            value_M,
-//                            q_i,
-//                            L,
-//                            set_L,
-//                            init_ids);
-                    engine.search_with_top_m_myths_M(
+                    engine.search_with_top_m_scale_m(
                             value_M,
                             q_i,
                             K,
                             L,
                             set_L,
                             init_ids,
-                            set_K_list[q_i]);
+                            set_K_list[q_i],
+                            top_m_candidates,
+                            is_visited);
+//                    engine.search_with_top_m(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i]);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
 
                 std::unordered_map<unsigned, double> recalls;
                 { // Recall values
-                    std::vector< std::vector<PANNS::idi> > true_nn_list;
-                    engine.load_true_NN(
-                            argv[8],
-                            true_nn_list);
+
 
                     engine.get_recall_for_all_queries(
                             true_nn_list,
@@ -137,14 +143,15 @@ int main(int argc, char **argv)
                     printf("M: %u "
                             "L: %u "
                            "search_time(s.): %f "
-                           "count_distance_computation: %'lu "
+                           "count_distance_computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
                            "query_num: %u "
                            "query_per_sec: %f "
                            "average_latency(ms.): %f "
-                           "P@100: %f\n",
+                           "P@100: %f "
+                           "P@1: %f \n",
                            value_M,
                            L,
                            diff.count(),
@@ -155,7 +162,8 @@ int main(int argc, char **argv)
                            query_num,
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num,
-                           recalls[100]);
+                           recalls[100],
+                           recalls[1]);
                     engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing
