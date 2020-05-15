@@ -24,7 +24,7 @@ with open(sys.argv[1]) as fin_qps, \
             is_first = True
             fout_curv.write(line_acc + "\n")
         else:
-            fout_curv.write(line_acc + " " + line_qps + "\n")
+            fout_curv.write(line_acc + "\t" + line_qps + "\n")
         last_acc = line_acc
     #
     #

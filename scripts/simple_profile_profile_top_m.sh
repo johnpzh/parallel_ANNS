@@ -13,52 +13,58 @@ cd ../cmake-build-release || exit
 #bin_panns=./profile_top_m_seq_search_bit_CAS
 #bin_panns=./profile_top_m_seq_search_myths_M
 #bin_panns=./profile_para_single_query_top_m_search_by_sort
-bin_panns=./profile_para_single_query_top_m_search_better_merge
+#bin_panns=./profile_para_single_query_top_m_search_better_merge
+#bin_panns=./profile_para_single_query_top_m_search_little_m
+bin_panns=./profile_para_single_query_top_m_search_middle_m
 #bin_panns=./profile_para_single_query_top_m_search_no_merge
 num_t_max=64
 #num_t_max=1
-value_m=128
+#value_m=128
 
-#
-## SIFT
-value_m=64
-data_path=/data/zpeng/sift1m
-#data_path=/scratch/zpeng/sift1m
-data_name=sift
-k=200
-l=200
-echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} 138452587
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-done
+value_M_middle=4
+#for value_M_middle in 2 4 8 16 32 64; do
 
-## GIST
-value_m=64
-data_path=/data/zpeng/gist1m
-#data_path=/scratch/zpeng/gist1m
-data_name=gist
-k=400
-l=400
-echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} 20436778
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
-done
+    #
+    ## SIFT
+    value_m=128
+    data_path=/data/zpeng/sift1m
+    #data_path=/scratch/zpeng/sift1m
+    data_name=sift
+    k=200
+    l=200
+    echo "----${data_name}----"
+    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+    done
 
-## DEEP10M
-value_m=64
-data_path=/data/zpeng/deep1b
-#data_path=/scratch/zpeng/deep1b
-data_name=deep10M
-k=400
-l=400
-echo "----${data_name}----"
-for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} 259642683
-    ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-done
+    ## GIST
+    value_m=256
+    data_path=/data/zpeng/gist1m
+    #data_path=/scratch/zpeng/gist1m
+    data_name=gist
+    k=400
+    l=400
+    echo "----${data_name}----"
+    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+    done
 
+    ## DEEP10M
+    value_m=256
+    data_path=/data/zpeng/deep1b
+    #data_path=/scratch/zpeng/deep1b
+    data_name=deep10M
+    k=400
+    l=400
+    echo "----${data_name}----"
+    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+    done
+
+#done
 ###
 #./profile_top_m_seq_search /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 200 200 output.ivecs 128 /scratch/zpeng/sift1m/sift.true-100_NN.q-10000.binary 1
 #./profile_top_m_seq_search /scratch/zpeng/gist1m/gist_base.fvecs /scratch/zpeng/gist1m/gist_query.fvecs /scratch/zpeng/gist1m/gist.nsg 400 400 output.ivecs 128 /scratch/zpeng/gist1m/gist.true-100_NN.q-1000.binary 1

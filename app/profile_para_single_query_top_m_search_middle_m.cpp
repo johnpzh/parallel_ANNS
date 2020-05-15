@@ -23,13 +23,13 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <value_M_middle>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -71,6 +71,8 @@ int main(int argc, char **argv)
     int num_threads = strtoull(argv[9], nullptr, 0);
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
+
+    unsigned M_middle = strtoull(argv[10], nullptr, 0);
 //        int warmup_max = 1;
 
 //    const PANNS::idi local_queue_length = L;
@@ -102,8 +104,8 @@ int main(int argc, char **argv)
                 boost::dynamic_bitset<> is_visited(points_num);
 //                PANNS::BitVector is_visited(points_num);
 //                std::vector<PANNS::Candidate> top_m_candidates(value_M);
-                std::vector<PANNS::idi> top_m_candidates(L);
-//                std::vector<PANNS::idi> top_m_candidates(value_M);
+//                std::vector<PANNS::idi> top_m_candidates(L);
+                std::vector<PANNS::idi> top_m_candidates(value_M);
 //                std::vector<PANNS::distf> local_thresholds(num_threads - 1, -FLT_MAX);
 //                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
 //                for (int i_t = 0; i_t < num_threads; ++i_t) {
@@ -122,10 +124,26 @@ int main(int argc, char **argv)
                 engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
+//                for (unsigned q_i = 499; q_i < query_num; q_i += 1000) {
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
+                    engine.para_search_with_top_m_merge_queues_scale_m_v3(
+                            M_middle,
+                            value_M,
+                            q_i,
+                            K,
+                            L,
+                            set_L,
+                            init_ids,
+                            set_K_list[q_i],
+                            local_queue_length, // Maximum size of local queue
+                            base_set_L,
+                            local_queues_ends, // Sizes of local queue
+                            top_m_candidates,
+                            is_visited);
 //                    engine.para_search_with_top_m_merge_queues_scale_m_v1(
+//                            M_middle,
 //                            value_M,
 //                            q_i,
 //                            K,
@@ -138,8 +156,9 @@ int main(int argc, char **argv)
 //                            local_queues_ends, // Sizes of local queue
 //                            top_m_candidates,
 //                            is_visited);
-//                    engine.para_search_with_top_m_merge_queues_scale_m_v3(
-////                            value_M,
+//                    engine.para_search_with_top_m_merge_queues_scale_m_v2(
+//                            M_min,
+//                            value_M,
 //                            q_i,
 //                            K,
 //                            L,
@@ -151,18 +170,18 @@ int main(int argc, char **argv)
 //                            local_queues_ends, // Sizes of local queue
 //                            top_m_candidates,
 //                            is_visited);
-                    engine.para_search_with_top_m_merge_queues_scale_m_v0(
-                            value_M,
-                            q_i,
-                            K,
-                            L,
-                            set_L,
-                            init_ids,
-                            set_K_list[q_i],
-                            local_queue_length, // Maximum size of local queue
-                            local_queues_ends, // Sizes of local queue
-                            top_m_candidates,
-                            is_visited);
+//                    engine.para_search_with_top_m_merge_queues_scale_m_v0(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited);
 //                    engine.para_search_with_top_m_merge_queues_less_merge(
 //                            value_M,
 //                            q_i,
@@ -227,6 +246,9 @@ int main(int argc, char **argv)
 //                            is_visited);
 
                 }
+//                {
+//                    exit(1);
+//                }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
                 {// Basic output
@@ -315,7 +337,8 @@ int main(int argc, char **argv)
                            "P@1: %f "
                            "G/s: %f "
                            "GFLOPS: %f "
-                           "local_queue_length: %u\n",
+                           "local_queue_length: %u "
+                           "M_MIDDLE: %u \n",
 //                           local_queue_length,
                            num_threads,
                            value_M,
@@ -332,7 +355,8 @@ int main(int argc, char **argv)
                            recalls[1],
                            data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                            data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
-                           local_queue_length);
+                           local_queue_length,
+                           M_middle);
                     engine.count_distance_computation_ = 0;
                 }
 //            { // Percentage of Sharing

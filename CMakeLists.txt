@@ -254,3 +254,18 @@ add_executable(profile_top_m_seq_search_scale_m app/profile_top_m_seq_search_sca
 target_compile_options(profile_top_m_seq_search_scale_m PRIVATE ${CXX_OPTION} -march=native -mavx)
 #target_compile_options(app_top_m_seq_search PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(profile_top_m_seq_search_scale_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_little_m app/profile_para_single_query_top_m_search_little_m.cpp)
+target_compile_options(profile_para_single_query_top_m_search_little_m PRIVATE ${CXX_OPTION} -march=native -mavx)
+#target_compile_options(profile_para_single_query_top_m_search_better_merge PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search_little_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_middle_m app/profile_para_single_query_top_m_search_middle_m.cpp)
+target_compile_options(profile_para_single_query_top_m_search_middle_m PRIVATE ${CXX_OPTION} -march=native -mavx)
+#target_compile_options(profile_para_single_query_top_m_search_better_merge PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(test_neighbors_distance_to_father app/test_neighbors_distance_to_father.cpp)
+target_compile_options(test_neighbors_distance_to_father PRIVATE ${CXX_OPTION} -march=native -mavx)
+#target_compile_options(profile_para_single_query_top_m_search_better_merge PRIVATE ${CXX_OPTION} -march=native)
+target_link_libraries(test_neighbors_distance_to_father PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
