@@ -2,6 +2,63 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
+/*
+ * 5/21/2020, Relative Distance Threshold Idea
+ */
+How_to_Select_Top-M_Candidates(
+    Threshold H, // A percentage like 10% or 20%
+    Queue,
+    Query)
+{
+    C0 = The 1st unchecked candidate in the queue;
+    D0 = C0's distance to the query;
+    for (every unchecked candidate C in queue) {
+        if (dist(C, query) < H * D0) {
+            Select C as one of Top-M;
+        } else {
+            break;
+        }
+    }
+
+    return Selected Candidates;
+}
+
+Queue Relative_Distance_Threshold_Search(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            // Int M_MAX, // Maximum value of M
+            Int L, // Candidate pool/queue size
+            Int K // Return pool/queue size
+)
+{
+    Candidate Queue S whose capacity is L;
+    // Select initial vertices to fill Queue S.
+    A Queue S = Neighbors of Vertex P and other random vertices;
+    Sort Queue S according to distances to Query Q;
+
+    // Value M = 1;
+    while (Queue S contains unchecked elements) {
+        A Set T = First M unchecked candidates in Queue S;
+        for (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C in Graph G) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                Insert Neighbor N into Queue S according to its distance to Query Q; // Queue S is sorted all the time.
+            }
+        }
+        // if (M < M_MAX) {
+        //     M = 2 * M;
+        // }
+    }
+
+    S = First K candidates of S;
+    return S;
+}
+
 Queue Scale-Top-M-Searching(
             Graph G,
             Vertex P, // The start/entry point

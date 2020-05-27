@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     int num_threads_max = 1;
     for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
 //        omp_set_num_threads(num_threads);
-        int warmup_max = 1;
+        int warmup_max = 4;
         for (int warmup = 0; warmup < warmup_max; ++warmup) {
             std::vector< std::vector<PANNS::idi> > set_K_list(query_num);
             for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);

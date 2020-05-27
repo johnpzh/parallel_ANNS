@@ -1,41 +1,54 @@
-#! /usr/local/bin/zsh
+#!/usr/bin/bash
+####! /usr/local/bin/zsh
 ####! /bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <data_directory>"
+    exit
+fi
+data_dir=$1
+
+export KMP_AFFINITY="granularity=fine,compact,0,0"
 
 cd ../cmake-build-release || exit
 #####################
 ## Simple Search
 #####################
 bin=./app_para_searching
-num_t_max=64
+num_t_max=40
+#num_t_max=64
 
 # SIFT
-data_path=/data/zpeng/sift1m
+data_path=${data_dir}/sift1m
 #data_path=/scratch/zpeng/sift1m
 data_name=sift
 k=200
-l=298
+l=200
+#l=298
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
     ${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 done
 
 # GIST
-data_path=/data/zpeng/gist1m
+data_path=${data_dir}/gist1m
 #data_path=/scratch/zpeng/gist1m
 data_name=gist
 k=400
-l=477
+l=400
+#l=477
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
     ${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
 done
 
 # DEEP10M
-data_path=/data/zpeng/deep1b
+data_path=${data_dir}/deep1b
 #data_path=/scratch/zpeng/deep1b
 data_name=deep10M
 k=400
-l=489
+l=400
+#l=489
 echo "----${data_name}----"
 for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
     ${bin} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}

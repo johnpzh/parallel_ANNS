@@ -12,8 +12,8 @@ data_dir=$1
 
 #set -x
 ## OpenMP Affinity for ICC
-#export KMP_AFFINITY="verbose,granularity=fine,compact,1,0"
-export KMP_AFFINITY="granularity=fine,compact,1,0"
+export KMP_AFFINITY="verbose,granularity=fine,compact,1,0"
+#export KMP_AFFINITY="granularity=fine,compact,1,0"
 #export KMP_AFFINITY="granularity=core,compact,1,0"
 ## Above are almost the same for KNL
 

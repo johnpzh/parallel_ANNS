@@ -12,9 +12,12 @@ data_dir=$1
 
 #set -x
 ## OpenMP Affinity for ICC
+
 #export KMP_AFFINITY="verbose,granularity=fine,compact,1,0"
-export KMP_AFFINITY="granularity=fine,compact,1,0"
-#export KMP_AFFINITY="granularity=core,compact,1,0"
+#export KMP_AFFINITY="verbose,granularity=core,compact,1,0"
+#export KMP_AFFINITY="verbose,granularity=fine,proclist=[0,4,8,6,2,12,16,18,14,10,20,24,28,26,22,32,36,38,34,30,1,5,9,7,3,13,17,19,15,11,21,25,29,27,23,33,37,39,35,31],explicit"
+export KMP_AFFINITY="granularity=fine,compact,0,0"
+#export KMP_AFFINITY="granularity=core,compact,0,0"
 ## Above are almost the same for KNL
 
 cd ../cmake-build-release || exit
@@ -27,26 +30,30 @@ cd ../cmake-build-release || exit
 #bin_panns=./profile_para_single_query_top_m_search_little_m
 #bin_panns=./profile_para_single_query_top_m_search_middle_m
 #bin_panns=./profile_para_single_query_top_m_search_no_merge
-bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold
-num_t_max=64
+#bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold
+bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold_middle-iteration
+num_t_max=40
 #num_t_max=2
 #num_t_max=1
 #value_m=128
 
 #value_M_middle=4
 #for value_M_middle in 2 4 8 16 32 64; do
-for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_threshold += 1)); do
-    relative_dist_threshold=$(bc -l <<< "${relative_dist_threshold} / 100")
+#for ((iter = 1; iter <= 20; iter += 1)); do
+#    relative_dist_threshold=$(bc -l <<< "${iter} / 100")
 #for ((relative_dist_threshold = 0.01; relative_dist_threshold <= 0.2; relative_dist_threshold += 0.01)); do
 #for relative_dist_threshold in 0.01 0.02 0.05 0.1; do
 #for relative_dist_threshold in 0.02 0.05 0.1; do
 #for relative_dist_threshold in 0.02 0.05 0.1 0.2 0.4 0.8; do
+
+for ((middle_iter = 1; middle_iter < 7; ++middle_iter)); do
     #
     ## SIFT
 #    value_m=128
     data_path=${data_dir}/sift1m
     #data_path=/scratch/zpeng/sift1m
     data_name=sift
+    relative_dist_threshold=0.05
     k=200
     l=200
     echo "----${data_name}----"
@@ -54,7 +61,8 @@ for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${middle_iter}
     done
 
     ## GIST
@@ -62,6 +70,7 @@ for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_
     data_path=${data_dir}/gist1m
     #data_path=/scratch/zpeng/gist1m
     data_name=gist
+    relative_dist_threshold=0.03
     k=400
     l=400
     echo "----${data_name}----"
@@ -69,7 +78,8 @@ for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${num_t}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${middle_iter}
     done
 
     ## DEEP10M
@@ -77,6 +87,7 @@ for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_
     data_path=${data_dir}/deep1b
     #data_path=/scratch/zpeng/deep1b
     data_name=deep10M
+    relative_dist_threshold=0.09
     k=400
     l=400
     echo "----${data_name}----"
@@ -84,7 +95,8 @@ for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
 #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${middle_iter}
     done
 
 done

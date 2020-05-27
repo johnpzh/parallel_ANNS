@@ -1,5 +1,14 @@
-#! /usr/local/bin/zsh
+#!/usr/bin/bash
+####! /usr/local/bin/zsh
 ####! /bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <data_directory>"
+    exit
+fi
+data_dir=$1
+
+export KMP_AFFINITY="granularity=fine,compact,0,0"
 
 cd ../cmake-build-release || exit
 #####################
@@ -8,7 +17,7 @@ cd ../cmake-build-release || exit
 bin=./app_seq_searching
 
 ## SIFT
-data_path=/data/zpeng/sift1m
+data_path=${data_dir}/sift1m
 #data_path=/scratch/zpeng/sift1m
 data_name=sift
 echo "----${data_name}----"
@@ -32,7 +41,7 @@ for l in 2000 4000 8000; do
 done
 
 ## GIST
-data_path=/data/zpeng/gist1m
+data_path=${data_dir}/gist1m
 #data_path=/scratch/zpeng/gist1m
 data_name=gist
 echo "----${data_name}----"
@@ -56,7 +65,7 @@ for l in 2000 4000 8000; do
 done
 
 ## DEEP10M
-data_path=/data/zpeng/deep1b
+data_path=${data_dir}/deep1b
 #data_path=/scratch/zpeng/deep1b
 data_name=deep10M
 echo "----${data_name}----"

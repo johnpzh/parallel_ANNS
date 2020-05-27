@@ -1,4 +1,5 @@
-#! /usr/local/bin/zsh
+#! /usr/bin/bash
+####! /usr/local/bin/zsh
 ####! /bin/bash
 
 if [ ! $# -eq 2 ]; then
@@ -8,7 +9,8 @@ fi
 data_dir=$1
 num_t=$2
 
-export KMP_AFFINITY="granularity=fine,compact,1,0"
+export KMP_AFFINITY="granularity=fine,compact,0,0"
+#export KMP_AFFINITY="granularity=fine,compact,1,0"
 cd ../cmake-build-release || exit
 #####################
 ## Parallel Single Query Top-M Search
