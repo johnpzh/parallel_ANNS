@@ -16,11 +16,11 @@
 #include <set>
 #include <algorithm>
 #include <omp.h>
-#include "../include/definitions.h"
+#include "../../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
-#include "../include/utils.h"
-#include "../include/Candidate.h"
-#include "../include/parallelization.h"
+#include "../../include/utils.h"
+#include "../../include/Candidate.h"
+#include "../../include/parallelization.h"
 //#include "../include/Buckets.h"
 
 namespace PANNS {
