@@ -28,8 +28,8 @@ cd ../cmake-build-release || exit
 #bin_panns=./profile_para_single_query_top_m_search_by_sort
 #bin_panns=./profile_para_single_query_top_m_search_better_merge
 #bin_panns=./profile_para_single_query_top_m_search_little_m
-bin_panns=./profile_para_single_query_top_m_search_middle_m
-#bin_panns=./profile_para_single_query_top_m_search_no_merge
+#bin_panns=./profile_para_single_query_top_m_search_middle_m
+bin_panns=./profile_para_single_query_top_m_search_no_merge
 #bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold
 num_t_max=40
 #num_t_max=2
@@ -49,13 +49,19 @@ value_M_middle=4
     data_path=${data_dir}/sift1m
     data_name=sift
     k=200
-    l=200
-    echo "----${data_name}----"
-    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#    l=200
+    l=1000000
+#    cmt_threshold=46385224
+    init_size=200
+    computation_start=4000
+    computation_bound=$((computation_start * 2))
+    for ((cmt_threshold = computation_start; cmt_threshold < computation_bound; cmt_threshold += computation_start/10)); do
+        echo "----${data_name}----"
+        for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+    #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+        done
     done
 
     ## GIST
@@ -63,13 +69,19 @@ value_M_middle=4
     data_path=${data_dir}/gist1m
     data_name=gist
     k=400
-    l=400
-    echo "----${data_name}----"
-    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
+#    l=400
+    l=1000000
+#    cmt_threshold=12449948
+    init_size=400
+    computation_start=12000
+    computation_bound=$((computation_start * 2))
+    for ((cmt_threshold = computation_start; cmt_threshold < computation_bound; cmt_threshold += computation_start/10)); do
+        echo "----${data_name}----"
+        for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+    #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${num_t}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
+        done
     done
 
     ## DEEP10M
@@ -77,13 +89,19 @@ value_M_middle=4
     data_path=${data_dir}/deep1b
     data_name=deep10M
     k=400
-    l=400
-    echo "----${data_name}----"
-    for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
-        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
-#        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${relative_dist_threshold} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
+#    l=400
+    l=10000000
+#    cmt_threshold=121796647
+    init_size=400
+    computation_start=12000
+    computation_bound=$((computation_start * 2))
+    for ((cmt_threshold = computation_start; cmt_threshold < computation_bound; cmt_threshold += computation_start/10)); do
+        echo "----${data_name}----"
+        for ((num_t = 1; num_t <= num_t_max; num_t *= 2)); do
+    #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+        done
     done
 
 #done

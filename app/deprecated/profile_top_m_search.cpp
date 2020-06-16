@@ -12,7 +12,7 @@
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
-#include "../../core/Searching.202002250815.buckets_equal_width.h"
+#include "../../core/deprecated/Searching.202002250815.buckets_equal_width.h"
 //#include "../core/Searching.h"
 //#include "../include/utils.h"
 //#include "../include/efanna2e/index_nsg.h"

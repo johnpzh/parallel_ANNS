@@ -3,15 +3,16 @@
 import sys
 import subprocess
 
-if len(sys.argv) < 3:
-    print(F'{sys.argv[0]} <bin> <sift|gist|deep10M> [additional]')
+if len(sys.argv) < 4:
+    print(F'{sys.argv[0]} <bin> <sift|gist|deep10M> <data_diretory> [additional]')
     exit()
 elif sys.argv[2] not in ['sift', 'gist', 'deep10M']:
     print(F'Error: does not support data mode {sys.argv[2]} (support only sift|gist|deep10M)')
     exit()
 
 # data_path="/scratch/zpeng"
-data_path="/data/zpeng"
+data_path=sys.argv[3]
+# data_path="/data/zpeng"
 
 sift_args = F'{data_path}/sift1m/sift_base.fvecs {data_path}/sift1m/sift_query.fvecs ' \
             F'{data_path}/sift1m/sift.nsg 200 200 output.ivecs'
@@ -31,7 +32,7 @@ elif sys.argv[2] == 'deep10M':
 else:
     print(F'Error: data mode {sys.argv[2]} not found.')
     exit()
-command.extend(sys.argv[3:])
+command.extend(sys.argv[4:])
 
 # os.system(' '.join(command))
 # For ICC CPU Affinity

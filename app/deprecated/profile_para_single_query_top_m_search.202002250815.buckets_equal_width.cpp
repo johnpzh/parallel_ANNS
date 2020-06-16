@@ -17,7 +17,7 @@
 //#include "../include/efanna2e/index_nsg.h"
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
-#include "../../core/Searching.202002250815.buckets_equal_width.h"
+#include "../../core/deprecated/Searching.202002250815.buckets_equal_width.h"
 
 //void set_L_to_set_K(
 //        std::vector< std::vector<PANNS::Candidate> > &set_L_list,

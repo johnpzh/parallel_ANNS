@@ -12,11 +12,13 @@ with open(sys.argv[1]) as fin, \
     # double_columns = []
     print_columns = []
     graph_index = 0
+    count_index = 1 # This is for the group size
+    # count_index = 3 # This is for the group size
     for line in fin:
         line = line.strip()
         # columns = line.split()
         if line[0] in ['%', '#', '-', '=', '+', 'F', 'N', 'Q']:
-            if 3 == graph_index:
+            if count_index == graph_index:
                 graph_index = 0
             if 0 == graph_index:
                 print_columns.append([])

@@ -5,7 +5,7 @@
 #PBS -m abe
 #PBS -A PGS0218
 
-# qsub -I -X -l nodes=1:ppn=40 -l walltime=1:00:00 -A PGS0218 -m abe
+# qsub -I -l nodes=1:ppn=40 -l walltime=1:00:00 -A PGS0218 -m abe
 
 cd /users/PGS0218/zpeng01/pppp/clion/panns_mac/cmake-build-release || exit
 

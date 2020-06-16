@@ -2,6 +2,43 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
+Queue Collector-Idea(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int M, // Some value M
+            Int L, // Candidate pool/queue size
+            Int K // Return pool/queue size
+)
+{
+    Queue S = a priority queue whose capacity is L;
+    // Select initial vertices to fill Queue S.
+    Queue S initializes L candidates consisting of neighbors of Vertex P and other random vertices if necessary;
+    Sort Queue S according to distances to Query Q;
+    Every Collector thread has a local queue;
+
+    while (Queue S contains unchecked elements) {
+        A Set T = First M unchecked candidates in Queue S;
+        for (every Candidate C in Set T) {
+            Mark Candidate C as checked;
+            for (every unvisited Neighbor N of Candidate C) {
+                Mark Neighbor N as visited;
+                Compute the distance between Neighbor N and Query Q;
+                if (distance(N, Q) > S.last()) // If N to Q is even further than S's longest distance
+                    continue;
+                if (C belongs to Master thread) {
+                    Insert Neighbor N into Queue S;
+                } else { // C belongs to Collector threads
+                    Insert Neighbor N into a local queue;
+                }
+            }
+        }
+    }
+    Merge all local queues to Queue S;
+
+    return First K candidates of S;
+}
+
 /*
  * 5/21/2020, Relative Distance Threshold Idea
  */
@@ -39,7 +76,7 @@ Queue Relative_Distance_Threshold_Search(
 
     // Value M = 1;
     while (Queue S contains unchecked elements) {
-        A Set T = First M unchecked candidates in Queue S;
+        A Set T = selected Top-M candidates by the threshold;
         for (every Candidate C in Set T) {
             Mark Candidate C as checked;
             for (every unvisited Neighbor N of Candidate C in Graph G) {

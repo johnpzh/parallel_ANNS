@@ -18,18 +18,20 @@
 //#include "../core/Searching.202002181409.local_queue_and_merge.h"
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
 //#include "../core/Searching.202003021000.profile_para_top_m_search.h"
-#include "../core/Searching.202004131634.better_merge.h"
+//#include "../core/Searching.202004131634.better_merge.h"
+#include "../core/Searching.202005271122.choosing_m.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <computation_threshold>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <value_M_middle> <computation_threshold> <init_size>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <value_M_middle> <computation_threshold>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 11) {
+    if (argc != 13) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -72,23 +74,27 @@ int main(int argc, char **argv)
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
 
-    uint64_t computation_threshold = strtoull(argv[10], nullptr, 0);
+    unsigned M_middle = strtoull(argv[10], nullptr, 0);
+    uint64_t computation_threshold = strtoull(argv[11], nullptr, 0);
+    unsigned init_size = strtoull(argv[12], nullptr, 0);
 //        int warmup_max = 1;
 
 //    const PANNS::idi local_queue_length = L;
 //        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
 //        for (unsigned local_queue_length = 0; local_queue_length <= 3 * L; local_queue_length += L/10) {
             unsigned local_queue_length = L;
+            unsigned base_set_L = (num_threads - 1) * local_queue_length;
             if (!local_queue_length) {
                 local_queue_length = 1;
             }
             unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 2;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
-                std::vector<PANNS::idi> init_ids(L);
+                std::vector<PANNS::idi> init_ids(init_size);
+//                std::vector<PANNS::idi> init_ids(L);
                 std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
 //                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
 //                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
@@ -115,27 +121,43 @@ int main(int argc, char **argv)
 //                boost::dynamic_bitset<> is_visited(points_num);
 
                 auto s = std::chrono::high_resolution_clock::now();
-//                engine.para_prepare_init_ids(init_ids, L);
-                engine.prepare_init_ids(init_ids, L);
+                engine.prepare_init_ids(init_ids, init_size);
+//                engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_with_top_m_merge_queues_no_merge(
+                    engine.para_search_with_top_m_merge_queues_middle_m_no_merge(
+                            computation_threshold,
+                            M_middle,
                             value_M,
                             q_i,
                             K,
                             L,
+                            init_size,
                             set_L,
                             init_ids,
                             set_K_list[q_i],
                             local_queue_length, // Maximum size of local queue
+                            base_set_L,
                             local_queues_ends, // Sizes of local queue
                             top_m_candidates,
-                            is_visited,
-                            local_thresholds,
-                            computation_threshold);
+                            is_visited);
+//                    engine.para_search_with_top_m_merge_queues_no_merge(
+//                            value_M,
+//                            q_i,
+//                            K,
+//                            L,
+//                            set_L,
+//                            init_ids,
+//                            set_K_list[q_i],
+//                            local_queue_length, // Maximum size of local queue
+//                            local_queues_ends, // Sizes of local queue
+//                            top_m_candidates,
+//                            is_visited,
+//                            local_thresholds,
+//                            computation_threshold);
 //                    engine.para_search_with_top_m_merge_queues_better_merge_v2(
 //                            value_M,
 //                            q_i,
@@ -251,16 +273,22 @@ int main(int argc, char **argv)
                            "num_threads: %d "
                            "M: %u "
                            "L: %u "
-                           "search_time(s.): %f "
-                           "count_distance_computation: %lu "
+                           "runtime(s.): %f "
+                           "computation: %lu "
                            "K: %u "
                            "Volume: %u "
                            "Dimension: %u "
                            "query_num: %u "
                            "query_per_sec: %f "
-                           "average_latency(ms.): %f "
+                           "avg_latency(ms.): %f "
                            "P@100: %f "
-                           "P@1: %f \n",
+                           "P@1: %f "
+                           "M_middle: %u "
+                           "cmpt_thrd: %lu "
+                           "init_size: %u "
+                           "time_init(s.): %f %.2f%% "
+                           "time_seq(s.): %f %.2f%% "
+                           "time_par(s.): %f %.2f%%\n",
 //                           local_queue_length,
                            num_threads,
                            value_M,
@@ -274,8 +302,17 @@ int main(int argc, char **argv)
                            query_num / diff.count(),
                            diff.count() * 1000 / query_num,
                            recalls[100],
-                           recalls[1]);
+                           recalls[1],
+                           M_middle,
+                           computation_threshold,
+                           init_size,
+                           engine.time_initialization_, 100.0 * engine.time_initialization_ / diff.count(),
+                           engine.time_sequential_phase_, 100.0 * engine.time_sequential_phase_ / diff.count(),
+                           engine.time_parallel_phase_, 100.0 * engine.time_parallel_phase_ / diff.count());
                     engine.count_distance_computation_ = 0;
+                    engine.time_initialization_ = 0;
+                    engine.time_sequential_phase_ = 0;
+                    engine.time_parallel_phase_ = 0;
                 }
 //            { // Percentage of Sharing
 //                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
