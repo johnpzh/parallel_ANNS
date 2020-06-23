@@ -321,3 +321,17 @@ add_executable(profile_para_single_query_top_m_search_sequential_merge app/profi
 #target_compile_options(profile_para_single_query_top_m_search_sequential_merge PRIVATE ${CXX_OPTION} -march=native)
 target_compile_options(profile_para_single_query_top_m_search_sequential_merge PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_top_m_search_sequential_merge PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_nested_para_top_m_search app/profile_nested_para_top_m_search.cpp)
+target_compile_options(profile_nested_para_top_m_search PRIVATE ${CXX_OPTION} -xHost)
+#target_compile_options(profile_nested_para_top_m_search PRIVATE ${CXX_OPTION} -march=native -mavx)
+#target_compile_options(profile_nested_para_top_m_search PRIVATE ${CXX_OPTION} -march=native)
+#target_compile_options(profile_nested_para_top_m_search PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_nested_para_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_subsearch app/profile_para_single_query_top_m_search_subsearch.cpp)
+target_compile_options(profile_para_single_query_top_m_search_subsearch PRIVATE ${CXX_OPTION} -xHost)
+#target_compile_options(profile_para_single_query_top_m_search_subsearch PRIVATE ${CXX_OPTION} -march=native -mavx)
+#target_compile_options(profile_para_single_query_top_m_search_subsearch PRIVATE ${CXX_OPTION} -march=native)
+#target_compile_options(profile_para_single_query_top_m_search_subsearch PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_subsearch PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

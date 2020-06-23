@@ -348,12 +348,45 @@ void test_omp_static(int argc, char *argv[])
     }
 }
 
+void test_level2(int parent)
+{
+#pragma omp parallel for num_threads(3)
+    for (int i = 0; i < 3; ++i) {
+//#pragma omp master
+        {
+            printf("level2: num_threads: %u parent: %u i: %u\n",
+                   omp_get_num_threads(), parent, i);
+        }
+    }
+}
+
+void test_level1(int parent)
+{
+#pragma omp parallel for num_threads(2)
+    for (int i = 0; i < 2; ++i) {
+//#pragma omp master
+        {
+            printf("level1: num_threads: %u parent: %u i: %u\n",
+                   omp_get_num_threads(), parent, i);
+            test_level2(i);
+        }
+    }
+}
+
+void test_run_levels()
+{
+    omp_set_nested(1);
+    omp_set_max_active_levels(2);
+    test_level1(0);
+}
+
 int main(int argc, char *argv[])
 {
 
 //    test_openmp_performance(argc, argv);
 //    test_bitvector(argc, argv);
-    test_omp_static(argc, argv);
+//    test_omp_static(argc, argv);
+    test_run_levels();
 
     return 0;
 }

@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 4/13/2020.
+// Created by Zhen Peng on 6/19/2020.
 //
 
 #include <iostream>
@@ -26,13 +26,13 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <value_M_middle>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads> <value_M_middle> <threads_intra_query> <query_batch_size>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 11) {
+    if (argc != 13) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -68,106 +68,86 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-//    int num_threads_max = strtoull(argv[9], nullptr, 0);
-//    int num_threads_max = 20;
-//    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
     int num_threads = strtoull(argv[9], nullptr, 0);
     engine.num_threads_ = num_threads;
-    engine.num_threads_intra_query_ = num_threads;
     omp_set_num_threads(num_threads);
+    omp_set_nested(1);
+    omp_set_max_active_levels(2);
 
     unsigned M_middle = strtoull(argv[10], nullptr, 0);
-//        int warmup_max = 1;
+    unsigned threads_intra_query = strtoull(argv[11], nullptr, 0);
+    unsigned query_batch_size = strtoull(argv[12], nullptr, 0);
+    engine.num_threads_intra_query_ = threads_intra_query;
+    engine.num_threads_inter_query_ = num_threads / threads_intra_query;
+    if (num_threads < threads_intra_query) {
+        threads_intra_query = num_threads;
+        engine.num_threads_inter_query_ = 1;
+    }
 
-//    const PANNS::idi local_queue_length = L;
-//        for (unsigned value_M = 2; value_M <= M_max; value_M *= 2) {
-//        for (unsigned local_queue_length = 0; local_queue_length <= 3 * L; local_queue_length += L/10) {
-//            unsigned local_queue_length = 1;
             unsigned local_queue_length = L;
-//            unsigned local_queue_length = L / num_threads;
-//            unsigned local_queue_length = M_max * engine.width_;
-            unsigned base_set_L = (num_threads - 1) * local_queue_length;
-            if (!local_queue_length) {
-                local_queue_length = 1;
-            }
-            unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            const unsigned base_set_L = (threads_intra_query - 1) * local_queue_length;
+            const unsigned value_M = M_max;
+            const unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L);
-                std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
-//                std::vector<PANNS::Candidate> set_L(L + 1); // Return set
-//                std::vector<std::vector<std::vector<PANNS::idi> > > queries_top_m_list(query_num);
-//                const PANNS::idi local_queue_length = L;
-//                std::vector< std::vector<PANNS::Candidate> > local_queues_list(num_threads, std::vector<PANNS::Candidate>(local_queue_length));
-//                std::vector<PANNS::Candidate> local_queues_array(num_threads * local_queue_length);
-                std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
-//                std::vector<uint8_t> is_visited(points_num, 0);
-                boost::dynamic_bitset<> is_visited(points_num);
-//                PANNS::BitVector is_visited(points_num);
-//                std::vector<PANNS::Candidate> top_m_candidates(value_M);
-//                std::vector<PANNS::idi> top_m_candidates(L);
-                std::vector<PANNS::idi> top_m_candidates(value_M);
-//                std::vector<PANNS::distf> local_thresholds(num_threads - 1, -FLT_MAX);
-//                std::vector<PANNS::idi> offsets_load_set_L(num_threads); // Offsets for loading from set_L.
-//                for (int i_t = 0; i_t < num_threads; ++i_t) {
-//                    if (0 == i_t) {
-//                        offsets_load_set_L[i_t] = 0;
-//                    } else {
-//                        offsets_load_set_L[i_t] = L + (i_t - 1) * local_queue_length;
-//                    }
-//                }
-//                std::vector<PANNS::idi> dest_offsets(num_threads, 0);
-//                std::vector<uint8_t> is_visited(points_num, 0);
+//                std::vector<PANNS::Candidate> set_L(L + (num_threads - 1) * local_queue_length); // Return set
+//                std::vector<PANNS::idi> local_queues_ends(num_threads, 0);
 //                boost::dynamic_bitset<> is_visited(points_num);
-//                PANNS::L3CacheMissRate cache_miss_rate;
-//                cache_miss_rate.measure_start();
+//                std::vector<PANNS::idi> top_m_candidates(value_M);
+
+                std::vector< std::vector<PANNS::Candidate> > set_L_list(query_batch_size,
+                                                                        std::vector<PANNS::Candidate>(L + (threads_intra_query - 1) * local_queue_length));
+                std::vector< std::vector<PANNS::idi> > local_queues_ends_list(query_batch_size,
+                                                                              std::vector<PANNS::idi>(threads_intra_query, 0));
+                std::vector< boost::dynamic_bitset<> > is_visited_list(query_batch_size,
+                                                                       boost::dynamic_bitset<>(points_num));
+                std::vector< std::vector<PANNS::idi> > top_m_candidates_list(query_batch_size,
+                                                                             std::vector<PANNS::idi>(value_M));
+
+                unsigned remain = query_num % query_batch_size;
+                unsigned q_i_bound = query_num - remain;
+
                 auto s = std::chrono::high_resolution_clock::now();
-//                engine.para_prepare_init_ids(init_ids, L);
                 engine.prepare_init_ids(init_ids, L);
-//#pragma omp parallel for
-                for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//                for (unsigned q_i = 499; q_i < query_num; q_i += 1000) {
-//                    {//test
-//                        printf("q_i: %u\n", q_i);
-//                    }
-                    engine.para_search_with_top_m_merge_queues_global_threshold(
+                for (unsigned q_i = 0; q_i < q_i_bound; q_i += query_batch_size) {
+                    engine.para_search_with_top_m_nested_para(
+                            q_i,
+                            query_batch_size,
                             M_middle,
                             value_M,
-                            q_i,
                             K,
                             L,
-                            set_L,
+                            set_L_list,
                             init_ids,
-                            set_K_list[q_i],
+                            set_K_list,
                             local_queue_length, // Maximum size of local queue
-                            base_set_L,
-                            local_queues_ends, // Sizes of local queue
-                            top_m_candidates,
-                            is_visited);
-//                    engine.para_search_with_top_m_merge_queues_middle_m(
-//                            M_middle,
-//                            value_M,
-//                            q_i,
-//                            K,
-//                            L,
-//                            set_L,
-//                            init_ids,
-//                            set_K_list[q_i],
-//                            local_queue_length, // Maximum size of local queue
-//                            base_set_L,
-//                            local_queues_ends, // Sizes of local queue
-//                            top_m_candidates,
-//                            is_visited);
+                            base_set_L, // base_set_L = (num_threads_ - 1) * local_queue_length;
+                            local_queues_ends_list, // Sizes of local queue
+                            top_m_candidates_list,
+                            is_visited_list);
                 }
-//                {
-//                    exit(1);
-//                }
+                if (remain) {
+                    engine.para_search_with_top_m_nested_para(
+                            q_i_bound,
+                            remain,
+                            M_middle,
+                            value_M,
+                            K,
+                            L,
+                            set_L_list,
+                            init_ids,
+                            set_K_list,
+                            local_queue_length, // Maximum size of local queue
+                            base_set_L, // base_set_L = (num_threads_ - 1) * local_queue_length;
+                            local_queues_ends_list, // Sizes of local queue
+                            top_m_candidates_list,
+                            is_visited_list);
+                }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
-//                cache_miss_rate.measure_stop();
                 {// Basic output
 //                printf("M: %u "
 //                        "L: %u "
@@ -238,7 +218,6 @@ int main(int argc, char **argv)
                 }
                 {// Basic output
                     printf(
-//                            "local_queue_length: %u "
                            "num_threads: %d "
                            "M: %u "
                            "L: %u "
@@ -256,9 +235,12 @@ int main(int argc, char **argv)
                            "GFLOPS: %f "
                            "local_queue_length: %u "
                            "M_middle: %u "
-                           "merge_time(s.): %f "
-                           "num_local_elements: %lu\n",
-//                           local_queue_length,
+//                           "merge_time(s.): %f "
+//                           "insert_time(s.): %f "
+//                           "compare_time(s.): %f "
+                           "num_threads_intra_query: %u "
+                           "num_threads_inter_query: %u "
+                           "batch_size: %u\n",
                            num_threads,
                            value_M,
                            L,
@@ -276,11 +258,16 @@ int main(int argc, char **argv)
                            data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                            local_queue_length,
                            M_middle,
-                           engine.time_merge_,
-                           engine.number_local_elements_);
+//                           engine.time_merge_,
+//                           engine.time_insert_,
+//                           engine.time_compare_minimum_,
+                           engine.num_threads_intra_query_,
+                           engine.num_threads_inter_query_,
+                           query_batch_size);
                     engine.count_distance_computation_ = 0;
-                    engine.time_merge_ = 0;
-                    engine.number_local_elements_ = 0;
+//                    engine.time_merge_ = 0;
+//                    engine.time_insert_ = 0;
+//                    engine.time_compare_minimum_ = 0;
 //                    cache_miss_rate.print();
                 }
 //            { // Percentage of Sharing
@@ -302,9 +289,6 @@ int main(int argc, char **argv)
             if (local_queue_length == 1) {
                 local_queue_length = 0;
             }
-//        }
-//        }
-//    }
 
     return 0;
 }

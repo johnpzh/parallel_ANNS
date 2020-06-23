@@ -28,17 +28,18 @@ cd ../cmake-build-release || exit
 #bin_panns=./profile_para_single_query_top_m_search_by_sort
 #bin_panns=./profile_para_single_query_top_m_search_better_merge
 #bin_panns=./profile_para_single_query_top_m_search_little_m
-#bin_panns=./profile_para_single_query_top_m_search_middle_m
+bin_panns=./profile_para_single_query_top_m_search_middle_m
 #bin_panns=./profile_para_single_query_top_m_search_no_merge
 #bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold
 #bin_panns=./profile_para_single_query_top_m_search_collector_threads
-bin_panns=./profile_para_single_query_top_m_search_sequential_merge
+#bin_panns=./profile_para_single_query_top_m_search_sequential_merge
 num_t_max=40
 #num_t_max=2
 #num_t_max=1
 #value_m=128
 
-value_M_middle=4
+value_M_middle=1
+#value_M_middle=4
 #for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_threshold += 1)); do
 #    relative_dist_threshold=$(bc -l <<< "${relative_dist_threshold} / 100")
 #for ((relative_dist_threshold = 0.01; relative_dist_threshold <= 0.2; relative_dist_threshold += 0.01)); do

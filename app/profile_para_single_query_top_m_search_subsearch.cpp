@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 4/13/2020.
+// Created by Zhen Peng on 6/22/2020.
 //
 
 #include <iostream>
@@ -21,7 +21,8 @@
 //#include "../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.202004131634.better_merge.h"
 //#include "../core/Searching.202005271122.choosing_m.h"
-#include "../core/Searching.202006191549.nested_parallel.h"
+//#include "../core/Searching.202006191549.nested_parallel.h"
+#include "../core/Searching.202006222053.subsearch.h"
 
 void usage(char *argv[])
 {

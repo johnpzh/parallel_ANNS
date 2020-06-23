@@ -1,5 +1,5 @@
-#PBS -N seq_merge
-#PBS -l walltime=00:30:00
+#PBS -N batch_perf
+#PBS -l walltime=03:00:00
 #PBS -l nodes=1:ppn=40
 #PBS -m abe
 #PBS -A PGS0218
@@ -10,4 +10,4 @@
 
 cd /users/PGS0218/zpeng01/pppp/clion/panns_mac/cmake-build-release
 
-../scripts/performance_engine.sh ../scripts/profile.pitzer.profile_para_top_m.sequential_merge.sh seq_merge 3 4 11 9 4 /users/PGS0218/zpeng01/data
+../scripts/performance_engine.sh ../scripts/profile.pitzer.profile_para_top_m.nested_batch_size.sh nested_batch_size2 3 4 11 9 4 /users/PGS0218/zpeng01/data
