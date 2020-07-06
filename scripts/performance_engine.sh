@@ -28,10 +28,10 @@ python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.computa
 python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.recall.txt ${repeats} ${loc_prec}
 python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.queries_per_second.txt ${repeats} ${loc_qps}
 
-# Backup
-app_name=$(basename ${app} .sh)
-cp output.${tag}.raw.txt output.${tag}.${app_name}.raw.txt
-cp output.${tag}.runtime.txt output.${tag}.${app_name}.runtime.txt
-cp output.${tag}.computation.txt output.${tag}.${app_name}.computation.txt
-cp output.${tag}.recall.txt output.${tag}.${app_name}.recall.txt
-cp output.${tag}.queries_per_second.txt output.${tag}.${app_name}.queries_per_second.txt
+## Backup
+#app_name=$(basename ${app} .sh)
+#cp output.${tag}.raw.txt output.${tag}.${app_name}.raw.txt
+#cp output.${tag}.runtime.txt output.${tag}.${app_name}.runtime.txt
+#cp output.${tag}.computation.txt output.${tag}.${app_name}.computation.txt
+#cp output.${tag}.recall.txt output.${tag}.${app_name}.recall.txt
+#cp output.${tag}.queries_per_second.txt output.${tag}.${app_name}.queries_per_second.txt

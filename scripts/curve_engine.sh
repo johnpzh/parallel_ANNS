@@ -25,9 +25,9 @@ python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.query-p
 python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.accuracy.txt ${repeats} ${loc_accry}
 python3 ../scripts/combine_two_cols.py output.${tag}.query-per-second.txt output.${tag}.accuracy.txt output.${tag}.curve.txt
 
-# Backup
-app_name=$(basename ${app} .sh)
-cp output.${tag}.raw.txt output.${tag}.${app_name}.raw.txt
-cp output.${tag}.query-per-second.txt output.${tag}.${app_name}.query-per-second.txt
-cp output.${tag}.accuracy.txt output.${tag}.${app_name}.accuracy.txt
-cp output.${tag}.curve.txt output.${tag}.${app_name}.curve.txt
+## Backup
+#app_name=$(basename ${app} .sh)
+#cp output.${tag}.raw.txt output.${tag}.${app_name}.raw.txt
+#cp output.${tag}.query-per-second.txt output.${tag}.${app_name}.query-per-second.txt
+#cp output.${tag}.accuracy.txt output.${tag}.${app_name}.accuracy.txt
+#cp output.${tag}.curve.txt output.${tag}.${app_name}.curve.txt

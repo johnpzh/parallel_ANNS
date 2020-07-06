@@ -2,6 +2,45 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
+Queue Selection_idea(
+            Graph G,
+            Vertex P, // The start/entry point
+            Query Q, // The query
+            Int M, // Some value M
+            Int L, // Candidate pool/queue size
+            Int K, // Return pool/queue size
+            Int T // Number of threads
+)
+{
+    Local Queues Ss = T priority queues whose capacity are L;
+    // Select initial vertices to fill Queue S.
+    Initialize Ss using neighbors of Vertex P and other random vertices if necessary;
+    Sort every queue Ss[t] according to distances to Query Q;
+
+    while (Any Queue Ss[t] contains unchecked elements) {
+        for (every thread t) {
+            A Set P = First M unchecked candidates in Queue Ss[t];
+            for (every Candidate C in Set P) {
+                Mark Candidate C as checked;
+                for (every unvisited Neighbor N of Candidate C) {
+                    Mark Neighbor N as visited;
+                    Compute the distance between Neighbor N and Query Q;
+                    if (distance(N, Q) > Ss[t].last()) // If N to Q is even further than S's longest distance
+                        continue;
+                    Insert Neighbor N into Queue Ss[t];
+                }
+            }
+        }
+        Lth = the L-th minimum elements in Ss;
+        for (every thread t) {
+            Ss[t] drops any elements larger then Lth;
+        }
+    }
+    Copy top-K element in to set S;
+
+    return S;
+}
+
 Queue Collector-Idea(
             Graph G,
             Vertex P, // The start/entry point

@@ -20,8 +20,8 @@
 //#include "../core/Searching.202002201424.parallel_merge_local_queues.h"
 //#include "../core/Searching.202003021000.profile_para_top_m_search.h"
 //#include "../core/Searching.202004131634.better_merge.h"
-//#include "../core/Searching.202005271122.choosing_m.h"
-#include "../core/Searching.202006191549.nested_parallel.h"
+#include "../core/Searching.202005271122.choosing_m.h"
+//#include "../core/Searching.202006191549.nested_parallel.h"
 
 void usage(char *argv[])
 {
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
     int num_threads = strtoull(argv[9], nullptr, 0);
     engine.num_threads_ = num_threads;
-    engine.num_threads_intra_query_ = num_threads;
+//    engine.num_threads_intra_query_ = num_threads;
     omp_set_num_threads(num_threads);
 
     unsigned M_middle = strtoull(argv[10], nullptr, 0);
@@ -133,21 +133,7 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_with_top_m_merge_queues_global_threshold(
-                            M_middle,
-                            value_M,
-                            q_i,
-                            K,
-                            L,
-                            set_L,
-                            init_ids,
-                            set_K_list[q_i],
-                            local_queue_length, // Maximum size of local queue
-                            base_set_L,
-                            local_queues_ends, // Sizes of local queue
-                            top_m_candidates,
-                            is_visited);
-//                    engine.para_search_with_top_m_merge_queues_middle_m(
+//                    engine.para_search_with_top_m_merge_queues_global_threshold(
 //                            M_middle,
 //                            value_M,
 //                            q_i,
@@ -161,6 +147,20 @@ int main(int argc, char **argv)
 //                            local_queues_ends, // Sizes of local queue
 //                            top_m_candidates,
 //                            is_visited);
+                    engine.para_search_with_top_m_merge_queues_middle_m(
+                            M_middle,
+                            value_M,
+                            q_i,
+                            K,
+                            L,
+                            set_L,
+                            init_ids,
+                            set_K_list[q_i],
+                            local_queue_length, // Maximum size of local queue
+                            base_set_L,
+                            local_queues_ends, // Sizes of local queue
+                            top_m_candidates,
+                            is_visited);
                 }
 //                {
 //                    exit(1);
@@ -256,8 +256,8 @@ int main(int argc, char **argv)
                            "GFLOPS: %f "
                            "local_queue_length: %u "
                            "M_middle: %u "
-                           "merge_time(s.): %f "
-                           "num_local_elements: %lu\n",
+                           "merge_time(s.): %f\n",
+//                           "num_local_elements: %lu\n",
 //                           local_queue_length,
                            num_threads,
                            value_M,
@@ -276,11 +276,11 @@ int main(int argc, char **argv)
                            data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                            local_queue_length,
                            M_middle,
-                           engine.time_merge_,
-                           engine.number_local_elements_);
+                           engine.time_merge_);
+//                           engine.number_local_elements_);
                     engine.count_distance_computation_ = 0;
                     engine.time_merge_ = 0;
-                    engine.number_local_elements_ = 0;
+//                    engine.number_local_elements_ = 0;
 //                    cache_miss_rate.print();
                 }
 //            { // Percentage of Sharing

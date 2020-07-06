@@ -77,12 +77,22 @@ int main(int argc, char **argv)
     unsigned M_middle = strtoull(argv[10], nullptr, 0);
     unsigned threads_intra_query = strtoull(argv[11], nullptr, 0);
     unsigned query_batch_size = strtoull(argv[12], nullptr, 0);
-    engine.num_threads_intra_query_ = threads_intra_query;
-    engine.num_threads_inter_query_ = num_threads / threads_intra_query;
+
+
     if (num_threads < threads_intra_query) {
-        threads_intra_query = num_threads;
-        engine.num_threads_inter_query_ = 1;
+        fprintf(stderr, "Error: num_threads %u is smaller than threads_intra_query %u\n",
+                num_threads, threads_intra_query);
+        exit(EXIT_FAILURE);
     }
+    unsigned threads_inter = num_threads / threads_intra_query;
+    engine.num_threads_intra_ = threads_intra_query;
+    engine.num_threads_inter_ = threads_inter;
+//    if (num_threads < threads_intra_query) {
+//        threads_intra_query = num_threads;
+//        threads_inter = 1;
+//        engine.num_threads_intra_ = threads_intra_query;
+//        engine.num_threads_inter_ = 1;
+//    }
 
             unsigned local_queue_length = L;
             const unsigned base_set_L = (threads_intra_query - 1) * local_queue_length;
@@ -261,8 +271,8 @@ int main(int argc, char **argv)
 //                           engine.time_merge_,
 //                           engine.time_insert_,
 //                           engine.time_compare_minimum_,
-                           engine.num_threads_intra_query_,
-                           engine.num_threads_inter_query_,
+                           engine.num_threads_intra_,
+                           engine.num_threads_inter_,
                            query_batch_size);
                     engine.count_distance_computation_ = 0;
 //                    engine.time_merge_ = 0;
