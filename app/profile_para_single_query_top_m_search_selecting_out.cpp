@@ -27,13 +27,13 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <global_L> <K> <result_path> <value_M_max> <true_NN_file> <num_threads> <local_L>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -47,14 +47,30 @@ int main(int argc, char **argv)
 
 //    engine.build_opt_graph();
 
-    unsigned local_L = strtoull(argv[4], nullptr, 0);
+    const unsigned global_L = strtoull(argv[4], nullptr, 0);
 //    unsigned L = strtoull(argv[4], nullptr, 0);
-    unsigned K = strtoull(argv[5], nullptr, 0);
-    unsigned M_max = strtoull(argv[7], nullptr, 0);
-    if (local_L < K) {
-        fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", local_L, K);
+    const unsigned K = strtoull(argv[5], nullptr, 0);
+    if (global_L < K) {
+        fprintf(stderr, "Error: search_L %u is smaller than search_K %u.\n", global_L, K);
         exit(EXIT_FAILURE);
     }
+    const unsigned M_max = strtoull(argv[7], nullptr, 0);
+    const int num_threads = strtoull(argv[9], nullptr, 0);
+    engine.num_threads_ = num_threads;
+    omp_set_num_threads(num_threads);
+    const unsigned local_L = strtoull(argv[10], nullptr, 0);
+    const unsigned initial_queue_end = (global_L - 1) / num_threads + 1;
+    const unsigned total_L = initial_queue_end * num_threads;
+    if (local_L < initial_queue_end) {
+        fprintf(stderr, "Error: local_L %u is too small to hold %u initial_queue_end in every thread. "
+                        "(global_L: %u num_threads: %u total_L: %u)\n",
+                local_L,
+                initial_queue_end,
+                global_L, num_threads, total_L);
+        exit(EXIT_FAILURE);
+    }
+//    unsigned total_L = num_threads * local_L;
+
 //    if (K < M_max) {
 ////        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
 ////        exit(EXIT_FAILURE);
@@ -66,38 +82,34 @@ int main(int argc, char **argv)
             argv[8],
             true_nn_list);
 
-    unsigned data_dimension = engine.dimension_;
-    unsigned points_num = engine.num_v_;
-    unsigned query_num = engine.num_queries_;
+    const unsigned data_dimension = engine.dimension_;
+    const unsigned points_num = engine.num_v_;
+    const unsigned query_num = engine.num_queries_;
 
 //    int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-    int num_threads = strtoull(argv[9], nullptr, 0);
-    engine.num_threads_ = num_threads;
-    omp_set_num_threads(num_threads);
 
-    unsigned total_L = num_threads * local_L;
 //            unsigned local_queue_length = L;
 //            unsigned base_set_L = (num_threads - 1) * local_queue_length;
 //            if (!local_queue_length) {
 //                local_queue_length = 1;
 //            }
-            unsigned value_M = M_max;
-            unsigned warmup_max = 1;
+            const unsigned value_M = M_max;
+            const unsigned warmup_max = 4;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(total_L);
-                std::vector<PANNS::Candidate> set_L(total_L); // Return set
+                std::vector<PANNS::Candidate> set_L(local_L * num_threads); // Return set
 //                std::vector<PANNS::idi> init_ids(L);
 //                std::vector<PANNS::Candidate> set_L(L); // Return set
                 std::vector<PANNS::idi> local_queues_bases(num_threads);
                 for (int t_i = 0; t_i < num_threads; ++t_i) {
                     local_queues_bases[t_i] = t_i * local_L;
                 }
-                std::vector<PANNS::idi> local_queues_lengths(num_threads, local_L);
+                std::vector<PANNS::idi> local_queues_ends(num_threads, initial_queue_end);
                 boost::dynamic_bitset<> is_visited(points_num);
                 std::vector< std::vector<PANNS::idi> > top_m_candidates_list(num_threads,
                                                                             std::vector<PANNS::idi>(value_M));
@@ -111,13 +123,15 @@ int main(int argc, char **argv)
                             value_M,
                             q_i,
                             K,
-                            total_L,
+                            global_L,
                             local_L,
+                            total_L,
+                            initial_queue_end,
                             set_L,
                             init_ids,
                             set_K_list[q_i],
                             local_queues_bases,
-                            local_queues_lengths,
+                            local_queues_ends,
                             top_m_candidates_list,
                             is_visited);
 //                    engine.para_search_with_top_m_subsearch_v0(
@@ -210,7 +224,7 @@ int main(int argc, char **argv)
                     printf(
                            "num_threads: %d "
                            "M: %u "
-                           "local_L: %u "
+                           "global_L: %u "
                            "runtime(s.): %f "
                            "computation: %lu "
                            "K: %u "
@@ -225,12 +239,13 @@ int main(int argc, char **argv)
                            "GFLOPS: %f "
 //                           "local_queue_length: %u "
 //                           "M_middle: %u "
-                           "merge_time(s.): %f \n",
+                           "local_L: %u "
+                           "merge(s.): %f \n",
 //                           "memmove_time(s.): %f\n",
 //                           "num_local_elements: %lu\n",
                            num_threads,
                            value_M,
-                           local_L,
+                           global_L,
                            diff.count(),
                            engine.count_distance_computation_,
                            K,
@@ -245,6 +260,7 @@ int main(int argc, char **argv)
                            data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
 //                           local_queue_length,
 //                           M_middle,
+                           local_L,
                            engine.time_merge_);
 //                           time_memmove);
 //                           engine.number_local_elements_);

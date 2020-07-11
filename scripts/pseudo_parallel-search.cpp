@@ -2,7 +2,7 @@
 // Created by Zhen Peng on 9/26/19.
 //
 
-Queue Selection_idea(
+Queue Selecting_Lth_idea(
             Graph G,
             Vertex P, // The start/entry point
             Query Q, // The query
@@ -13,30 +13,31 @@ Queue Selection_idea(
 )
 {
     Local Queues Ss = T priority queues whose capacity are L;
-    // Select initial vertices to fill Queue S.
-    Initialize Ss using neighbors of Vertex P and other random vertices if necessary;
+    // Select initial vertices to fill Queue Ss.
+    Initialize Ss by only L vertices that are neighbors of Vertex P and other random vertices if necessary;
     Sort every queue Ss[t] according to distances to Query Q;
+    Lth = the L-th minimum elements in all Ss;
 
     while (Any Queue Ss[t] contains unchecked elements) {
         for (every thread t) {
-            A Set P = First M unchecked candidates in Queue Ss[t];
+            A Set P = First M/T unchecked candidates in Queue Ss[t];
             for (every Candidate C in Set P) {
                 Mark Candidate C as checked;
                 for (every unvisited Neighbor N of Candidate C) {
                     Mark Neighbor N as visited;
                     Compute the distance between Neighbor N and Query Q;
-                    if (distance(N, Q) > Ss[t].last()) // If N to Q is even further than S's longest distance
+                    if (distance(N, Q) > Lth) // If N to Q is even further than S's longest distance
                         continue;
                     Insert Neighbor N into Queue Ss[t];
                 }
             }
         }
-        Lth = the L-th minimum elements in Ss;
+        Lth = the L-th minimum elements in all Ss;
         for (every thread t) {
-            Ss[t] drops any elements larger then Lth;
+            Ss[t] drops any elements larger than Lth;
         }
     }
-    Copy top-K element in to set S;
+    Copy top-K elements from Ss into set S;
 
     return S;
 }
