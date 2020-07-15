@@ -97,7 +97,7 @@ int main(int argc, char **argv)
                 printf("L: %u "
                        "search_time(s.): %f "
                        //                       "time_distance_computation: %f "
-                       "count_distance_computation: %lu "
+                       "computation: %lu "
                        "K: %u "
                        "Volume: %u "
                        "Dimension: %u "
@@ -105,7 +105,9 @@ int main(int argc, char **argv)
                        "query_per_sec: %f "
                        "average_latency(ms.): %f "
                        "P@100: %f "
-                       "P@1: %f\n",
+                       "P@1: %f "
+                       "addtime(s.): %f "
+                       "addcount: %lu\n",
                        L,
                        diff.count(),
 //                       index.time_distance_computation,
@@ -118,10 +120,14 @@ int main(int argc, char **argv)
                        query_num / diff.count(),
                        diff.count() * 1000 / query_num,
                        recalls[100],
-                       recalls[1]);
+                       recalls[1],
+                       engine.time_add_to_queue_,
+                       engine.count_add_to_queue_);
 //                index.time_distance_computation = 0.0;
 //                    index.count_distance_computation = 0;
                 engine.count_distance_computation_ = 0;
+                engine.time_add_to_queue_ = 0;
+                engine.count_add_to_queue_ = 0;
             }
             PANNS::DiskIO::save_result(argv[6], set_K_list);
         }

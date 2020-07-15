@@ -16,22 +16,24 @@ Queue SimpleSearch_using_two_queues(
         Int K) // Results size
 {
     R = The result queue of capacity L; // A priority queue, storing closest L vertices that have been visited.
-    W = The worklist queue; // A priority queue, storing unvisited vertices
+    W = The worklist queue of capacity L; // A priority queue, storing unvisited vertices
     R = empty; W = empty;
 
     // Initilzation
     Compute dist(P, Q);
     Add P into W;
+    Mark P as visited;
     for (every neighbor N of P) {
         Compute dist(N, Q);
         Add N into W;
+        Mark N as visited;
     }
     is_finished = false;
 
     while (!is_finished) {
         Vertex V = W[0]; // V is the closest unvisited vertex
         Remove W[0] from W;
-        Mark V as visited;
+//        Mark V as visited;
         Add V into R; // Try to add V to R
         if (Successfully added V into R) {
             is_finished = false;
@@ -41,6 +43,7 @@ Queue SimpleSearch_using_two_queues(
         // Access all neighbors of V
         for (every neighbor N of V) {
             if (N is unvisited) {
+                Mark N as visited;
                 Compute dist(N, Q);
                 Add N into W;
             }

@@ -162,8 +162,10 @@ public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
+    uint64_t count_add_to_queue_ = 0;
     distf dist_min_ = 0;
     distf dist_max_ = 0;
+    double time_add_to_queue_ = 0;
 //    L3CacheMissRate profile_miss_rate;
 
     ~Searching()
@@ -897,6 +899,14 @@ inline void Searching::search_in_sequential(
         set_L[i] = Candidate(v_id, dist, false); // False means not checked.
     }
     std::sort(set_L.begin(), set_L.begin() + L);
+//    {//test
+//        for (idi e_i = 0; e_i < L; ++e_i) {
+//            printf("query_id: %u "
+//                   "init[%u]: (%u %f)\n",
+//                   query_id,
+//                   e_i, set_L[e_i].id_, set_L[e_i].distance_);
+//        }
+//    }
     idi k = 0; // Index of every queue's first unchecked candidate.
     idi tmp_count = 0; // for debug
 
@@ -943,7 +953,10 @@ inline void Searching::search_in_sequential(
 //                }
                 Candidate cand(nb_id, dist, false);
                 // Insert into the queue
+                ++count_add_to_queue_;
+                time_add_to_queue_ -= WallTimer::get_time_mark();
                 idi r = insert_into_queue(set_L, L, cand);
+                time_add_to_queue_ += WallTimer::get_time_mark();
                 if (r < nk) {
                     nk = r;
                 }
@@ -973,9 +986,15 @@ inline void Searching::search_in_sequential(
     }
 
 //    {//test
-//        if (0 == query_id) {
-//            exit(1);
+//        for (idi e_i = 0; e_i < L; ++e_i) {
+//            printf("query_id: %u "
+//                   "[%u]: (%u %f)\n",
+//                   query_id,
+//                   e_i, set_L[e_i].id_, set_L[e_i].distance_);
 //        }
+////        if (100 == query_id) {
+////            exit(1);
+////        }
 //    }
 }
 

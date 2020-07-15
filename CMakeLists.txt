@@ -360,3 +360,7 @@ target_link_libraries(profile_para_simple_search_subsearch PRIVATE ${Boost_LIBRA
 add_executable(profile_para_single_query_top_m_search_selecting_out app/profile_para_single_query_top_m_search_selecting_out.cpp)
 target_compile_options(profile_para_single_query_top_m_search_selecting_out PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_top_m_search_selecting_out PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_seq_simple_search_two_queues app/profile_seq_simple_search_two_queues.cpp)
+target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

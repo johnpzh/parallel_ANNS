@@ -7455,6 +7455,268 @@ inline void Searching::para_search_with_top_m_subsearch_v1(
 ////    }
 //}
 
+
+//inline void Searching::para_search_with_top_m_subsearch_v2(
+//        const idi local_M_max,
+//        const idi query_id,
+//        const idi K,
+//        const idi global_L,
+//        const idi local_L,
+//        const idi total_L,
+//        const idi init_queue_end,
+//        std::vector<Candidate> &set_L,
+//        const std::vector<idi> &init_ids,
+//        std::vector<idi> &set_K,
+//        const std::vector<idi> &local_queues_bases,
+//        std::vector<idi> &local_queues_ends,
+//        std::vector< std::vector<idi> > &top_m_candidates_list,
+//        std::vector<idi> &top_m_ends,
+//        boost::dynamic_bitset<> &is_visited)
+//{
+//    uint64_t tmp_count_computation = 0;
+//    {// Initialization
+//        // is_visited flag array
+////#pragma omp parallel for
+//// Cannot use OMP for bit array is_visited!
+//        for (idi c_i = 0; c_i < total_L; ++c_i) {
+//            is_visited[init_ids[c_i]] = 1;
+//        }
+//
+//        const dataf *query_data = queries_load_ + query_id * dimension_;
+//#pragma omp parallel for
+//        for (idi v_i = 0; v_i < total_L; ++v_i) {
+//            idi v_id = init_ids[v_i];
+//            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+//        }
+//
+//        // Get the distances of all candidates, store in the set set_L.
+//#pragma omp parallel for reduction(+ : tmp_count_computation)
+//        for (int q_i = 0; q_i < num_threads_; ++q_i) {
+//            idi local_queue_base = local_queues_bases[q_i];
+//            idi init_ids_base = q_i * init_queue_end;
+//            idi init_ids_bound = init_ids_base + init_queue_end;
+//            for (idi id_i = init_ids_base; id_i < init_ids_bound; ++id_i) {
+//                idi v_id = init_ids[id_i];
+//                auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+//                dataf norm = *v_data++;
+//                ++tmp_count_computation;
+//                distf dist = compute_distance_with_norm(v_data, query_data, norm);
+//                set_L[local_queue_base++] = Candidate(v_id, dist, false); // False means not checked.
+//            }
+//            local_queues_ends[q_i] = init_queue_end;
+//        }
+//        count_distance_computation_ += tmp_count_computation;
+//        tmp_count_computation = 0;
+//
+////#pragma omp parallel for reduction(+ : tmp_count_computation)
+////        for (unsigned i = 0; i < total_L; i++) {
+////            unsigned v_id = init_ids[i];
+////            auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+////            dataf norm = *v_data++;
+////            ++tmp_count_computation;
+////            distf dist = compute_distance_with_norm(v_data, query_data, norm);
+////            set_L[i] = Candidate(v_id, dist, false); // False means not checked.
+////        }
+////        count_distance_computation_ += tmp_count_computation;
+////        tmp_count_computation = 0;
+//    }
+//
+//    // Searching
+//    if (num_threads_ == 1) { // Single threads
+////        local_queues_lengths[0] = local_L;
+//        std::sort(
+//                set_L.begin(),
+//                set_L.end());
+//        subsearch_with_top_m(
+//                local_M_max,
+//                query_id,
+//                local_L,
+//                set_L,
+//                0,
+//                local_queues_ends[0],
+//                top_m_candidates_list[0],
+//                is_visited,
+//                tmp_count_computation);
+//        count_distance_computation_ += tmp_count_computation;
+//        tmp_count_computation = 0;
+//    } else { // Multiple threads
+////        std::fill(local_queues_lengths.begin(), local_queues_lengths.end(), local_L);
+//        const dataf *query_data = queries_load_ + query_id  * dimension_;
+//        const idi num_queues = num_threads_;
+//#pragma omp parallel for
+//        for (idi q_i = 0; q_i < num_queues; ++q_i) {
+//            idi local_queue_base = local_queues_bases[q_i];
+//            std::sort(
+//                    set_L.begin() + local_queue_base,
+//                    set_L.begin() + local_queue_base + init_queue_end);
+//        }
+//        distf bound_lth = FLT_MAX;
+//        for (idi q_i = 0; q_i < num_queues; ++q_i) {
+//            bound_lth = std::min(bound_lth, set_L[local_queues_bases[q_i] + init_queue_end - 1].distance_);
+//        }
+////        const idi local_queue_length = (L - 1) / num_queues + 1;
+//        std::vector<idi> ks(num_queues, 0);
+//        idi iter = 0;
+//        idi local_M = 1;
+//        uint8_t not_finished = 1;
+//        while (not_finished) {
+//            not_finished = 0;
+//            ++iter;
+//#pragma omp parallel for reduction(+ : tmp_count_computation)
+//            for (idi q_i = 0; q_i < num_queues; ++q_i) {
+//                idi &k = ks[q_i];
+//                idi &local_queue_end = local_queues_ends[q_i];
+//                auto &local_top_m_candidates = top_m_candidates_list[q_i];
+//                if (k >= local_queue_end) {
+//                    continue;
+//                }
+//                not_finished = 1;
+//                const idi local_queue_base = local_queues_bases[q_i];
+//
+//                subsearch_top_m_for_one_iteration(
+//                        bound_lth,
+//                        iter,
+//                        k,
+//                        local_M,
+//                        query_id,
+//                        query_data,
+//                        local_L,
+//                        set_L,
+//                        local_queue_base,
+//                        local_queue_end,
+//                        local_top_m_candidates,
+//                        is_visited,
+//                        tmp_count_computation);
+//            }
+//            count_distance_computation_ += tmp_count_computation;
+//            tmp_count_computation = 0;
+//            {// Setecting and update local_queues_lengths
+//                time_merge_ -= WallTimer::get_time_mark();
+//                bound_lth = selecting_top_L_seq(
+//                        set_L,
+//                        global_L,
+////                        local_L,
+//                        num_queues,
+//                        local_queues_bases,
+//                        local_queues_ends);
+//                time_merge_ += WallTimer::get_time_mark();
+////                {// local_queues_ends
+////                    printf("query_id: %u "
+////                           "iter: %u",
+//////                           "local_queues_ends:",
+////                           query_id,
+////                           iter);
+////                    for (idi q_i = 0; q_i < num_queues; ++q_i) {
+////                        printf(" [%u]: %u",
+////                                q_i,
+////                                local_queues_ends[q_i]);
+////                    }
+////                    printf("\n");
+////                }
+//            }
+//            {// Scale M
+//                if (local_M < local_M_max) {
+//                    local_M <<= 1;
+//                }
+////                else {
+////                    local_M = value_M_max;
+////                }
+//            }
+//        }
+//    }
+//
+//    time_merge_ -= WallTimer::get_time_mark();
+//    {// Return the results to set_K
+//        std::vector<idi> pointer(num_threads_, 0);
+//        // get the first
+//        distf min_dist = FLT_MAX;
+//        idi min_q_i;
+//        idi min_sub;
+//        idi last_id;
+//        for (int q_i = 0; q_i < num_threads_; ++q_i) {
+//            if (pointer[q_i] >= local_queues_ends[q_i]) {
+//                continue;
+//            }
+//            idi sub = pointer[q_i] + local_queues_bases[q_i];
+//            distf tmp_dist = set_L[sub].distance_;
+//            if (tmp_dist < min_dist) {
+//                min_dist = tmp_dist;
+//                min_q_i = q_i;
+//                min_sub = sub;
+//            }
+//        }
+//        set_K[0] = set_L[min_sub].id_;
+//        ++pointer[min_q_i];
+//        last_id = set_K[0];
+//
+//        bool is_finished = false;
+//        idi k_i = 1;
+//        while (k_i < K && !is_finished) {
+//            is_finished = true;
+//            min_dist = FLT_MAX;
+//            for (int q_i = 0; q_i < num_threads_; ++q_i) {
+//                const idi local_queue_end = local_queues_ends[q_i];
+//                if (pointer[q_i] >= local_queue_end) {
+//                    continue;
+//                }
+//                is_finished = false;
+//                idi sub = pointer[q_i] + local_queues_bases[q_i];
+//                while (set_L[sub].id_ == last_id
+//                       && pointer[q_i] < local_queue_end) {
+//                    ++pointer[q_i];
+//                    sub = pointer[q_i] + local_queues_bases[q_i];
+//                }
+//                if (pointer[q_i] >= local_queue_end) {
+//                    continue;
+//                }
+////                if (set_L[sub].id_ == last_id) {
+////                    // Duplicate
+////                    ++pointer[q_i];
+////                    continue;
+////                }
+//                distf tmp_dist = set_L[sub].distance_;
+//                if (tmp_dist < min_dist) {
+//                    min_dist = tmp_dist;
+//                    min_q_i = q_i;
+//                    min_sub = sub;
+//                }
+//            }
+//            set_K[k_i] = set_L[min_sub].id_;
+//            ++pointer[min_q_i];
+//            ++k_i;
+//        }
+//    }
+//    time_merge_ += WallTimer::get_time_mark();
+////    {// Return the results to set_K
+////        // How to deal with duplicate?
+////        idi last_id = set_L[0].id_;
+////        set_K[0] = last_id;
+////        idi k_i = 1;
+////        idi l_i = 1;
+////        while (k_i < K && l_i < L) {
+////            if (last_id == set_L[l_i].id_) {
+////                ++l_i;
+////                continue;
+////            }
+////            last_id = set_L[l_i++].id_;
+////            set_K[k_i++] = last_id;
+////        }
+////    }
+//
+//    {// Reset
+////        std::fill(is_visited.begin(), is_visited.end(), 0);
+//        is_visited.reset();
+////        is_visited.clear_all();
+////        std::fill(local_queues_ends.begin(), local_queues_ends.end(), init_queue_end);
+//    }
+//
+////    {//test
+////        if (3 == query_id) {
+////            exit(1);
+////        }
+////    }
+//}
+
 /*
  * 6/27/2020-12:33
  * Do searching on the local_set_L
