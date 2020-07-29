@@ -8,15 +8,15 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_CXX_STANDARD 20)
 # C++14
 #set_property(GLOBAL PROPERTY CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Boost
-find_package(Boost)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 # OpenMP
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 
 # Debug Options
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
@@ -362,5 +362,105 @@ target_compile_options(profile_para_single_query_top_m_search_selecting_out PRIV
 target_link_libraries(profile_para_single_query_top_m_search_selecting_out PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(profile_seq_simple_search_two_queues app/profile_seq_simple_search_two_queues.cpp)
-target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+if(FOUND_GCC930 AND FOUND_CPP6)
+#    message(KNL!!!)
+    ## For KNL
+    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+else()
+    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION})
+    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+endif()
+
+add_executable(profile_para_simple_search_two_global_queues app/profile_para_simple_search_two_global_queues.cpp)
+if(FOUND_GCC930 AND FOUND_CPP6)
+#    message(KNL!!!)
+    ## For KNL
+    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+else()
+    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION})
+    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES})
+#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+endif()
+
+#add_executable(profile_para_simple_search_two_global_queues.bak app/profile_para_simple_search_two_global_queues.bak.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+#    #    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_para_simple_search_two_global_queues.bak PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.bak PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+#    target_compile_options(profile_para_simple_search_two_global_queues.bak PRIVATE ${CXX_OPTION})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.bak PRIVATE ${Boost_LIBRARIES})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
+
+#add_executable(profile_para_simple_search_two_global_queues.atomic app/profile_para_simple_search_two_global_queues.atomic.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+#    #    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_para_simple_search_two_global_queues.atomic PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.atomic PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+#    target_compile_options(profile_para_simple_search_two_global_queues.atomic PRIVATE ${CXX_OPTION})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.atomic PRIVATE ${Boost_LIBRARIES})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
+
+add_executable(profile_para_simple_search_two_global_queues.workbuffer app/profile_para_simple_search_two_global_queues.workbuffer.cpp)
+if(FOUND_GCC930 AND FOUND_CPP6)
+    #    message(KNL!!!)
+    ## For KNL
+    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+else()
+    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION})
+    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES})
+    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+endif()
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.mth app/profile_para_single_query_top_m_search_selecting_out.mth.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+#    #    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_para_single_query_top_m_search_selecting_out.mth PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_para_single_query_top_m_search_selecting_out.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.mth PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.seq_par.mth app/profile_para_single_query_top_m_search_selecting_out.seq_par.mth.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.seq_par.mth PRIVATE ${CXX_OPTION})
+#target_compile_options(profile_para_single_query_top_m_search_selecting_out.seq_par.mth PRIVATE ${CXX_OPTION} -no-vec)
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.seq_par.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_middle_m.profile app/profile_para_single_query_top_m_search_middle_m.profile.cpp)
+target_compile_options(profile_para_single_query_top_m_search_middle_m.profile PRIVATE ${CXX_OPTION})
+#target_compile_options(profile_para_single_query_top_m_search_middle_m.profile PRIVATE ${CXX_OPTION} -no-vec)
+target_link_libraries(profile_para_single_query_top_m_search_middle_m.profile PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.profile.seq_par.mth app/profile_para_single_query_top_m_search_selecting_out.profile.seq_par.mth.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.profile.seq_par.mth PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.profile.seq_par.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.gather_top_m.seq_par.mth app/profile_para_single_query_top_m_search_selecting_out.gather_top_m.seq_par.mth.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.gather_top_m.seq_par.mth PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.gather_top_m.seq_par.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.profile.gather_top_m.seq_par.mth app/profile_para_single_query_top_m_search_selecting_out.profile.gather_top_m.seq_par.mth.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.profile.gather_top_m.seq_par.mth PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.profile.gather_top_m.seq_par.mth PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m.profile app/profile_para_single_query_top_m_search_selecting_out.only_gather_top_m.profile.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m.profile PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m.profile PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m app/profile_para_single_query_top_m_search_selecting_out.only_gather_top_m.cpp)
+target_compile_options(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_selecting_out.only_gather_top_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

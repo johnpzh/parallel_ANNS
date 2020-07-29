@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 7/12/2020.
+// Created by Zhen Peng on 7/18/2020.
 //
 
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
-#include <omp.h>
+//#include <omp.h>
 //#include "../include/papi_panns.h"
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.201912161559.set_for_queue.h"
@@ -28,14 +28,14 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <true_NN_file>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <true_NN_file> <num_threads>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 8) {
+    if (argc != 9) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -66,6 +66,9 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
+    int num_threads = strtoull(argv[8], nullptr, 0);
+    engine.num_threads_ = num_threads;
+
 //    int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
@@ -80,7 +83,7 @@ int main(int argc, char **argv)
 //                local_queue_length = 1;
 //            }
 //            unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 2;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
 //                {//test
 //                    engine.time_memmove_list_.resize(num_threads, 0);
@@ -107,7 +110,7 @@ int main(int argc, char **argv)
                         L,
                         is_visited);
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.simple_search_with_two_queues_seq(
+                    engine.simple_search_two_global_queues_para(
                             q_i,
                             L,
                             set_L,
@@ -140,7 +143,7 @@ int main(int argc, char **argv)
                 }
                 {// Basic output
                     printf(
-//                           "num_threads: %d "
+                           "num_threads: %d "
 //                           "M: %u "
                            "L: %u "
                            "runtime(s.): %f "
@@ -154,19 +157,19 @@ int main(int argc, char **argv)
                            "P@100: %f "
                            "P@1: %f "
                            "G/s: %f "
-                           "GFLOPS: %f "
-                           "addtime(s.): %f "
-                           "addcount: %lu \n",
+                           "GFLOPS: %f \n",
+//                           "addtime(s.): %f "
+//                           "addcount: %lu \n",
 //                           "local_queue_length: %u "
 //                           "M_middle: %u "
 //                           "merge_time(s.): %f \n",
 //                           "memmove_time(s.): %f\n",
 //                           "num_local_elements: %lu\n",
-//                           num_threads,
+                           num_threads,
 //                           value_M,
                            L,
                            diff.count(),
-                           engine.count_distance_computation_,
+                           engine.count_distance_computation_atomic_.load(),
                            K,
                            points_num,
                            data_dimension,
@@ -176,17 +179,17 @@ int main(int argc, char **argv)
                            recalls[100],
                            recalls[1],
                            data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
-                           data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
-                           engine.time_add_to_queue_,
-                           engine.count_add_to_queue_);
+                           data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count());
+//                           engine.time_add_to_queue_,
+//                           engine.count_add_to_queue_);
 //                           local_queue_length,
 //                           M_middle,
 //                           engine.time_merge_);
 //                           time_memmove);
 //                           engine.number_local_elements_);
-                    engine.count_distance_computation_ = 0;
-                    engine.time_add_to_queue_ = 0;
-                    engine.count_add_to_queue_ = 0;
+                    engine.count_distance_computation_atomic_ = 0;
+//                    engine.time_add_to_queue_ = 0;
+//                    engine.count_add_to_queue_ = 0;
 //                    engine.time_merge_ = 0;
 //                    engine.number_local_elements_ = 0;
 //                    cache_miss_rate.print();

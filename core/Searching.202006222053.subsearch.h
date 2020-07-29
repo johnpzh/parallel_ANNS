@@ -93,8 +93,8 @@ public:
     static idi add_into_queue(
             std::vector<PANNS::Candidate> &queue,
             const idi queue_start,
-            idi &queue_top,
-            const idi queue_size,
+            idi &queue_size,
+            const idi queue_capacity,
             const PANNS::Candidate &cand);
     static void add_into_queue_at(
             const Candidate &cand,
@@ -175,8 +175,18 @@ public:
             const idi global_L,
 //            const idi local_L,
             const idi num_queues,
-            const std::vector<idi> &local_queues_bases,
-            std::vector<idi> &local_queues_ends);
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes);
+    void selecting_unchecked_top_M_seq(
+            const idi query_id,
+            const idi iter,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &pointers_starts,
+            const idi value_M,
+            const idi num_queues,
+            const std::vector<idi> &local_queues_starts,
+            const std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &local_m_counts);
 //    idi merge_all_queues_all_together_in_sequential(
 //            std::vector<Candidate> &set_L,
 //            std::vector<idi> &local_queues_ends,
@@ -198,6 +208,9 @@ public:
 //    distf dist_min_ = 0;
 //    distf dist_max_ = 0;
     double time_merge_ = 0;
+    double time_select_ = 0;
+    double time_select_L_ = 0.0;
+    double time_select_M_ = 0.0;
 //    double time_initialization_ = 0;
 //    double time_sequential_phase_ = 0;
 //    double time_parallel_phase_ = 0;
@@ -207,6 +220,8 @@ public:
 //    std::vector<double> time_memmove_list_;
 //    L3CacheMissRate profile_miss_rate;
 //    uint64_t number_local_elements_ = 0;
+//    std::vector<idi> L_ids_;
+//    std::vector<idi> M_ids_;
 
     ~Searching()
     {
@@ -634,8 +649,8 @@ public:
             const idi query_id,
             const idi local_L,
             std::vector<Candidate> &set_L,
-            const idi base_set_L,
-            idi &set_L_end,
+            const idi set_L_start,
+            idi &set_L_size,
             std::vector<idi> &local_top_m_candidates,
             boost::dynamic_bitset<> &is_visited,
             uint64_t &local_count_distance_computation);
@@ -647,12 +662,12 @@ public:
             const dataf *query_data,
             const idi L,
             std::vector<Candidate> &set_L,
-            const idi set_L_base,
-            idi &set_L_end,
+            const idi set_L_start,
+            idi &set_L_size,
             std::vector<idi> &top_m_candidates,
             boost::dynamic_bitset<> &is_visited,
             uint64_t &count_distance_computation);
-    void subsearch_top_m_for_one_iteration(
+    void subsearch_top_m_for_one_iteration_lth(
             const distf bound_lth,
             const idi iter,
             idi &k_uc,
@@ -661,8 +676,23 @@ public:
             const dataf *query_data,
             const idi L,
             std::vector<Candidate> &set_L,
-            const idi set_L_base,
-            idi &set_L_end,
+            const idi set_L_start,
+            idi &set_L_size,
+            std::vector<idi> &top_m_candidates,
+            boost::dynamic_bitset<> &is_visited,
+            uint64_t &count_distance_computation);
+    void subsearch_top_m_for_one_iteration_lth_mth(
+            const distf bound_lth,
+//            const idi top_m_position,
+            const idi iter,
+            idi &k_uc,
+            const idi local_m_count,
+            const idi query_id,
+            const dataf *query_data,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const idi set_L_start,
+            idi &set_L_size,
             std::vector<idi> &top_m_candidates,
             boost::dynamic_bitset<> &is_visited,
             uint64_t &count_distance_computation);
@@ -693,6 +723,39 @@ public:
             std::vector<idi> &set_K,
             const std::vector<idi> &local_queues_bases,
             std::vector<idi> &local_queues_ends,
+            std::vector< std::vector<idi> > &top_m_candidates_list,
+            boost::dynamic_bitset<> &is_visited);
+    void para_search_with_top_m_subsearch_v2(
+            const idi local_M_max,
+            const idi query_id,
+            const idi K,
+            const idi global_L,
+            const idi local_L,
+            const idi total_L,
+            const idi init_queue_size,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &local_m_counts,
+            std::vector< std::vector<idi> > &top_m_candidates_list,
+            boost::dynamic_bitset<> &is_visited);
+    void para_search_with_top_m_subsearch_v3(
+            const idi local_M_max,
+            const idi local_M_middle,
+            const idi query_id,
+            const idi K,
+            const idi global_L,
+            const idi local_L,
+//        const idi total_L,
+//        const idi init_queue_size,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &local_m_counts,
             std::vector< std::vector<idi> > &top_m_candidates_list,
             boost::dynamic_bitset<> &is_visited);
     void subsearch_for_simple_search(
@@ -1541,67 +1604,45 @@ inline idi Searching::add_into_queue(
 inline idi Searching::add_into_queue(
         std::vector<PANNS::Candidate> &queue,
         const idi queue_start,
-        idi &queue_top, // The insertion location starting from queue_start
-        const idi queue_size, // The maximum capacity of queue, independent with queue_start.
+        idi &queue_size, // The insertion location starting from queue_start
+        const idi queue_capacity, // The maximum capacity of queue, independent with queue_start.
         const PANNS::Candidate &cand)
 {
-    if (0 == queue_top) {
-        queue[queue_start + queue_top++] = cand;
+    if (0 == queue_size) {
+        queue[queue_start + queue_size++] = cand;
         return 0;
     }
-    idi queue_end = queue_start + queue_top;
+    idi queue_end = queue_start + queue_size;
     // Find the insert location
     const auto it_loc = std::lower_bound(queue.begin() + queue_start, queue.begin() + queue_end, cand);
-//    auto it_loc = std::lower_bound(queue.begin(), queue.begin() + queue_top, cand);
+//    auto it_loc = std::lower_bound(queue.begin(), queue.begin() + queue_size, cand);
     idi insert_loc = it_loc - queue.begin();
 
     if (insert_loc != queue_end) {
         if (cand.id_ == it_loc->id_) {
             // Duplicate
-            return queue_size;
+            return queue_capacity;
         }
-        if (queue_top >= queue_size) { // Queue is full
-            --queue_top;
+        if (queue_size >= queue_capacity) { // Queue is full
+            --queue_size;
             --queue_end;
         }
     } else { // insert_loc == queue_end, insert at the end?
-        if (queue_top < queue_size) { // Queue is not full
+        if (queue_size < queue_capacity) { // Queue is not full
             // Insert at the end
             queue[insert_loc] = cand;
-            ++queue_top;
-            return queue_top - 1;
+            ++queue_size;
+            return queue_size - 1;
         } else { // Queue is full
-            return queue_size;
+            return queue_capacity;
         }
     }
-
-//    if (queue_top < queue_size) {
-//        // Queue is not full
-//        if (insert_loc == queue_end) {
-//            // Insert at the end
-//            queue[insert_loc] = cand;
-//            ++queue_top;
-//            return queue_top - 1;
-//        }
-//    } else {
-//        // Queue is full
-//        if (insert_loc == queue_end) {
-//            return queue_size;
-//        }
-//        --queue_top;
-//        --queue_end;
-//    }
-//
-//    if (cand.id_ == it_loc->id_) {
-//        // Duplicate
-//        return queue_size;
-//    }
     // Add into queue
     memmove(reinterpret_cast<char *>(queue.data() + insert_loc + 1),
             reinterpret_cast<char *>(queue.data() + insert_loc),
             (queue_end - insert_loc) * sizeof(Candidate));
     queue[insert_loc] = cand;
-    ++queue_top;
+    ++queue_size;
     return insert_loc - queue_start;
 }
 
@@ -2188,7 +2229,7 @@ inline idi Searching::merge_all_queues_para_array(
         const idi local_queue_length,
         const idi L)
 {
-    const idi num_queues = num_threads_;
+    const int num_queues = num_threads_;
     idi nk = L;
     int size = 1 << (static_cast<idi>(log2(num_queues)));
     idi log2size = static_cast<idi>(log2(size));
@@ -2408,7 +2449,7 @@ inline void Searching::merge_two_consecutive_queues_in_place(
         const idi base_2,
         const idi &length_2)
 {
-    idi tid = omp_get_thread_num();
+//    idi tid = omp_get_thread_num();
 
     idi index_1 = base_1;
     idi index_2 = base_2;
@@ -2612,10 +2653,9 @@ inline void Searching::merge_in_set_L(
 inline distf Searching::selecting_top_L_seq(
         std::vector<Candidate> &set_L,
         const idi global_L,
-//        const idi local_L,
         const idi num_queues,
-        const std::vector<idi> &local_queues_bases,
-        std::vector<idi> &local_queues_ends)
+        const std::vector<idi> &local_queues_starts,
+        std::vector<idi> &local_queues_sizes)
 {
     std::vector<idi> pointers(num_queues, 0);
 
@@ -2623,23 +2663,27 @@ inline distf Searching::selecting_top_L_seq(
     idi rank = 0;
     bool is_finished = false;
     distf min_dist = FLT_MAX;
-    distf min_q_i;
+    idi min_q_i;
+    idi min_id;
     while (rank < global_L) {
         is_finished = true;
-        bound_lth = min_dist;
         min_dist = FLT_MAX;
 
         for (idi q_i = 0; q_i < num_queues; ++q_i) {
-            if (pointers[q_i] >= local_queues_ends[q_i]) {
+            if (pointers[q_i] >= local_queues_sizes[q_i]) {
                 // q_i is finished
                 continue;
             }
             is_finished = false;
-            idi sub = pointers[q_i] + local_queues_bases[q_i];
-//            idi sub = pointers[q_i] + q_i * local_L;
+            idi sub = pointers[q_i] + local_queues_starts[q_i];
             distf tmp_dist = set_L[sub].distance_;
+            idi tmp_id = set_L[sub].id_;
             if (tmp_dist < min_dist) {
                 min_dist = tmp_dist;
+                min_id = tmp_id;
+                min_q_i = q_i;
+            } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                min_id = tmp_id;
                 min_q_i = q_i;
             }
         }
@@ -2651,12 +2695,86 @@ inline distf Searching::selecting_top_L_seq(
             }
             break;
         }
+        bound_lth = min_dist;
         ++pointers[min_q_i];
         ++rank;
     }
-    std::copy(pointers.begin(), pointers.end(), local_queues_ends.begin());
+    std::copy(pointers.begin(), pointers.end(), local_queues_sizes.begin());
 
     return bound_lth;
+}
+
+/*
+ * 7/24/2020-10:08
+ * Record for every queue the position that contains the top-M unchecked vertices.
+ * So the total expanded vertices should still be M, which means the computation should
+ * be the same with merging idea.
+ */
+inline void Searching::selecting_unchecked_top_M_seq(
+        const idi query_id,
+        const idi iter,
+        std::vector<Candidate> &set_L,
+        const std::vector<idi> &pointers_starts,
+        const idi value_M,
+        const idi num_queues,
+        const std::vector<idi> &local_queues_starts,
+        const std::vector<idi> &local_queues_sizes,
+        std::vector<idi> &local_m_counts)
+{
+
+    std::vector<idi> pointers(pointers_starts);
+//    std::vector<idi> pointers(num_queues, 0);
+    std::fill(local_m_counts.begin(), local_m_counts.end(), 0);
+    idi rank = 0;
+    bool is_finished = true;
+    distf min_dist = FLT_MAX;
+    idi min_q_i;
+    idi min_id;
+    while (rank < value_M) {
+        min_dist = FLT_MAX;
+
+        for (idi q_i = 0; q_i < num_queues; ++q_i) {
+            idi &pointer = pointers[q_i];
+            idi sub = pointer + local_queues_starts[q_i];
+//            {//test
+//                if (133 == query_id &&
+//                    3 == iter &&
+//                    321341 == set_L[sub].id_) {
+//                    printf("(%u %f)\n",
+//                            set_L[sub].id_, set_L[sub].distance_);
+//                }
+//            }
+            while (pointer < local_queues_sizes[q_i]
+                    && set_L[sub].is_checked_) {
+                ++pointer;
+                ++sub;
+            }
+            if (pointer >= local_queues_sizes[q_i]) {
+                // q_i is finished
+                continue;
+            }
+            is_finished = false;
+            distf tmp_dist = set_L[sub].distance_;
+            idi tmp_id = set_L[sub].id_;
+            if (tmp_dist < min_dist) {
+                min_dist = tmp_dist;
+                min_id = tmp_id;
+                min_q_i = q_i;
+            } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                min_id = tmp_id;
+                min_q_i = q_i;
+            }
+        }
+        if (!is_finished) {
+            is_finished = true;
+            ++pointers[min_q_i];
+            ++rank;
+            ++local_m_counts[min_q_i];
+        } else {
+            break;
+        }
+    }
+//    std::copy(pointers.begin(), pointers.end(), local_top_m_positions.begin());
 }
 
 inline void Searching::search_with_top_m(
@@ -6336,8 +6454,8 @@ inline void Searching::subsearch_with_top_m(
         const idi query_id,
         const idi local_L,
         std::vector<Candidate> &set_L,
-        const idi base_set_L,
-        idi &set_L_end,
+        const idi set_L_start,
+        idi &set_L_size,
         std::vector<idi> &local_top_m_candidates,
         boost::dynamic_bitset<> &is_visited,
         uint64_t &local_count_distance_computation)
@@ -6358,8 +6476,8 @@ inline void Searching::subsearch_with_top_m(
                 query_data,
                 local_L,
                 set_L,
-                base_set_L,
-                set_L_end,
+                set_L_start,
+                set_L_size,
                 local_top_m_candidates,
                 is_visited,
                 local_count_distance_computation);
@@ -6373,9 +6491,9 @@ inline void Searching::subsearch_with_top_m(
         }
     }
 //    {//test
-//        printf("base_set_L: %u "
+//        printf("set_L_start: %u "
 //               "local_count_distance_computation: %lu\n",
-//                base_set_L,
+//                set_L_start,
 //                local_count_distance_computation);
 //    }
 }
@@ -6482,26 +6600,27 @@ inline void Searching::subsearch_top_m_for_one_iteration(
         const dataf *query_data,
         const idi L,
         std::vector<Candidate> &set_L,
-        const idi set_L_base,
-        idi &set_L_end,
+        const idi set_L_start,
+        idi &set_L_size,
         std::vector<idi> &top_m_candidates,
         boost::dynamic_bitset<> &is_visited,
         uint64_t &count_distance_computation)
 {
-//    uint64_t count_iter_computation = 0;
-
     // Select M candidates
     idi top_m_candidates_end = 0;
     idi last_k = L;
 // Cannot use OpenMP here because this for-loop needs early break by the 2nd condition.
-    for (idi c_i = k_uc; c_i < set_L_end && top_m_candidates_end < value_M; ++c_i) {
-        idi index_set_L = c_i + set_L_base;
+    for (idi c_i = k_uc; c_i < set_L_size && top_m_candidates_end < value_M; ++c_i) {
+        idi index_set_L = c_i + set_L_start;
         if (set_L[index_set_L].is_checked_) {
             continue;
         }
         last_k = c_i; // Record the location of the last candidate selected.
         set_L[index_set_L].is_checked_ = true;
         top_m_candidates[top_m_candidates_end++] = set_L[index_set_L].id_;
+//        {//test
+//            M_ids_.push_back(set_L[index_set_L].id_);
+//        }
     }
 
     idi nk = L;
@@ -6526,49 +6645,18 @@ inline void Searching::subsearch_top_m_for_one_iteration(
             auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
             dataf norm = *nb_data++;
             ++count_distance_computation;
-//            {//test
-//                ++count_iter_computation;
-//            }
             distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-            if (dist > set_L[set_L_end - 1 + set_L_base].distance_) {
+            if (dist > set_L[set_L_size - 1 + set_L_start].distance_) {
                 continue;
             }
 
             Candidate cand(nb_id, dist, false);
-//            {//test
-//                if (set_L_end != L) {
-//                    printf("before_add: "
-//                           "query_id: %u "
-//                           "iter: %u "
-//                           "set_L_end: %u "
-//                           "L: %u\n",
-//                           query_id,
-//                           iter,
-//                           set_L_end,
-//                           L);
-//                }
-//            }
             idi r = add_into_queue(
                     set_L,
-                    set_L_base,
-                    set_L_end,
+                    set_L_start,
+                    set_L_size,
                     L,
                     cand);
-//            {//test
-//                if (set_L_end != L) {
-//                    printf("after_add: "
-//                           "query_id: %u "
-//                           "iter: %u "
-//                           "set_L_end: %u "
-//                           "L: %u "
-//                           "r: %u\n",
-//                           query_id,
-//                           iter,
-//                           set_L_end,
-//                           L,
-//                           r);
-//                }
-//            }
             if (r < nk) {
                 nk = r;
             }
@@ -6581,20 +6669,42 @@ inline void Searching::subsearch_top_m_for_one_iteration(
     } else {
         k_uc = last_k + 1;
     }
+
 //    {//test
-//        printf("iter: %u "
-//               "set_L_base: %u "
-//               "count_iter_computation: %lu\n",
-//               iter,
-//               set_L_base,
-//               count_iter_computation);
+//        for (idi l_i = 0; l_i < set_L_size; ++l_i) {
+//            L_ids_.push_back(set_L[set_L_start + l_i].id_);
+//        }
+//        std::sort(L_ids_.begin(), L_ids_.end());
+//        std::sort(M_ids_.begin(), M_ids_.end());
+//        for (idi m_i = 0; m_i < M_ids_.size(); ++m_i) {
+//            printf("query_id: %u "
+//                   "iter: %u "
+//                   "M[%u]: "
+//                   "%u\n",
+//                   query_id,
+//                   iter,
+//                   m_i,
+//                   M_ids_[m_i]);
+//        }
+//        M_ids_.clear();
+//        for (idi l_i = 0; l_i < L_ids_.size(); ++l_i) {
+//            printf("query_id: %u "
+//                   "iter: %u "
+//                   "L[%u]: "
+//                   "%u\n",
+//                   query_id,
+//                   iter,
+//                   l_i,
+//                   L_ids_[l_i]);
+//        }
+//        L_ids_.clear();
 //    }
 }
 
 /*
  * One more parameter for distance bound
  */
-inline void Searching::subsearch_top_m_for_one_iteration(
+inline void Searching::subsearch_top_m_for_one_iteration_lth(
         const distf bound_lth,
         const idi iter,
         idi &k_uc,
@@ -6603,8 +6713,8 @@ inline void Searching::subsearch_top_m_for_one_iteration(
         const dataf *query_data,
         const idi L,
         std::vector<Candidate> &set_L,
-        const idi set_L_base,
-        idi &set_L_end,
+        const idi set_L_start,
+        idi &set_L_size,
         std::vector<idi> &top_m_candidates,
         boost::dynamic_bitset<> &is_visited,
         uint64_t &count_distance_computation)
@@ -6613,8 +6723,8 @@ inline void Searching::subsearch_top_m_for_one_iteration(
     idi top_m_candidates_end = 0;
     idi last_k = L;
 // Cannot use OpenMP here because this for-loop needs early break by the 2nd condition.
-    for (idi c_i = k_uc; c_i < set_L_end && top_m_candidates_end < value_M; ++c_i) {
-        idi index_set_L = c_i + set_L_base;
+    for (idi c_i = k_uc; c_i < set_L_size && top_m_candidates_end < value_M; ++c_i) {
+        idi index_set_L = c_i + set_L_start;
         if (set_L[index_set_L].is_checked_) {
             continue;
         }
@@ -6653,8 +6763,103 @@ inline void Searching::subsearch_top_m_for_one_iteration(
             Candidate cand(nb_id, dist, false);
             idi r = add_into_queue(
                     set_L,
-                    set_L_base,
-                    set_L_end,
+                    set_L_start,
+                    set_L_size,
+                    L,
+                    cand);
+            if (r < nk) {
+                nk = r;
+            }
+        }
+    }
+
+    if (nk <= last_k) {
+        k_uc = nk;
+    } else {
+        k_uc = last_k + 1;
+    }
+}
+
+/*
+ * 7/24/2020-10:53
+ * Subsearch for one iteration, with the global L-th value as the bound,
+ * and the top_m_position indicates the bound for local top-M vertices.
+ */
+inline void Searching::subsearch_top_m_for_one_iteration_lth_mth(
+        const distf bound_lth,
+//        const idi top_m_position,
+        const idi iter,
+        idi &k_uc,
+        const idi local_m_count,
+        const idi query_id,
+        const dataf *query_data,
+        const idi L,
+        std::vector<Candidate> &set_L,
+        const idi set_L_start,
+        idi &set_L_size,
+        std::vector<idi> &top_m_candidates,
+        boost::dynamic_bitset<> &is_visited,
+        uint64_t &count_distance_computation)
+{
+//    {//test
+//        printf("query_id: %u "
+//               "iter: %u "
+//               "tid: %u \n",
+//               query_id,
+//               iter,
+//               omp_get_thread_num());
+//    }
+    // Select M candidates
+    idi top_m_candidates_end = 0;
+    idi last_k = L;
+// Cannot use OpenMP here because this for-loop needs early break by the 2nd condition.
+//    for (idi c_i = k_uc; c_i < top_m_position; ++c_i) {
+    for (idi c_i = k_uc; c_i < set_L_size && top_m_candidates_end < local_m_count; ++c_i) {
+        idi index_set_L = c_i + set_L_start;
+        if (set_L[index_set_L].is_checked_) {
+            continue;
+        }
+        last_k = c_i; // Record the location of the last candidate selected.
+        set_L[index_set_L].is_checked_ = true;
+        top_m_candidates[top_m_candidates_end++] = set_L[index_set_L].id_;
+//        {//test
+//            M_ids_.push_back(set_L[index_set_L].id_);
+//        }
+    }
+
+    idi nk = L;
+    // Push M candidates' neighbors into the queue.
+    for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
+        idi cand_id = top_m_candidates[c_i];
+        _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+        idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+        idi out_degree = *out_edges++;
+        for (idi n_i = 0; n_i < out_degree; ++n_i) {
+            _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+        }
+        for (idi e_i = 0; e_i < out_degree; ++e_i) {
+            idi nb_id = out_edges[e_i];
+            { // Sequential edition
+                if (is_visited[nb_id]) {
+                    continue;
+                }
+                is_visited[nb_id] = 1;
+            }
+
+            auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+            dataf norm = *nb_data++;
+            ++count_distance_computation;
+            distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+//            if (dist > set_L[set_L_start + set_L_size - 1].distance_) {
+            if (dist > bound_lth) {
+                continue;
+            }
+
+            Candidate cand(nb_id, dist, false);
+            idi r = add_into_queue(
+                    set_L,
+                    set_L_start,
+                    set_L_size,
                     L,
                     cand);
             if (r < nk) {
@@ -7033,7 +7238,7 @@ inline void Searching::para_search_with_top_m_subsearch_v1(
                 not_finished = 1;
                 const idi local_queue_base = local_queues_bases[q_i];
 
-                subsearch_top_m_for_one_iteration(
+                subsearch_top_m_for_one_iteration_lth(
                         bound_lth,
                         iter,
                         k,
@@ -7455,6 +7660,788 @@ inline void Searching::para_search_with_top_m_subsearch_v1(
 ////    }
 //}
 
+/*
+ * 7/24/2020-8:57
+ * L-th Selection.
+ * And also M-th Selection. Then the computation should be the same as merging.
+ */
+inline void Searching::para_search_with_top_m_subsearch_v2(
+        const idi local_M_max,
+        const idi query_id,
+        const idi K,
+        const idi global_L,
+        const idi local_L,
+        const idi total_L,
+        const idi init_queue_size,
+        std::vector<Candidate> &set_L,
+        const std::vector<idi> &init_ids,
+        std::vector<idi> &set_K,
+        const std::vector<idi> &local_queues_starts,
+        std::vector<idi> &local_queues_sizes,
+        std::vector<idi> &local_m_counts,
+//        std::vector<idi> &local_top_m_positions,
+        std::vector< std::vector<idi> > &top_m_candidates_list,
+        boost::dynamic_bitset<> &is_visited)
+{
+    uint64_t tmp_count_computation = 0;
+    {// Initialization
+        // is_visited flag array
+//#pragma omp parallel for
+// Cannot use OMP for bit array is_visited!
+        for (idi c_i = 0; c_i < total_L; ++c_i) {
+            is_visited[init_ids[c_i]] = 1;
+        }
+
+        const dataf *query_data = queries_load_ + query_id * dimension_;
+#pragma omp parallel for
+        for (idi v_i = 0; v_i < total_L; ++v_i) {
+            idi v_id = init_ids[v_i];
+            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+        }
+
+        // Get the distances of all candidates, store in the set set_L.
+#pragma omp parallel for reduction(+ : tmp_count_computation)
+        for (int q_i = 0; q_i < num_threads_; ++q_i) {
+            idi local_queue_base = local_queues_starts[q_i];
+            idi init_ids_base = q_i * init_queue_size;
+            idi init_ids_bound = init_ids_base + init_queue_size;
+            for (idi id_i = init_ids_base; id_i < init_ids_bound; ++id_i) {
+                idi v_id = init_ids[id_i];
+                auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+                dataf norm = *v_data++;
+                ++tmp_count_computation;
+                distf dist = compute_distance_with_norm(v_data, query_data, norm);
+                set_L[local_queue_base++] = Candidate(v_id, dist, false); // False means not checked.
+//                {//test
+//                    if (11 == query_id
+//                        && 400620 == v_id) {
+//                        printf("query_id: %u "
+//                               "(%u %f)\n",
+//                               query_id,
+//                               v_id, dist);
+//                    }
+//                }
+            }
+            local_queues_sizes[q_i] = init_queue_size;
+        }
+        count_distance_computation_ += tmp_count_computation;
+        tmp_count_computation = 0;
+    }
+
+    // Searching
+    if (num_threads_ == 1) { // Single threads
+//        local_queues_lengths[0] = local_L;
+        std::sort(
+                set_L.begin(),
+                set_L.end());
+        subsearch_with_top_m(
+                local_M_max,
+                query_id,
+                local_L,
+                set_L,
+                0,
+                local_queues_sizes[0],
+                top_m_candidates_list[0],
+                is_visited,
+                tmp_count_computation);
+        count_distance_computation_ += tmp_count_computation;
+        tmp_count_computation = 0;
+    } else { // Multiple threads
+        const dataf *query_data = queries_load_ + query_id  * dimension_;
+        const idi num_queues = num_threads_;
+#pragma omp parallel for
+        for (idi q_i = 0; q_i < num_queues; ++q_i) {
+            idi local_queue_base = local_queues_starts[q_i];
+            std::sort(
+                    set_L.begin() + local_queue_base,
+                    set_L.begin() + local_queue_base + init_queue_size);
+        }
+        idi local_M = 1;
+        idi iter = 0;
+        std::vector<idi> ks(num_queues, 0);
+        distf bound_lth = FLT_MAX;
+        for (idi q_i = 0; q_i < num_queues; ++q_i) {
+            bound_lth = std::min(bound_lth, set_L[local_queues_starts[q_i] + init_queue_size - 1].distance_);
+        }
+        selecting_unchecked_top_M_seq(
+                query_id,
+                iter,
+                set_L,
+                ks,
+                local_M,
+                num_queues,
+                local_queues_starts,
+                local_queues_sizes,
+                local_m_counts);
+//        {//test
+//            printf("query_id: %u "
+//                   "iter: %u",
+//                   query_id,
+//                   iter);
+//            printf(" local_queues_sizes:");
+//            for (idi i = 0; i < num_queues; ++i) {
+//                printf(" %u", local_queues_sizes[i]);
+//            }
+//            printf(" local_m_counts:");
+//            for (idi i = 0; i < num_queues; ++i) {
+//                printf(" %u", local_m_counts[i]);
+//            }
+//            printf(" ks:");
+//            for (idi i = 0; i < num_queues; ++i) {
+//                printf(" %u", ks[i]);
+//            }
+//            printf("\n");
+//        }
+
+
+        uint8_t not_finished = 1;
+        while (true) {
+            not_finished = 0;
+            ++iter;
+            // TODO: openmp
+//#pragma omp parallel for reduction(+ : tmp_count_computation)
+            for (idi q_i = 0; q_i < num_queues; ++q_i) {
+                idi &k = ks[q_i];
+                idi &local_queue_size = local_queues_sizes[q_i];
+                auto &local_top_m_candidates = top_m_candidates_list[q_i];
+//                if (k >= local_queue_size) {
+//                    continue;
+//                }
+//                not_finished = 1;
+                idi local_m_count = local_m_counts[q_i];
+//                // Cannot do this. local_m_count being 0 does not mean this worker is finished.
+                if (local_M < num_queues && !local_m_count) {
+                    local_m_count = 1;
+                }
+                if (!local_m_count) {
+//                    k = local_L;
+                    continue;
+                }
+                not_finished = 1;
+//                if (local_M < static_cast<idi>(num_threads_) &&
+//                    0 == local_m_count) {
+//                    local_m_count = 1;
+//                }
+                const idi local_queue_start = local_queues_starts[q_i];
+
+                subsearch_top_m_for_one_iteration_lth_mth(
+                        bound_lth,
+//                        local_top_m_pos,
+                        iter,
+                        k,
+                        local_m_count,
+                        query_id,
+                        query_data,
+                        local_L,
+                        set_L,
+                        local_queue_start,
+                        local_queue_size,
+                        local_top_m_candidates,
+                        is_visited,
+                        tmp_count_computation);
+            }
+            count_distance_computation_ += tmp_count_computation;
+            tmp_count_computation = 0;
+            if (!not_finished) {
+                break;
+            }
+            {// Setecting and update local_queues_lengths
+//                {//test
+//                    printf("query_id: %u "
+//                           "iter: %u "
+//                           "before:local_queues_sizes: (%u, %u)\n",
+//                           query_id,
+//                           iter,
+//                           local_queues_sizes[0], local_queues_sizes[1]);
+//                }
+//                time_select_L_ -= WallTimer::get_time_mark();
+                bound_lth = selecting_top_L_seq(
+                        set_L,
+                        global_L,
+//                        local_L,
+                        num_queues,
+                        local_queues_starts,
+                        local_queues_sizes);
+//                time_select_L_ += WallTimer::get_time_mark();
+//                {//test
+//                    for (idi t_i = 0; t_i < num_queues; ++t_i) {
+//                        idi sub_start = local_queues_starts[t_i];
+//                        idi sub_bound = sub_start + local_queues_sizes[t_i];
+//                        for (idi e_i = sub_start; e_i < sub_bound; ++e_i) {
+//                            L_ids_.push_back(set_L[e_i].id_);
+//                        }
+//                    }
+//                    std::sort(L_ids_.begin(), L_ids_.end());
+//                    std::sort(M_ids_.begin(), M_ids_.end());
+//                    for (idi m_i = 0; m_i < M_ids_.size(); ++m_i) {
+//                        printf("query_id: %u "
+//                               "iter: %u "
+//                               "M[%u]: "
+//                               "%u\n",
+//                               query_id,
+//                               iter,
+//                               m_i,
+//                               M_ids_[m_i]);
+//                    }
+//                    M_ids_.clear();
+//                    for (idi l_i = 0; l_i < L_ids_.size(); ++l_i) {
+//                        printf("query_id: %u "
+//                               "iter: %u "
+//                               "L[%u]: "
+//                               "%u\n",
+//                               query_id,
+//                               iter,
+//                               l_i,
+//                               L_ids_[l_i]);
+//                    }
+//                    L_ids_.clear();
+//                }
+//                {//test
+//                    printf("query_id: %u "
+//                           "iter: %u "
+//                           "after:local_queues_sizes: (%u, %u)\n",
+//                           query_id,
+//                           iter,
+//                           local_queues_sizes[0], local_queues_sizes[1]);
+//                }
+            }
+            {// Scale M
+                if (local_M < local_M_max) {
+                    local_M <<= 1;
+                }
+//                else {
+//                    local_M = value_M_max;
+//                }
+            }
+            {
+//                {//test
+//                    printf("query_id: %u "
+//                           "iter: %u "
+//                           "selecting_M\n",
+//                           query_id,
+//                           iter);
+//                }
+//                {//test
+//                    if (0 == query_id
+//                        && 10 == iter) {
+//                        printf("test.\n");
+//                    }
+//                }
+//                time_select_M_ -= WallTimer::get_time_mark();
+                selecting_unchecked_top_M_seq(
+                        query_id,
+                        iter,
+                        set_L,
+                        ks,
+                        local_M,
+                        num_queues,
+                        local_queues_starts,
+                        local_queues_sizes,
+                        local_m_counts);
+//                time_select_M_ += WallTimer::get_time_mark();
+//                {//test
+//                    printf("query_id: %u "
+//                           "iter: %u "
+//                           "local_m_counts: (%u, %u)\n",
+//                           query_id,
+//                           iter,
+//                           local_m_counts[0], local_m_counts[1]);
+//                }
+            }
+//            {//test
+//                printf("query_id: %u "
+//                       "iter: %u",
+//                       query_id,
+//                       iter);
+//                printf(" local_queues_sizes:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", local_queues_sizes[i]);
+//                }
+//                printf(" local_m_counts:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", local_m_counts[i]);
+//                }
+//                printf(" ks:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", ks[i]);
+//                }
+//                printf("\n");
+//            }
+        }
+    }
+
+    time_merge_ -= WallTimer::get_time_mark();
+    {// Return the results to set_K
+        std::vector<idi> pointer(num_threads_, 0);
+        // get the first
+        distf min_dist = FLT_MAX;
+        idi min_q_i;
+        idi min_id;
+        idi min_sub;
+        idi last_id;
+        for (int q_i = 0; q_i < num_threads_; ++q_i) {
+            if (pointer[q_i] >= local_queues_sizes[q_i]) {
+                continue;
+            }
+            idi sub = pointer[q_i] + local_queues_starts[q_i];
+            distf tmp_dist = set_L[sub].distance_;
+            idi tmp_id = set_L[sub].id_;
+            if (tmp_dist < min_dist) {
+                min_dist = tmp_dist;
+                min_id = tmp_id;
+                min_q_i = q_i;
+                min_sub = sub;
+            } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                min_id = tmp_id;
+                min_q_i = q_i;
+                min_sub = sub;
+            }
+        }
+        set_K[0] = set_L[min_sub].id_;
+//        {//test
+//            printf("query_id: %u "
+//                   "[%u]: "
+//                   "(%u, %f)\n",
+//                   query_id,
+//                   0,
+//                   set_L[min_sub].id_, set_L[min_sub].distance_);
+//        }
+        ++pointer[min_q_i];
+        last_id = set_K[0];
+
+        bool is_finished = false;
+        idi k_i = 1;
+        while (k_i < K && !is_finished) {
+            is_finished = true;
+            min_dist = FLT_MAX;
+            for (int q_i = 0; q_i < num_threads_; ++q_i) {
+                const idi local_queue_size = local_queues_sizes[q_i];
+                idi sub = pointer[q_i] + local_queues_starts[q_i];
+
+                while (pointer[q_i] < local_queue_size
+                       && set_L[sub].id_ == last_id) {
+                    ++pointer[q_i];
+                    ++sub;
+                }
+                if (pointer[q_i] >= local_queue_size) {
+                    continue;
+                }
+                is_finished = false;
+                distf tmp_dist = set_L[sub].distance_;
+                idi tmp_id = set_L[sub].id_;
+                if (tmp_dist < min_dist) {
+                    min_dist = tmp_dist;
+                    min_id = tmp_id;
+                    min_q_i = q_i;
+                    min_sub = sub;
+                } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                    min_id = tmp_id;
+                    min_q_i = q_i;
+                    min_sub = sub;
+                }
+            }
+            set_K[k_i] = set_L[min_sub].id_;
+//            {//test
+//                printf("query_id: %u "
+//                       "[%u]: "
+//                       "(%u, %f)\n",
+//                       query_id,
+//                       k_i,
+//                       set_L[min_sub].id_, set_L[min_sub].distance_);
+//            }
+            ++pointer[min_q_i];
+            ++k_i;
+        }
+    }
+    time_merge_ += WallTimer::get_time_mark();
+//    {// Return the results to set_K
+//        // How to deal with duplicate?
+//        idi last_id = set_L[0].id_;
+//        set_K[0] = last_id;
+//        idi k_i = 1;
+//        idi l_i = 1;
+//        while (k_i < K && l_i < L) {
+//            if (last_id == set_L[l_i].id_) {
+//                ++l_i;
+//                continue;
+//            }
+//            last_id = set_L[l_i++].id_;
+//            set_K[k_i++] = last_id;
+//        }
+//    }
+
+    {// Reset
+//        std::fill(is_visited.begin(), is_visited.end(), 0);
+        is_visited.reset();
+//        is_visited.clear_all();
+//        std::fill(local_queues_sizes.begin(), local_queues_sizes.end(), init_queue_size);
+    }
+
+//    {//test
+//        if (3 == query_id) {
+//            exit(1);
+//        }
+//    }
+}
+
+/*
+ * 7/26/2020-15:41
+ * L-th and M-th Selection.
+ * Seq-Par Phases: when M is 1 and 2, do sequential searching;
+ * When M is equal and larger than 4, do parallel searching.
+ * It's for load-balance issue.
+ */
+inline void Searching::para_search_with_top_m_subsearch_v3(
+        const idi local_M_max,
+        const idi local_M_middle,
+        const idi query_id,
+        const idi K,
+        const idi global_L,
+        const idi local_L,
+//        const idi total_L,
+//        const idi init_queue_size,
+        std::vector<Candidate> &set_L,
+        const std::vector<idi> &init_ids,
+        std::vector<idi> &set_K,
+        const std::vector<idi> &local_queues_starts,
+        std::vector<idi> &local_queues_sizes,
+        std::vector<idi> &local_m_counts,
+        std::vector< std::vector<idi> > &top_m_candidates_list,
+        boost::dynamic_bitset<> &is_visited)
+{
+    uint64_t tmp_count_computation = 0;
+    {// Initialization
+        // is_visited flag array
+//#pragma omp parallel for
+// Cannot use OMP for bit array is_visited!
+        for (idi c_i = 0; c_i < global_L; ++c_i) {
+            is_visited[init_ids[c_i]] = 1;
+        }
+
+        const dataf *query_data = queries_load_ + query_id * dimension_;
+#pragma omp parallel for
+        for (idi v_i = 0; v_i < global_L; ++v_i) {
+            idi v_id = init_ids[v_i];
+            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+        }
+
+        // Get the distances of all candidates, store in the set set_L.
+//        idi global_queue_start = 0;
+#pragma omp parallel for
+        for (idi id_i = 0; id_i < global_L; ++id_i) {
+            idi v_id = init_ids[id_i];
+            auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+            dataf norm = *v_data++;
+            ++tmp_count_computation;
+            distf dist = compute_distance_with_norm(v_data, query_data, norm);
+            set_L[id_i] = Candidate(v_id, dist, false); // False means not checked.
+        }
+        local_queues_sizes[0] = global_L;
+        count_distance_computation_ += tmp_count_computation;
+        tmp_count_computation = 0;
+        std::sort(set_L.begin(), set_L.begin() + global_L);
+    }
+
+    // Searching
+    if (num_threads_ == 1) { // Single threads
+//        std::sort(
+//                set_L.begin(),
+//                set_L.end());
+        subsearch_with_top_m(
+                local_M_max,
+                query_id,
+                local_L,
+                set_L,
+                0,
+                local_queues_sizes[0],
+                top_m_candidates_list[0],
+                is_visited,
+                tmp_count_computation);
+        count_distance_computation_ += tmp_count_computation;
+        tmp_count_computation = 0;
+    } else { // Multiple threads
+        const dataf *query_data = queries_load_ + query_id * dimension_;
+        const idi num_queues = num_threads_;
+        idi local_M = 1;
+        idi iter = 0;
+        std::vector<idi> ks(num_queues, 0);
+
+        {// Sequential Search for M = 1, 2.
+            idi &k = ks[0];
+            while (k < global_L && local_M < local_M_middle) {
+                ++iter;
+                subsearch_top_m_for_one_iteration(
+                        iter,
+                        k,
+                        local_M,
+                        query_id,
+                        query_data,
+                        global_L,
+                        set_L,
+                        0,
+                        local_queues_sizes[0],
+                        top_m_candidates_list[0],
+                        is_visited,
+                        tmp_count_computation);
+                count_distance_computation_ += tmp_count_computation;
+                tmp_count_computation = 0;
+
+                {// Double M
+                    if (local_M < local_M_max) {
+                        local_M <<= 1;
+                    }
+                }
+            }
+        }
+
+        distf bound_lth = set_L[global_L - 1].distance_;
+        {// Parallel Search for M >= 4, or local_M_middle
+            {// Assign elements from Queue[0] to others
+                idi dst_i = 1;
+                for (idi e_i = 1; e_i < global_L; ++e_i) {
+                    idi dest_sub = e_i % num_queues;
+                    if (0 == dest_sub) {
+                        set_L[dst_i++] = set_L[e_i];
+                    } else {
+                        set_L[local_queues_starts[dest_sub] + local_queues_sizes[dest_sub]++] = set_L[e_i];
+                    }
+                }
+                local_queues_sizes[0] = dst_i;
+            }
+            std::fill(ks.begin(), ks.end(), 0);
+
+
+            selecting_unchecked_top_M_seq(
+                    query_id,
+                    iter,
+                    set_L,
+                    ks,
+                    local_M,
+                    num_queues,
+                    local_queues_starts,
+                    local_queues_sizes,
+                    local_m_counts);
+
+//            {//test
+//                printf("query_id: %u "
+//                       "iter: %u",
+//                       query_id,
+//                       iter);
+//                printf(" local_queues_sizes:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", local_queues_sizes[i]);
+//                }
+//                printf(" local_m_counts:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", local_m_counts[i]);
+//                }
+//                printf(" ks:");
+//                for (idi i = 0; i < num_queues; ++i) {
+//                    printf(" %u", ks[i]);
+//                }
+//                printf("\n");
+//            }
+
+            uint8_t not_finished = 1;
+            while (true) {
+                not_finished = 0;
+                ++iter;
+#pragma omp parallel for reduction(+ : tmp_count_computation)
+                for (idi q_i = 0; q_i < num_queues; ++q_i) {
+                    idi L_value = q_i == 0 ? global_L : local_L;
+                    idi &k = ks[q_i];
+                    idi &local_queue_size = local_queues_sizes[q_i];
+                    auto &local_top_m_candidates = top_m_candidates_list[q_i];
+                    idi local_m_count = local_m_counts[q_i];
+//                if (local_M < num_queues && !local_m_count) {
+//                    local_m_count = 1;
+//                }
+                    if (!local_m_count) {
+                        continue;
+                    }
+                    not_finished = 1;
+                    const idi local_queue_start = local_queues_starts[q_i];
+
+                    subsearch_top_m_for_one_iteration_lth_mth(
+                            bound_lth,
+                            iter,
+                            k,
+                            local_m_count,
+                            query_id,
+                            query_data,
+                            L_value,
+                            set_L,
+                            local_queue_start,
+                            local_queue_size,
+                            local_top_m_candidates,
+                            is_visited,
+                            tmp_count_computation);
+                }
+                count_distance_computation_ += tmp_count_computation;
+                tmp_count_computation = 0;
+                if (!not_finished) {
+                    break;
+                }
+                {// Scale M
+                    if (local_M < local_M_max) {
+                        local_M <<= 1;
+                    }
+//                else {
+//                    local_M = value_M_max;
+//                }
+                }
+                time_select_ -= WallTimer::get_time_mark();
+#pragma omp parallel sections
+                {
+#pragma omp section
+                    {// Setecting and update local_queues_lengths
+//                        time_select_L_ -= WallTimer::get_time_mark();
+                        bound_lth = selecting_top_L_seq(
+                                set_L,
+                                global_L,
+//                        local_L,
+                                num_queues,
+                                local_queues_starts,
+                                local_queues_sizes);
+//                        time_select_L_ += WallTimer::get_time_mark();
+                    }
+#pragma omp section
+                    {
+//                        time_select_M_ -= WallTimer::get_time_mark();
+                        selecting_unchecked_top_M_seq(
+                                query_id,
+                                iter,
+                                set_L,
+                                ks,
+                                local_M,
+                                num_queues,
+                                local_queues_starts,
+                                local_queues_sizes,
+                                local_m_counts);
+//                        time_select_M_ += WallTimer::get_time_mark();
+                    }
+                }
+                time_select_ += WallTimer::get_time_mark();
+//                {//test
+//                    printf("query_id: %u "
+//                           "iter: %u",
+//                           query_id,
+//                           iter);
+//                    printf(" local_queues_sizes:");
+//                    for (idi i = 0; i < num_queues; ++i) {
+//                        printf(" %u", local_queues_sizes[i]);
+//                    }
+//                    printf(" local_m_counts:");
+//                    for (idi i = 0; i < num_queues; ++i) {
+//                        printf(" %u", local_m_counts[i]);
+//                    }
+//                    printf(" ks:");
+//                    for (idi i = 0; i < num_queues; ++i) {
+//                        printf(" %u", ks[i]);
+//                    }
+//                    printf("\n");
+//                }
+            }
+        }
+    }
+
+//    time_merge_ -= WallTimer::get_time_mark();
+    {// Return the results to set_K
+        std::vector<idi> pointer(num_threads_, 0);
+        // get the first
+        distf min_dist = FLT_MAX;
+        idi min_q_i;
+        idi min_id;
+        idi min_sub;
+        idi last_id;
+        for (int q_i = 0; q_i < num_threads_; ++q_i) {
+            if (pointer[q_i] >= local_queues_sizes[q_i]) {
+                continue;
+            }
+            idi sub = pointer[q_i] + local_queues_starts[q_i];
+            distf tmp_dist = set_L[sub].distance_;
+            idi tmp_id = set_L[sub].id_;
+            if (tmp_dist < min_dist) {
+                min_dist = tmp_dist;
+                min_id = tmp_id;
+                min_q_i = q_i;
+                min_sub = sub;
+            } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                min_id = tmp_id;
+                min_q_i = q_i;
+                min_sub = sub;
+            }
+        }
+        set_K[0] = set_L[min_sub].id_;
+//        {//test
+//            printf("query_id: %u "
+//                   "[%u]: "
+//                   "(%u, %f)\n",
+//                   query_id,
+//                   0,
+//                   set_L[min_sub].id_, set_L[min_sub].distance_);
+//        }
+        ++pointer[min_q_i];
+        last_id = set_K[0];
+
+        bool is_finished = false;
+        idi k_i = 1;
+        while (k_i < K && !is_finished) {
+            is_finished = true;
+            min_dist = FLT_MAX;
+            for (int q_i = 0; q_i < num_threads_; ++q_i) {
+                const idi local_queue_size = local_queues_sizes[q_i];
+                idi sub = pointer[q_i] + local_queues_starts[q_i];
+
+                while (pointer[q_i] < local_queue_size
+                       && set_L[sub].id_ == last_id) {
+                    ++pointer[q_i];
+                    ++sub;
+                }
+                if (pointer[q_i] >= local_queue_size) {
+                    continue;
+                }
+                is_finished = false;
+                distf tmp_dist = set_L[sub].distance_;
+                idi tmp_id = set_L[sub].id_;
+                if (tmp_dist < min_dist) {
+                    min_dist = tmp_dist;
+                    min_id = tmp_id;
+                    min_q_i = q_i;
+                    min_sub = sub;
+                } else if (tmp_dist == min_dist && tmp_id < min_id) {
+                    min_id = tmp_id;
+                    min_q_i = q_i;
+                    min_sub = sub;
+                }
+            }
+            set_K[k_i] = set_L[min_sub].id_;
+//            {//test
+//                printf("query_id: %u "
+//                       "[%u]: "
+//                       "(%u, %f)\n",
+//                       query_id,
+//                       k_i,
+//                       set_L[min_sub].id_, set_L[min_sub].distance_);
+//            }
+            ++pointer[min_q_i];
+            ++k_i;
+        }
+    }
+//    time_merge_ += WallTimer::get_time_mark();
+
+    {// Reset
+//        std::fill(is_visited.begin(), is_visited.end(), 0);
+        is_visited.reset();
+        std::fill(local_queues_sizes.begin() + 1, local_queues_sizes.end(), 0);
+    }
+
+//    {//test
+//        if (3 == query_id) {
+//            exit(1);
+//        }
+//    }
+}
 
 //inline void Searching::para_search_with_top_m_subsearch_v2(
 //        const idi local_M_max,

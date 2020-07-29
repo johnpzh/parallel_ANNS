@@ -21,7 +21,7 @@
 #include <cfloat>
 #include <algorithm>
 #include <thread>
-//#include <atomic>
+#include <atomic>
 //#include <mutex>
 //#include <shared_mutex>
 #include <omp.h>
@@ -33,7 +33,6 @@
 //#include "../include/bitvector.h"
 #include "../include/Neighbor.h"
 #include "../include/Spinlock.h"
-#include "../include/Runtime.h"
 
 namespace PANNS {
 
@@ -67,17 +66,16 @@ public:
     idi add_into_queue(
             std::vector<Neighbor> &queue,
             const idi queue_start,
-//            std::atomic<idi> &queue_size,
-            idi &queue_size,
+            std::atomic<idi> &queue_size,
+//            idi &queue_size,
             const idi queue_capacity,
             const Neighbor &cand);
     void get_start_point_and_its_neighbors(
             const idi query_id,
             std::vector<Neighbor> &worklist,
-//            const std::atomic<idi> &worklist_start,
-//            std::atomic<idi> &worklist_size,
-            const idi worklist_start,
-            idi &worklist_size,
+            const std::atomic<idi> &worklist_start,
+            std::atomic<idi> &worklist_size,
+//            idi &worklist_size,
 //            const idi L,
             const std::vector<idi> &init_ids,
             const idi init_ids_start,
@@ -93,12 +91,8 @@ public:
 //    uint64_t count_single_query_computation_ = 0;
 //    distf dist_min_ = 0;
 //    distf dist_max_ = 0;
-    double time_merge_ = 0.0;
-    double time_add_to_result_ = 0.0;
-    double time_add_to_worklist_ = 0.0;
-    double time_pick_tops_ = 0.0;
-//    double time_expand_neighbors_ = 0.0;
-
+    double time_merge_ = 0;
+    double time_add_to_queue_ = 0;
 //    double time_initialization_ = 0;
 //    double time_sequential_phase_ = 0;
 //    double time_parallel_phase_ = 0;
@@ -148,34 +142,18 @@ public:
             const idi global_L,
             std::vector<Neighbor> &set_L,
             const idi set_L_start,
-//            std::atomic<idi> &set_L_size,
-            idi &set_L_size,
+            std::atomic<idi> &set_L_size,
+//            idi &set_L_size,
             Spinlock &set_L_spinlock,
 //        boost::shared_mutex &set_L_mutex,
             std::vector<Neighbor> &worklist,
-//            std::atomic<idi> &worklist_start,
-//            std::atomic<idi> &worklist_size,
-            idi &worklist_start,
-            idi &worklist_size,
+            std::atomic<idi> &worklist_start,
+            std::atomic<idi> &worklist_size,
+//            idi &worklist_start,
+//            idi &worklist_size,
             Spinlock &worklist_spinlock,
 //        boost::shared_mutex &worklist_mutex,
             boost::dynamic_bitset<> &is_visited);
-    void simple_search_worker_two_global_queues_workbuffer(
-            const idi worker_id,
-            const idi query_id,
-            const idi global_L,
-            std::vector<Neighbor> &set_L,
-            const idi set_L_start,
-            idi &set_L_size,
-            Spinlock &set_L_spinlock,
-            std::vector<Neighbor> &worklist,
-            idi &worklist_start,
-            idi &worklist_size,
-            Spinlock &worklist_spinlock,
-            std::vector<Neighbor> workbuffer,
-            const idi workbuffer_start,
-            boost::dynamic_bitset<> &is_visited,
-            Runtime &runtime);
     void simple_search_two_global_queues_para(
             const idi query_id,
             const idi global_L,
@@ -185,17 +163,6 @@ public:
             boost::dynamic_bitset<> &is_visited,
             const idi K,
             std::vector<idi> &set_K);
-    void simple_search_two_global_queues_workbuffer(
-            const idi query_id,
-            const idi global_L,
-            std::vector<Neighbor> &set_L,
-            std::vector<Neighbor> &worklist,
-            std::vector<Neighbor> &workbuffer,
-            const std::vector<idi> &init_ids,
-            boost::dynamic_bitset<> &is_visited,
-            const idi K,
-            std::vector<idi> &set_K,
-            std::vector<Runtime> &runtimes);
 }; // Class Searching
 
 /**
@@ -564,8 +531,8 @@ inline dataf Searching::compute_distance_with_norm(
 inline idi Searching::add_into_queue(
         std::vector<Neighbor> &queue,
         const idi queue_start,
-//        std::atomic<idi> &queue_size,
-        idi &queue_size,
+        std::atomic<idi> &queue_size,
+//        idi &queue_size,
         const idi queue_capacity,
         const Neighbor &cand)
 {
@@ -615,10 +582,9 @@ inline idi Searching::add_into_queue(
 inline void Searching::get_start_point_and_its_neighbors(
         const idi query_id,
         std::vector<Neighbor> &worklist,
-//        const std::atomic<idi> &worklist_start,
-//        std::atomic<idi> &worklist_size,
-        const idi worklist_start,
-        idi &worklist_size,
+        const std::atomic<idi> &worklist_start,
+        std::atomic<idi> &worklist_size,
+//        idi &worklist_size,
 //        const idi L,
         const std::vector<idi> &init_ids,
         const idi init_ids_start,
@@ -863,15 +829,15 @@ inline void Searching::simple_search_worker_set_L_global_worklist_global(
         const idi global_L,
         std::vector<Neighbor> &set_L,
         const idi set_L_start,
-//        std::atomic<idi> &set_L_size,
-        idi &set_L_size,
+        std::atomic<idi> &set_L_size,
+//        idi &set_L_size,
         Spinlock &set_L_spinlock,
 //        boost::shared_mutex &set_L_mutex,
         std::vector<Neighbor> &worklist,
-//        std::atomic<idi> &worklist_start,
-//        std::atomic<idi> &worklist_size,
-        idi &worklist_start,
-        idi &worklist_size,
+        std::atomic<idi> &worklist_start,
+        std::atomic<idi> &worklist_size,
+//        idi &worklist_start,
+//        idi &worklist_size,
         Spinlock &worklist_spinlock,
 //        boost::shared_mutex &worklist_mutex,
         boost::dynamic_bitset<> &is_visited)
@@ -921,21 +887,11 @@ inline void Searching::simple_search_worker_set_L_global_worklist_global(
         Neighbor cand;
         {
 //            boost::lock_guard<boost::shared_mutex> lock_worklist(worklist_mutex);
-            worklist_spinlock.lock();
+//            worklist_spinlock.lock();
             cand = worklist[worklist_start++];
             // Remove
             --worklist_size;
-//            {//tset
-//                printf("%u: "
-//                       "worker_id: %u "
-//                       "worklist_start: %u "
-//                       "worklist_size: %u\n",
-//                       __LINE__,
-//                       worker_id,
-//                       worklist_start.load(),
-//                       worklist_size.load());
-//            }
-            worklist_spinlock.unlock();
+//            worklist_spinlock.unlock();
         }
         // Add to set_L
 //        time_add_to_queue_ -= WallTimer::get_time_mark();
@@ -971,47 +927,29 @@ inline void Searching::simple_search_worker_set_L_global_worklist_global(
             dataf v_norm = *v_data++;
             ++tmp_distance_computation;
             distf dist = compute_distance_with_norm(v_data, query_data, v_norm);
-//            {//test
-//                if (0 == query_id &&
-//                    710644 == v_id) {
-//                    printf("query_id: %u "
-//                           "v_id: %u "
-//                           "dist: %f\n",
-//                           query_id,
-//                           v_id,
-//                           dist);
-//                }
-//            }
             {
 //                boost::shared_lock<boost::shared_mutex> lock_worklist(worklist_mutex);
-                worklist_spinlock.lock();
+//                worklist_spinlock.lock();
                 if (dist > worklist[worklist_start + worklist_size - 1].distance_) {
-                    worklist_spinlock.unlock();
+//                    worklist_spinlock.unlock();
                     continue;
                 }
-                worklist_spinlock.unlock();
+//                worklist_spinlock.unlock();
             }
             {
 //                boost::shared_lock<boost::shared_mutex> lock_set_L(set_L_mutex);
-                set_L_spinlock.lock();
+//                set_L_spinlock.lock();
                 if (set_L_size == global_L && dist > set_L[set_L_start + set_L_size - 1].distance_) {
-                    set_L_spinlock.unlock();
+//                    set_L_spinlock.unlock();
                     continue;
                 }
-                set_L_spinlock.unlock();
+//                set_L_spinlock.unlock();
             }
 //            ++count_add_to_queue_;
 //            time_add_to_queue_ -= WallTimer::get_time_mark();
             {
 //                boost::lock_guard<boost::shared_mutex> lock_worklist(worklist_mutex);
                 worklist_spinlock.lock();
-//                {//test
-//                    printf("worker_id: %u "
-//                           "got lock.\n",
-//                           worker_id);
-//                }
-//                idi tmp_size = worklist_size;
-//                insert_sub =
                 add_into_queue(
                         worklist,
                         worklist_start,
@@ -1019,27 +957,6 @@ inline void Searching::simple_search_worker_set_L_global_worklist_global(
                         worklist_size,
                         global_L,
                         Neighbor(v_id, dist));
-//                {//test
-//                    printf("query_id: %u "
-//                           "worker_id: %u "
-//                           "iter: %u "
-//                           "e_i: %u "
-//                           "pre_size: %u "
-//                           "worklist_size: %u "
-//                           "insert_sub: %u\n",
-//                           query_id,
-//                           worker_id,
-//                           iter,
-//                           e_i,
-//                           tmp_size,
-//                           worklist_size.load(),
-//                           insert_sub);
-//                }
-//                {//test
-//                    printf("worker_id: %u "
-//                           "released lock.\n",
-//                           worker_id);
-//                }
                 worklist_spinlock.unlock();
             }
 //            time_add_to_queue_ += WallTimer::get_time_mark();
@@ -1061,154 +978,6 @@ inline void Searching::simple_search_worker_set_L_global_worklist_global(
 //    {// Reset flags
 //        is_visited.reset();
 //    }
-}
-
-inline void Searching::simple_search_worker_two_global_queues_workbuffer(
-        const idi worker_id,
-        const idi query_id,
-        const idi global_L,
-        std::vector<Neighbor> &set_L,
-        const idi set_L_start,
-        idi &set_L_size,
-        Spinlock &set_L_spinlock,
-        std::vector<Neighbor> &worklist,
-        idi &worklist_start,
-        idi &worklist_size,
-        Spinlock &worklist_spinlock,
-        std::vector<Neighbor> workbuffer,
-        const idi workbuffer_start,
-        boost::dynamic_bitset<> &is_visited,
-        Runtime &runtime)
-{
-    const dataf *query_data = queries_load_ + query_id * dimension_;
-    idi iter = 0;
-    idi workbuffer_size = 0;
-    while (worklist_size) {
-        ++iter;
-//        {//
-//            printf("query_id: %u "
-//                   "worker_id: %u "
-//                   "iter: %u "
-//                   "set_L_size: %u "
-//                   "worklist_start: %u "
-//                   "worklist_size: %u\n",
-//                   query_id,
-//                   worker_id,
-//                   iter,
-//                   set_L_size,
-//                   worklist_start,
-//                   worklist_size);
-//        }
-        // Get the top-1
-        runtime.pick_tops_ -= WallTimer::get_time_mark();
-        Neighbor cand;
-        {
-            worklist_spinlock.lock();
-            cand = worklist[worklist_start++];
-            // Remove
-            --worklist_size;
-            worklist_spinlock.unlock();
-        }
-        runtime.pick_tops_ += WallTimer::get_time_mark();
-
-//        runtime.add_to_result_ -= WallTimer::get_time_mark();
-//        // Add to set_L
-//        {
-//            set_L_spinlock.lock();
-//            if (set_L_size == global_L &&
-//                cand.distance_ > set_L[set_L_start + set_L_size - 1].distance_) {
-//                // Stop condition:
-//                set_L_spinlock.unlock();
-//                runtime.add_to_result_ += WallTimer::get_time_mark();
-//                break;
-//            }
-//            set_L_spinlock.unlock();
-//        }
-//        runtime.add_to_result_ += WallTimer::get_time_mark();
-
-        runtime.add_to_result_ -= WallTimer::get_time_mark();
-        idi insert_sub;
-        {
-            set_L_spinlock.lock();
-            insert_sub = add_into_queue(
-                    set_L,
-                    set_L_start,
-                    set_L_size,
-                    global_L,
-                    cand);
-            set_L_spinlock.unlock();
-        }
-        runtime.add_to_result_ += WallTimer::get_time_mark();
-        if (insert_sub >= global_L) {
-            // Stop condition
-            break;
-        }
-
-        // Explore neighbors
-        runtime.expand_neighbors_ -= WallTimer::get_time_mark();
-        idi tmp_distance_computation = 0;
-        idi *out_edges = reinterpret_cast<idi *>(opt_nsg_graph_ + cand.id_ * vertex_bytes_ + data_bytes_);
-        idi out_degree = *out_edges++;
-        for (idi e_i = 0; e_i < out_degree; ++e_i) {
-            idi v_id = out_edges[e_i];
-            if(is_visited[v_id]) {
-                continue;
-            }
-            is_visited[v_id] = 1;
-            dataf *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
-            dataf v_norm = *v_data++;
-            ++tmp_distance_computation;
-
-            runtime.exp_worklist_check_ -= WallTimer::get_time_mark();
-            distf dist = compute_distance_with_norm(v_data, query_data, v_norm);
-            {
-                worklist_spinlock.lock();
-                if (dist > worklist[worklist_start + worklist_size - 1].distance_) {
-                    worklist_spinlock.unlock();
-                    runtime.exp_worklist_check_ += WallTimer::get_time_mark();
-                    continue;
-                }
-                worklist_spinlock.unlock();
-            }
-            runtime.exp_worklist_check_ += WallTimer::get_time_mark();
-
-            runtime.exp_result_check_ -= WallTimer::get_time_mark();
-            {
-                set_L_spinlock.lock();
-                if (set_L_size == global_L && dist > set_L[set_L_start + set_L_size - 1].distance_) {
-                    set_L_spinlock.unlock();
-                    runtime.exp_result_check_ += WallTimer::get_time_mark();
-                    continue;
-                }
-                set_L_spinlock.unlock();
-            }
-            runtime.exp_result_check_ += WallTimer::get_time_mark();
-
-            // Workbuffer
-            workbuffer[workbuffer_start + workbuffer_size++] = Neighbor(v_id, dist);
-        }
-        count_distance_computation_atomic_ += tmp_distance_computation;
-        runtime.expand_neighbors_ += WallTimer::get_time_mark();
-        // Copy workbuffer to worklist
-        runtime.add_to_worklist_ -= WallTimer::get_time_mark();
-        {
-            worklist_spinlock.lock();
-            idi e_i_start = workbuffer_start;
-            idi e_i_bound = e_i_start + workbuffer_size;
-
-            for (idi e_i = e_i_start; e_i < e_i_bound; ++e_i) {
-                add_into_queue(
-                        worklist,
-                        worklist_start,
-                        worklist_size,
-                        global_L,
-                        workbuffer[e_i]);
-            }
-            worklist_spinlock.unlock();
-            workbuffer_size = 0;
-        }
-        runtime.add_to_worklist_ += WallTimer::get_time_mark();
-    }
 }
 
 ////Backup
@@ -1354,12 +1123,12 @@ inline void Searching::simple_search_two_global_queues_para(
         std::vector<idi> &set_K)
 {
     idi set_L_start = 0;
-//    std::atomic<idi> set_L_size{0}; // real size
-    idi set_L_size = 0; // real size
-//    std::atomic<idi> worklist_start{0}; // base location
-    idi worklist_start = 0; // base location
-//    std::atomic<idi> worklist_size{0}; // real size
-    idi worklist_size = 0;
+    std::atomic<idi> set_L_size{0}; // real size
+//    idi set_L_size = 0; // real size
+    std::atomic<idi> worklist_start{0}; // base location
+//    idi worklist_start = 0; // base location
+    std::atomic<idi> worklist_size{0}; // real size
+//    idi worklist_size = 0;
 
     {// Initialization
         get_start_point_and_its_neighbors(
@@ -1513,121 +1282,6 @@ inline void Searching::simple_search_two_global_queues_para(
 //    }
     {// Reset flags
         is_visited.reset();
-    }
-}
-
-inline void Searching::simple_search_two_global_queues_workbuffer(
-        const idi query_id,
-        const idi global_L,
-        std::vector<Neighbor> &set_L,
-        std::vector<Neighbor> &worklist,
-        std::vector<Neighbor> &workbuffer,
-        const std::vector<idi> &init_ids,
-        boost::dynamic_bitset<> &is_visited,
-        const idi K,
-        std::vector<idi> &set_K,
-        std::vector<Runtime> &runtimes)
-{
-    idi set_L_start = 0;
-    idi set_L_size = 0; // real size
-    idi worklist_start = 0; // base location
-    idi worklist_size = 0;
-
-    {// Initialization
-        get_start_point_and_its_neighbors(
-                query_id,
-                worklist,
-                worklist_start,
-                worklist_size,
-//                L,
-                init_ids,
-                0,
-                global_L,
-                is_visited);
-        std::sort(
-                worklist.begin(),
-                worklist.begin() + worklist_size);
-    }
-    Spinlock set_L_spinlock;
-    Spinlock worklist_spinlock;
-
-//    std::vector<Runtime> runtimes(num_threads_);
-    std::vector<std::thread> threads(num_threads_ - 1);
-    for (int t_i = 1; t_i < num_threads_; ++t_i) {
-        threads[t_i - 1] = std::thread(
-                &Searching::simple_search_worker_two_global_queues_workbuffer,
-                this,
-                t_i,
-                query_id,
-                global_L,
-                std::ref(set_L),
-                set_L_start,
-                std::ref(set_L_size),
-                std::ref(set_L_spinlock),
-                std::ref(worklist),
-                std::ref(worklist_start),
-                std::ref(worklist_size),
-                std::ref(worklist_spinlock),
-                std::ref(workbuffer),
-                width_ * t_i,
-                std::ref(is_visited),
-                std::ref(runtimes[t_i]));
-    }
-    simple_search_worker_two_global_queues_workbuffer(
-            0,
-            query_id,
-            global_L,
-            set_L,
-            set_L_start,
-            set_L_size,
-            set_L_spinlock,
-            worklist,
-            worklist_start,
-            worklist_size,
-            worklist_spinlock,
-            workbuffer,
-            0,
-            is_visited,
-            runtimes[0]);
-
-    for (int t_i = 1; t_i < num_threads_; ++t_i) {
-        threads[t_i - 1].join();
-    }
-
-    {// Return results
-        for (idi e_i = 0; e_i < K; ++e_i) {
-            set_K[e_i] = set_L[e_i].id_;
-        }
-    }
-
-//    {//test
-//        for (idi e_i = 0; e_i < global_L; ++e_i) {
-//            printf("query_id:\t%u\t"
-//                   "e_i:\t%u\t"
-//                   "%u\t"
-//                   "%f\n",
-//                   query_id,
-//                   e_i,
-//                   set_L[e_i].id_,
-//                   set_L[e_i].distance_);
-//        }
-//        if (1 == query_id) {
-//            exit(1);
-//        }
-//    }
-    {// Reset flags
-        is_visited.reset();
-    }
-    {// Time
-        for (int t_i = 0; t_i < num_threads_; ++t_i) {
-            time_add_to_result_ += runtimes[t_i].add_to_result_;
-            time_add_to_worklist_ += runtimes[t_i].add_to_worklist_;
-            time_pick_tops_ += runtimes[t_i].pick_tops_;
-
-            runtimes[t_i].add_to_result_ = 0;
-            runtimes[t_i].add_to_worklist_ = 0;
-            runtimes[t_i].pick_tops_ = 0;
-        }
     }
 }
 

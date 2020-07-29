@@ -36,6 +36,7 @@ command.extend(sys.argv[4:])
 
 # os.system(' '.join(command))
 # For ICC CPU Affinity
+# 0,0 for Pitzer; 1,0 for KNL
 subprocess.run('export KMP_AFFINITY="granularity=fine,compact,0,0"; ' + \
 # subprocess.run('export KMP_AFFINITY="granularity=fine,compact,1,0"; ' + \
 # subprocess.run('export KMP_AFFINITY="verbose,granularity=fine,compact,1,0"; ' + \

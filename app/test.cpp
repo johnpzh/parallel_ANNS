@@ -8,6 +8,8 @@
 #include <cstring>
 #include <omp.h>
 #include <vector>
+#include <thread>
+#include <atomic>
 #include "../include/bitvector.h"
 
 double print_c(double *C, int n)
@@ -380,13 +382,45 @@ void test_run_levels()
     test_level1(0);
 }
 
+void test_update(int id, std::atomic_int &count)
+{
+    for (int i = 0; i < 10000; ++i) {
+        ++count;
+    }
+    for (int i = 0; i < 10000; ++i) {
+        --count;
+    }
+    for (int i = 0; i < 10000; ++i) {
+        ++count;
+    }
+
+    printf("id: %u, count: %u\n",
+            id, count.load());
+}
+
+void test_thread()
+{
+    std::atomic_int count(0);
+    int num_threads = 7;
+    std::vector<std::thread> threads(num_threads);
+    for (int t_i = 0; t_i < num_threads; ++t_i) {
+        threads[t_i] = std::thread(test_update, t_i, std::ref(count));
+    }
+
+    test_update(num_threads, count);
+    for (int t_i = 0 ; t_i < num_threads; ++t_i) {
+        threads[t_i].join();
+    }
+}
+
 int main(int argc, char *argv[])
 {
 
 //    test_openmp_performance(argc, argv);
 //    test_bitvector(argc, argv);
 //    test_omp_static(argc, argv);
-    test_run_levels();
+//    test_run_levels();
+    test_thread();
 
     return 0;
 }

@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 7/12/2020.
+// Created by Zhen Peng on 7/18/2020.
 //
 
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <vector>
 #include <chrono>
 #include <clocale>
-#include <omp.h>
+//#include <omp.h>
 //#include "../include/papi_panns.h"
 //#include "../core/Searching.202002101535.reorganization.h"
 //#include "../core/Searching.201912161559.set_for_queue.h"
@@ -23,19 +23,19 @@
 //#include "../core/Searching.202005271122.choosing_m.h"
 //#include "../core/Searching.202006191549.nested_parallel.h"
 //#include "../core/Searching.202006222053.subsearch.h"
-#include "../core/Searching.202007121434.two_queues.bak.h"
+#include "../core/Searching.202007121434.two_queues.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <true_NN_file>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <true_NN_file> <num_threads>\n",
 //            "Usage: %s <data_file> <query_file> <nsg_path> <search_L> <search_K> <result_path> <value_M_max> <true_NN_file> <num_threads>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 8) {
+    if (argc != 9) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -66,6 +66,9 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
+    int num_threads = strtoull(argv[8], nullptr, 0);
+    engine.num_threads_ = num_threads;
+
 //    int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
@@ -80,7 +83,7 @@ int main(int argc, char **argv)
 //                local_queue_length = 1;
 //            }
 //            unsigned value_M = M_max;
-            unsigned warmup_max = 4;
+            unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
 //                {//test
 //                    engine.time_memmove_list_.resize(num_threads, 0);
@@ -100,22 +103,26 @@ int main(int argc, char **argv)
 //                std::vector< std::vector<PANNS::idi> > top_m_candidates_list(num_threads,
 //                                                                            std::vector<PANNS::idi>(local_queue_length));
                 std::vector<PANNS::Neighbor> worklist(points_num);
+                std::vector<PANNS::Neighbor> workbuffer(engine.width_ * num_threads);
 //                std::vector<PANNS::Neighbor> worklist(L);
+                std::vector<PANNS::Runtime> runtimes(num_threads);
                 auto s = std::chrono::high_resolution_clock::now();
                 engine.prepare_init_ids(
                         init_ids,
                         L,
                         is_visited);
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.simple_search_with_two_queues_seq(
+                    engine.simple_search_two_global_queues_workbuffer(
                             q_i,
                             L,
                             set_L,
                             worklist,
+                            workbuffer,
                             init_ids,
                             is_visited,
                             K,
-                            set_K_list[q_i]);
+                            set_K_list[q_i],
+                            runtimes);
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -140,7 +147,7 @@ int main(int argc, char **argv)
                 }
                 {// Basic output
                     printf(
-//                           "num_threads: %d "
+                           "num_threads: %d "
 //                           "M: %u "
                            "L: %u "
                            "runtime(s.): %f "
@@ -155,18 +162,23 @@ int main(int argc, char **argv)
                            "P@1: %f "
                            "G/s: %f "
                            "GFLOPS: %f "
-                           "addtime(s.): %f "
-                           "addcount: %lu \n",
+                           "add_R(s.): %f(%.2f%%) "
+                           "add_W(s.): %f(%.2f%%) "
+                           "pick_time(s.): %f(%.2f%%)",
+//                           "expand_time(s.): %f(%.2f%%)\n",
+//                           "addtime(s.): %lu\n",
+//                           "addtime(s.): %f "
+//                           "addcount: %lu \n",
 //                           "local_queue_length: %u "
 //                           "M_middle: %u "
 //                           "merge_time(s.): %f \n",
 //                           "memmove_time(s.): %f\n",
 //                           "num_local_elements: %lu\n",
-//                           num_threads,
+                           num_threads,
 //                           value_M,
                            L,
                            diff.count(),
-                           engine.count_distance_computation_,
+                           engine.count_distance_computation_atomic_.load(),
                            K,
                            points_num,
                            data_dimension,
@@ -177,16 +189,40 @@ int main(int argc, char **argv)
                            recalls[1],
                            data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                            data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
-                           engine.time_add_to_queue_,
-                           engine.count_add_to_queue_);
+                           engine.time_add_to_result_, 100.0 * engine.time_add_to_result_ / diff.count(),
+                           engine.time_add_to_worklist_, 100.0 * engine.time_add_to_worklist_ / diff.count(),
+                           engine.time_pick_tops_, 100.0 * engine.time_pick_tops_ / diff.count());
+//                           engine.time_expand_neighbors_, 100.0 * engine.time_expand_neighbors_ / diff.count());
+//                           engine.time_add_to_queue_.load());
+//                           engine.time_add_to_queue_,
+//                           engine.count_add_to_queue_);
 //                           local_queue_length,
 //                           M_middle,
 //                           engine.time_merge_);
 //                           time_memmove);
 //                           engine.number_local_elements_);
-                    engine.count_distance_computation_ = 0;
-                    engine.time_add_to_queue_ = 0;
-                    engine.count_add_to_queue_ = 0;
+                    for (int t_i = 0; t_i < num_threads; ++t_i) {
+//                        printf(" expand_time[%u](s.): %f",
+//                                t_i, runtimes[t_i].expand_neighbors_);
+                        printf(" expand_time[%u](s.): %f "
+                               " exp_R_check[%u](s.): %f "
+                               " exp_W_check[%u](s.): %f",
+                               t_i, runtimes[t_i].expand_neighbors_,
+                               t_i, runtimes[t_i].exp_result_check_,
+                               t_i, runtimes[t_i].exp_worklist_check_);
+//                        runtimes[t_i].clear();
+                        runtimes[t_i].expand_neighbors_ = 0.0;
+                        runtimes[t_i].exp_result_check_ = 0.0;
+                        runtimes[t_i].exp_worklist_check_ = 0.0;
+                    }
+                    printf("\n");
+                    engine.count_distance_computation_atomic_ = 0;
+                    engine.time_add_to_result_ = 0;
+                    engine.time_add_to_worklist_ = 0;
+                    engine.time_pick_tops_ = 0;
+//                    engine.time_expand_neighbors_ = 0;
+//                    engine.time_add_to_queue_ = 0;
+//                    engine.count_add_to_queue_ = 0;
 //                    engine.time_merge_ = 0;
 //                    engine.number_local_elements_ = 0;
 //                    cache_miss_rate.print();

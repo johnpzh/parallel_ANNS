@@ -3,7 +3,7 @@
 ####! /bin/bash
 
 if [ $# -ne 9 ]; then
-    echo "Usage: $0 <script> <tag> <location_runtime> <location_computation> <location_recall> <location_Queries_per_Second> <location_merge_time> <repeats> <data_directory>"
+    echo "Usage: $0 <script> <tag> <location_runtime> <location_computation> <location_recall> <location_bandwidth> <location_gflops> <repeats> <data_directory>"
     exit
 fi
 
@@ -12,8 +12,10 @@ tag=$2
 loc_rntm=$3
 loc_comp=$4
 loc_prec=$5
-loc_qps=$6
-loc_merge=$7
+#loc_qps=$6
+loc_bdw=$6
+#loc_merge=$7
+loc_gflops=$7
 repeats=$8
 data_dir=$9
 
@@ -27,10 +29,13 @@ ${app} ${data_dir} | tee output.${tag}.raw.txt
 python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.runtime.txt ${repeats} ${loc_rntm}
 python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.computation.txt ${repeats} ${loc_comp}
 python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.recall.txt ${repeats} ${loc_prec}
-python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.queries_per_second.txt ${repeats} ${loc_qps}
-python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.merge_time.txt ${repeats} ${loc_merge}
+python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.bandwidth.txt ${repeats} ${loc_bdw}
+python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.gflops.txt ${repeats} ${loc_gflops}
+#python3 ../scripts/output_maximum.py output.${tag}.raw.txt output.${tag}.queries_per_second.txt ${repeats} ${loc_qps}
+#python3 ../scripts/output_minimum.py output.${tag}.raw.txt output.${tag}.merge_time.txt ${repeats} ${loc_merge}
 
-python3 ../scripts/combine_four_cols.py output.${tag}.runtime.txt output.${tag}.recall.txt output.${tag}.computation.txt output.${tag}.merge_time.txt output.${tag}.performance_table.txt
+python3 ../scripts/combine_five_cols.py output.${tag}.runtime.txt output.${tag}.recall.txt output.${tag}.computation.txt output.${tag}.bandwidth.txt output.${tag}.gflops.txt output.${tag}.performance_table.txt
+#python3 ../scripts/combine_four_cols.py output.${tag}.runtime.txt output.${tag}.recall.txt output.${tag}.computation.txt output.${tag}.merge_time.txt output.${tag}.performance_table.txt
 
 ## Backup
 #app_name=$(basename ${app} .sh)

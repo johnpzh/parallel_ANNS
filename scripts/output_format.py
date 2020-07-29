@@ -26,11 +26,13 @@ with open(sys.argv[1]) as fin, \
             is_first_line = False
             output = []
             for si in selected_indices:
-                output.append(columns[2 * si])
+                if 2 * si < len(columns):
+                    output.append(columns[2 * si])
             fout.write('\t'.join(output) + '\n')
 
         # Print column values
         output = []
         for si in selected_indices:
-            output.append(columns[2 * si + 1])
+            if 2 * si + 1 < len(columns):
+                output.append(columns[2 * si + 1])
         fout.write('\t'.join(output) + '\n')
