@@ -146,6 +146,11 @@ public:
             const idi local_queue_length,
 //        std::vector<Candidate> &set_L,
             const idi L);
+    idi merge_all_queues_seq(
+            std::vector<Candidate> &set_L,
+            std::vector<idi> &local_queues_ends,
+            const idi local_queue_length,
+            const idi L);
     idi merge_all_queues_queue_base(
 //        std::vector< std::vector<Candidate> > &local_queues_list,
             std::vector<Candidate> &set_L,
@@ -2189,6 +2194,61 @@ inline idi Searching::merge_all_queues_para_array(
     // Reset local_queues_ends
     // Not do this for Collector Idea or Selecting Idea
     std::fill(local_queues_ends.begin(), local_queues_ends.end() - 1, 0);
+//    std::fill(local_queues_ends.begin(), local_queues_ends.end(), 0);
+
+    return nk;
+//    return r;
+}
+
+inline idi Searching::merge_all_queues_seq(
+        std::vector<Candidate> &set_L,
+        std::vector<idi> &local_queues_ends,
+        const idi local_queue_length,
+        const idi L)
+{
+    idi nk = L;
+    for (int i = 1; i < num_threads_; ++i) {
+        idi ai = i;
+        idi a_start = ai * local_queue_length;
+        idi bi = i - 1;
+        idi b_start = bi * local_queue_length;
+        if (0 == local_queues_ends[bi]) {
+            continue;
+        }
+        if (local_queues_ends[ai] == 0) {
+            std::copy(set_L.begin() + b_start,
+                      set_L.begin() + b_start + local_queues_ends[bi],
+                      set_L.begin() + a_start); // Copy bi to ai
+            local_queues_ends[ai] = local_queues_ends[bi];
+            local_queues_ends[bi] = 0;
+            continue;
+        }
+        if (ai != static_cast<idi>(num_threads_ - 1)) {
+            merge_two_queues_into_1st_queue_seq_incr(
+                    set_L,
+                    a_start,
+                    local_queues_ends[ai],
+                    local_queue_length,
+                    set_L,
+                    b_start,
+                    local_queues_ends[bi]);
+        } else {
+            idi r = merge_two_queues_into_1st_queue_seq_fixed(
+                    set_L,
+                    a_start,
+                    L,
+                    set_L,
+                    b_start,
+                    local_queues_ends[bi]);
+            if (r < nk) {
+                nk = r;
+            }
+        }
+        local_queues_ends[bi] = 0;
+    }
+    // Reset local_queues_ends
+    // Not do this for Collector Idea or Selecting Idea
+//    std::fill(local_queues_ends.begin(), local_queues_ends.end() - 1, 0);
 //    std::fill(local_queues_ends.begin(), local_queues_ends.end(), 0);
 
     return nk;
@@ -4824,7 +4884,7 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
 {
 //    const idi base_set_L = (num_threads_ - 1) * local_queue_length;
     {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (idi c_i = 0; c_i < L; ++c_i) {
             is_visited[init_ids[c_i]] = 1;
         }
@@ -4962,9 +5022,10 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
             {// Scale M
                 if (M < value_M_max) {
                     M <<= 1;
-                } else {
-                    M = value_M_max;
                 }
+//                else {
+//                    M = value_M_max;
+//                }
             }
 
 //            {// Print relative distance
@@ -5004,7 +5065,7 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
             // Push M candidates' neighbors into the queue.
 //#pragma omp parallel for reduction(+ : tmp_count_computation) num_threads(real_threads)
 #pragma omp parallel for reduction(+ : tmp_count_computation)
-//#pragma omp parallel for schedule(static, 1) reduction(+ : tmp_count_computation)
+//#pragma omp parallel for schedule(dynamic, 1) reduction(+ : tmp_count_computation)
             for (idi c_i = 0; c_i < top_m_candidates_end; ++c_i) {
                 int tid = omp_get_thread_num();
                 idi cand_id = top_m_candidates[c_i];
@@ -5070,13 +5131,11 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
 
 //        // Merge. Merge all queues in parallel.
             {
-                time_merge_ -= WallTimer::get_time_mark();
+//                time_merge_ -= WallTimer::get_time_mark();
                 if (num_threads_ > 1) {
-//                    idi r = merge_all_queues_queue_base(
+//                    idi r = merge_all_queues_seq(
 //                            set_L,
 //                            local_queues_ends,
-//                            queue_base,
-//                            real_threads,
 //                            local_queue_length,
 //                            L);
                     idi r = merge_all_queues_para_array(
@@ -5088,7 +5147,7 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
                         nk = r;
                     }
                 }
-                time_merge_ += WallTimer::get_time_mark();
+//                time_merge_ += WallTimer::get_time_mark();
             }
             if (nk <= last_k) {
                 k = nk;
@@ -5098,19 +5157,11 @@ inline void Searching::para_search_with_top_m_merge_queues_middle_m(
             {// Scale M
                 if (M < value_M_max) {
                     M <<= 1;
-                } else {
-                    M = value_M_max;
                 }
-            }
-
-//            {// Print relative distance
-////                distf top_dist = set_L[base_set_L].distance_;
-//                for (idi i_l = 0; i_l < L; ++i_l) {
-//                    printf("%u %f\n",
-//                           tmp_count, set_L[i_l + base_set_L].distance_);
-////                           tmp_count, set_L[i_l + base_set_L].distance_ - top_dist);
+//                else {
+//                    M = value_M_max;
 //                }
-//            }
+            }
         }
     }
 

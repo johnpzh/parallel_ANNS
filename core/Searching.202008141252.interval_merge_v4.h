@@ -1,0 +1,351 @@
+//
+// Created by Zhen Peng on 08/14/2020.
+//
+
+#ifndef BATCH_SEARCHING_SEARCHING_H
+#define BATCH_SEARCHING_SEARCHING_H
+
+#include <vector>
+#include <boost/dynamic_bitset.hpp>
+//#include <boost/sort/sort.hpp>
+#include <iostream>
+#include <fstream>
+#include <unordered_map>
+#include <immintrin.h>
+#include <cstring>
+#include <unordered_set>
+#include <set>
+#include <cfloat>
+#include <algorithm>
+//#include <omp.h>
+#include "../include/definitions.h"
+//#include "../include/efanna2e/neighbor.h"
+#include "../include/utils.h"
+#include "../include/Candidate.h"
+#include "../include/parallelization.h"
+#include "../include/bitvector.h"
+
+namespace PANNS {
+
+class Searching {
+//private:
+public:
+    idi num_v_ = 0;
+    edgei num_e_ = 0;
+    idi num_queries_ = 0;
+    int dimension_ = 0;
+
+    idi width_ = 0; // NSG largest degree
+    idi ep_ = 0; // Start point
+
+//    std::vector<dataf> data_load_;
+//    std::vector<dataf> queries_load_;
+//    std::vector< std::vector<dataf> > data_load_;
+//    std::vector< std::vector<dataf> > queries_load_;
+//    std::vector<distf> norms_;
+    dataf *data_load_ = nullptr;
+    dataf *queries_load_ = nullptr;
+//    dataf *norms_;
+//    std::vector< std::vector<idi> > nsg_graph_;
+
+//    idi *nsg_graph_indices_;
+//    idi *nsg_graph_out_edges_;
+
+//    std::vector< std::vector<idi> > edge_list_;
+
+    char *opt_nsg_graph_ = nullptr;
+    uint64_t data_bytes_;
+    uint64_t neighbor_bytes_;
+    uint64_t vertex_bytes_;
+
+    // For multithreads
+    int num_threads_ = 1;
+//    int num_real_threads_ = 1;
+//    int num_threads_intra_query_ = 1;
+//    int num_threads_inter_query_ = 1;
+    uint64_t thread_compuation_quota_ = 0;
+    std::vector<uint64_t> threads_computations_;
+
+    dataf compute_norm(
+            const dataf *data) const;
+//          idi vertex_id);
+//            const std::vector<PANNS::dataf> &data);
+//        size_t loc_start,
+//        idi dimension)
+    dataf compute_distance_with_norm(
+            const dataf *v_data,
+            const dataf *q_data,
+//            idi vertex_id,
+//            idi query_id,
+//            const std::vector<dataf> &d_data,
+//            const std::vector<dataf> &q_data,
+//        PANNS::idi d_start,
+//        PANNS::idi q_start,
+            const dataf vertex_norm) const;
+    static idi add_into_queue(
+            std::vector<PANNS::Candidate> &queue,
+            const idi queue_start,
+            idi &queue_size,
+            const idi queue_capacity,
+            const PANNS::Candidate &cand);
+    static void add_into_queue_at(
+            const Candidate &cand,
+            std::vector<Candidate> &queue,
+            const idi insert_index, // The insertion location, independent with queue_start
+            const idi queue_start,
+            idi &queue_top, // The number of elements in queue, independent with queue_start
+            const idi queue_size); // The maximum capacity of queue, independent with queue_start.
+    static void insert_one_element_at(
+//        const T &cand,
+//        T *queue_base,
+            const Candidate &cand,
+            std::vector<Candidate> &queue_base,
+            const idi insert_index,
+            const idi queue_start,
+            const idi queue_size);
+    static idi merge_two_queues_into_1st_queue_seq_fixed(
+            std::vector<Candidate> &queue1,
+            const idi queue1_start,
+            const idi queue1_size,
+            std::vector<Candidate> &queue2,
+            const idi queue2_start,
+            const idi queue2_size);
+    static idi merge_two_queues_into_1st_queue_seq_incr(
+            std::vector<Candidate> &queue1,
+            const idi queue1_start,
+            idi &queue1_size, // The number of element in queue1, independent with queue1_start.
+            const idi queue1_length, // The maximum capacity of queue1, independent with queue1_start.
+            std::vector<Candidate> &queue2,
+            const idi queue2_start,
+            const idi queue2_size);
+    idi merge_all_queues_to_master(
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            const idi local_queue_capacity,
+            const idi L);
+    idi merge_queues_of_four(
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            const idi group_id,
+            const idi local_queue_capacity,
+            const idi master_queue_capacity);
+    idi merge_all_queues_to_master(
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            const idi local_queue_capacity,
+            const idi local_master_queue_capacity,
+            const idi master_queue_capacity,
+            const idi group_size);
+    void subsearch_with_top_m(
+            const idi value_M_max,
+            const idi query_id,
+            const idi local_L,
+            std::vector<Candidate> &set_L,
+            const idi set_L_start,
+            idi &set_L_size,
+            std::vector<idi> &local_top_m_candidates,
+            boost::dynamic_bitset<> &is_visited,
+            uint64_t &local_count_distance_computation);
+    void subsearch_top_m_for_one_iteration(
+            const idi iter,
+            idi &k_uc,
+            const idi value_M,
+            const idi query_id,
+            const dataf *query_data,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const idi set_L_start,
+            idi &set_L_size,
+            std::vector<idi> &top_m_candidates,
+            boost::dynamic_bitset<> &is_visited,
+            uint64_t &count_distance_computation);
+    idi expand_one_candidate(
+            const idi q_i,
+            const idi cand_id,
+            const dataf *query_data,
+            const distf &dist_bound,
+            std::vector<Candidate> &set_L,
+            const idi local_queue_start,
+            idi &local_queue_size,
+            const idi &local_queue_capacity,
+            boost::dynamic_bitset<> &is_visited,
+            uint64_t &local_count_computation,
+            bool &is_quota_done);
+    void group_search_for_one_iteration(
+            const idi g_i,
+            const dataf *query_data,
+            const idi M_group,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const idi local_queue_capacity, // Maximum size of local queue
+            const idi local_master_queue_capacity, // Maximum size of local master queue
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            std::vector<idi> &top_m_candidates,
+            const idi top_m_candidates_start,
+            idi &top_m_candidates_size,
+            boost::dynamic_bitset<> &is_visited,
+            idi &k_uc,
+            idi &last_k,
+            idi &nk,
+            const idi para_iter,
+            const idi group_size, // Should be 4
+            const idi num_groups,
+            const idi full_merge_freq,
+            bool &is_finished,
+            uint64_t &group_distance_computation);
+    idi pick_top_m_to_workers(
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &top_m_candidates,
+            const std::vector<idi> &top_m_candidates_starts,
+            std::vector<idi> &top_m_candidates_sizes,
+            const idi k_uc,
+            idi &last_k,
+            const idi M);
+    void pick_top_m_unchecked(
+            const idi M,
+            const idi k_uc,
+            std::vector<Candidate> &set_L,
+            const idi local_queue_start,
+            const idi local_queue_size,
+            std::vector<idi> &top_m_candidates,
+//            const idi top_m_candidates_start,
+            idi &top_m_candidates_size,
+            idi &last_k);
+    void pick_top_m_unchecked_from_queues(
+            const idi M,
+            const int queue_i_start,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            const std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &top_m_candidates,
+            idi &top_m_candidates_size,
+            int &queue_i_end,
+            const std::vector<idi> &ks,
+            std::vector<idi> &last_ks) const;
+    void interval_expand(
+            idi M,
+//            const idi M_max,
+            const dataf* query_data,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const idi local_queue_capacity,
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes,
+            std::vector<idi> &top_m_candidates,
+            boost::dynamic_bitset<> &is_visited,
+            const idi subsearch_iterations);
+
+
+public:
+    // For Profiling
+//    L3CacheMissRate cache_miss_kernel;
+    uint64_t count_distance_computation_ = 0;
+    uint64_t count_full_merge_ = 0;
+//    uint64_t count_threads_computation_ = 0;
+//    uint64_t count_add_to_queue_ = 0;
+//    uint64_t count_single_query_computation_ = 0;
+//    distf dist_min_ = 0;
+//    distf dist_max_ = 0;
+//    double time_merge_ = 0;
+//    double time_gather_ = 0;
+//    double time_move_top_m_ = 0;
+    double time_full_merge_ = 0;
+//    double time_select_ = 0;
+//    double time_select_L_ = 0.0;
+//    double time_select_M_ = 0.0;
+//    double time_initialization_ = 0;
+//    double time_sequential_phase_ = 0;
+//    double time_parallel_phase_ = 0;
+//    double time_ending_ = 0.0;
+//    double time_assign_s_ = 0.0;
+    double time_expand_ = 0.0;
+    double time_pick_top_m_ = 0.0;
+//    double time_distance_computation_ = 0.0;
+//    double time_add_to_queue_ = 0.0;
+//    double time_insert_ = 0;
+//    double time_compare_minimum_ = 0;
+//    double time_memmove_ = 0;
+//    std::vector<double> time_memmove_list_;
+//    L3CacheMissRate profile_miss_rate;
+//    uint64_t number_local_elements_ = 0;
+//    std::vector<idi> L_ids_;
+//    std::vector<idi> M_ids_;
+
+    ~Searching()
+    {
+        free(data_load_);
+        data_load_ = nullptr;
+//        free(queries_load_);
+//        _mm_free(data_load_);
+        free(queries_load_);
+        queries_load_ = nullptr;
+//        free(norms_);
+//        free(nsg_graph_indices_);
+//        free(nsg_graph_out_edges_);
+        free(opt_nsg_graph_);
+        opt_nsg_graph_ = nullptr;
+    }
+    void load_data_load(char *filename);
+    void load_queries_load(char *filename);
+    void load_nsg_graph(char *filename);
+//    void build_opt_graph();
+    void prepare_init_ids(
+            std::vector<unsigned> &init_ids,
+            const unsigned L) const;
+    void load_true_NN(
+            const char *filename,
+            std::vector< std::vector<idi> > &true_nn_list);
+    void get_recall_for_all_queries(
+            const std::vector< std::vector<idi> > &true_nn_list,
+            const std::vector<std::vector<unsigned>> &set_K_list,
+            std::unordered_map<unsigned, double> &recalls) const;
+    void para_search_with_top_m_interval_merge_v2(
+            const idi value_M_middle,
+            const idi value_M_max,
+            const idi local_M_max,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            std::vector<idi> &top_m_candidates,
+//            std::vector<idi> &ks,
+//            std::vector<idi> &last_ks,
+//            std::vector<idi> &nks,
+            boost::dynamic_bitset<> &is_visited,
+            const idi subsearch_iterations);
+
+    void para_search_with_top_m_interval_merge_v3(
+            const idi value_M_middle,
+            const idi value_M_max,
+//            const idi local_M_max,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            std::vector<idi> &top_m_candidates,
+            boost::dynamic_bitset<> &is_visited,
+            const idi subsearch_iterations);
+}; // Class Searching
+
+
+
+} // namespace PANNS
+
+
+#endif //BATCH_SEARCHING_SEARCHING_H

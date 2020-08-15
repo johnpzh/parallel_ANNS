@@ -16,8 +16,8 @@ data_dir=$1
 #export KMP_AFFINITY="verbose,granularity=fine,compact,1,0"
 #export KMP_AFFINITY="verbose,granularity=core,compact,1,0"
 #export KMP_AFFINITY="verbose,granularity=fine,proclist=[0,4,8,6,2,12,16,18,14,10,20,24,28,26,22,32,36,38,34,30,1,5,9,7,3,13,17,19,15,11,21,25,29,27,23,33,37,39,35,31],explicit"
-export KMP_AFFINITY="granularity=fine,compact,0,0"
-#export KMP_AFFINITY="granularity=core,compact,1,0"
+#export KMP_AFFINITY="granularity=fine,compact,0,0"
+export KMP_AFFINITY="granularity=core,compact,1,0"
 ## KNL and Pitzer are different
 
 cd ../cmake-build-release || exit
@@ -29,7 +29,6 @@ cd ../cmake-build-release || exit
 #bin_panns=./profile_para_single_query_top_m_search_better_merge
 #bin_panns=./profile_para_single_query_top_m_search_little_m
 #bin_panns=./profile_para_single_query_top_m_search_middle_m
-bin_panns="numactl -m 0 ./profile_para_single_query_top_m_search_middle_m"
 #bin_panns=./profile_para_single_query_top_m_search_no_merge
 #bin_panns=./profile_para_single_query_top_m_search_relative_distance_threshold
 #bin_panns=./profile_para_single_query_top_m_search_collector_threads
@@ -37,14 +36,17 @@ bin_panns="numactl -m 0 ./profile_para_single_query_top_m_search_middle_m"
 #bin_panns=./profile_para_single_query_top_m_search_subsearch
 #bin_panns=./profile_para_simple_search_two_global_queues
 #bin_panns=./profile_para_simple_search_two_global_queues.workbuffer
+#bin_panns=./profile_para_multi_queries_top_m_search_vtune
+bin_panns="numactl -m 0 ./profile_para_multi_queries_top_m_search_vtune"
 #num_t_max=16
+#num_t_max=20
 num_t_max=40
 #num_t_max=2
 #num_t_max=1
 #value_m=128
 
 #value_M_middle=1
-value_M_middle=4
+#value_M_middle=4
 #for ((relative_dist_threshold = 1; relative_dist_threshold <= 20; relative_dist_threshold += 1)); do
 #    relative_dist_threshold=$(bc -l <<< "${relative_dist_threshold} / 100")
 #for ((relative_dist_threshold = 0.01; relative_dist_threshold <= 0.2; relative_dist_threshold += 0.01)); do
@@ -74,7 +76,8 @@ value_M_middle=4
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
-            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs $((value_m / num_t)) ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${local_L}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $((100 * num_t)) $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
         done
@@ -102,7 +105,8 @@ value_M_middle=4
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
     #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
-            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${value_M_middle}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs $((value_m / num_t)) ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${local_L}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $((100 * num_t)) $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-1000.binary ${num_t}
         done
@@ -130,7 +134,8 @@ value_M_middle=4
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
     #        ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle} ${cmt_threshold} ${init_size}
-            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+#            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${value_M_middle}
+            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $l $k output.ivecs $((value_m / num_t)) ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${local_L}
 #            ${bin_panns} ${data_path}/${data_name}_base.fvecs ${data_path}/${data_name}_query.fvecs ${data_path}/${data_name}.nsg $((100 * num_t)) $k output.ivecs ${value_m} ${data_path}/${data_name}.true-100_NN.q-10000.binary ${num_t}
         done

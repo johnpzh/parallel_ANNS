@@ -219,6 +219,14 @@ public:
 //            std::vector<idi> &init_ids,
             const std::vector<idi> &init_ids,
             std::vector<idi> &set_K);
+    void search_in_query_parallel(
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            uint64_t &tmp_distance_computation);
 //    void search_in_sequential_BitVector(
 //            const idi query_id,
 //            const idi K,
@@ -894,7 +902,7 @@ inline void Searching::search_in_sequential(
         unsigned v_id = init_ids[i];
         auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
         dataf norm = *v_data++;
-        ++count_distance_computation_;
+//        ++count_distance_computation_;
         distf dist = compute_distance_with_norm(v_data, query_data, norm);
         set_L[i] = Candidate(v_id, dist, false); // False means not checked.
     }
@@ -943,7 +951,7 @@ inline void Searching::search_in_sequential(
                 auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
                 dataf norm = *nb_data++;
                 // Compute the distance
-                ++count_distance_computation_;
+//                ++count_distance_computation_;
                 distf dist = compute_distance_with_norm(nb_data, query_data, norm);
                 if (dist > set_L[L-1].distance_) {
                     continue;
@@ -953,10 +961,10 @@ inline void Searching::search_in_sequential(
 //                }
                 Candidate cand(nb_id, dist, false);
                 // Insert into the queue
-                ++count_add_to_queue_;
-                time_add_to_queue_ -= WallTimer::get_time_mark();
+//                ++count_add_to_queue_;
+//                time_add_to_queue_ -= WallTimer::get_time_mark();
                 idi r = insert_into_queue(set_L, L, cand);
-                time_add_to_queue_ += WallTimer::get_time_mark();
+//                time_add_to_queue_ += WallTimer::get_time_mark();
                 if (r < nk) {
                     nk = r;
                 }
@@ -996,6 +1004,95 @@ inline void Searching::search_in_sequential(
 ////            exit(1);
 ////        }
 //    }
+}
+
+inline void Searching::search_in_query_parallel(
+        const idi query_id,
+        const idi K,
+        const idi L,
+        std::vector<Candidate> &set_L,
+        const std::vector<idi> &init_ids,
+        std::vector<idi> &set_K,
+        uint64_t &tmp_distance_computation)
+{
+    boost::dynamic_bitset<> is_visited(num_v_);
+
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        is_visited[init_ids[v_i]] = true;
+    }
+
+    const dataf *query_data = queries_load_ + query_id  * dimension_;
+
+    for (idi v_i = 0; v_i < L; ++v_i) {
+        idi v_id = init_ids[v_i];
+        _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+    }
+    // Get the distances of all candidates, store in the set set_L.
+    for (unsigned i = 0; i < L; i++) {
+        unsigned v_id = init_ids[i];
+        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+        dataf norm = *v_data++;
+//        ++count_distance_computation_;
+        ++tmp_distance_computation;
+        distf dist = compute_distance_with_norm(v_data, query_data, norm);
+        set_L[i] = Candidate(v_id, dist, false); // False means not checked.
+    }
+    std::sort(set_L.begin(), set_L.begin() + L);
+    idi k = 0; // Index of every queue's first unchecked candidate.
+    idi tmp_count = 0; // for debug
+
+    while (k < L) {
+        Candidate &top_cand = set_L[k];
+        unsigned nk = L;
+        if (!top_cand.is_checked_) {
+            ++tmp_count;
+
+            top_cand.is_checked_ = true;
+            idi v_id = top_cand.id_; // Vertex ID.
+            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+            idi *out_edges = (idi *) (opt_nsg_graph_ + v_id * vertex_bytes_ + data_bytes_);
+            idi out_degree = *out_edges++;
+            for (idi n_i = 0; n_i < out_degree; ++n_i) {
+                _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+            }
+            // Traverse v_id's all neighbors, pushing them into the queue
+            for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                idi nb_id = out_edges[e_i];
+                if (is_visited[nb_id]) {
+                    continue;
+                }
+                is_visited[nb_id] = true;
+                auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+                dataf norm = *nb_data++;
+                // Compute the distance
+//                ++count_distance_computation_;
+                ++tmp_distance_computation;
+                distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+                if (dist > set_L[L-1].distance_) {
+                    continue;
+                }
+//                if (dist >= set_L[L-1].distance_) {
+//                    continue;
+//                }
+                Candidate cand(nb_id, dist, false);
+                // Insert into the queue
+                idi r = insert_into_queue(set_L, L, cand);
+                if (r < nk) {
+                    nk = r;
+                }
+            }
+        }
+        if (nk <= k) {
+            k = nk;
+        } else {
+            ++k;
+        }
+    }
+//    cache_miss_kernel.measure_stop();
+
+    for (size_t k_i = 0; k_i < K; ++k_i) {
+        set_K[k_i] = set_L[k_i].id_;
+    }
 }
 
 //inline void Searching::search_in_sequential_BitVector(

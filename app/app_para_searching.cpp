@@ -46,6 +46,10 @@ int main(int argc, char **argv)
         std::cout << "search_L cannot be smaller than search_K!" << std::endl;
         exit(-1);
     }
+    std::vector< std::vector<PANNS::idi> > true_nn_list;
+    engine.load_true_NN(
+            argv[7],
+            true_nn_list);
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
@@ -66,26 +70,34 @@ int main(int argc, char **argv)
             auto s = std::chrono::high_resolution_clock::now();
 
             engine.prepare_init_ids(init_ids, L);
-#pragma omp parallel for
+            uint64_t tmp_distance_computation = 0;
+#pragma omp parallel for reduction(+ : tmp_distance_computation)
             for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                engine.search_in_sequential(
+                engine.search_in_query_parallel(
                         q_i,
                         K,
                         L,
                         set_L_list[q_i],
 //                        set_L,
                         init_ids,
-                        set_K_list[q_i]);
+                        set_K_list[q_i],
+                        tmp_distance_computation);
+//                engine.search_in_sequential(
+//                        q_i,
+//                        K,
+//                        L,
+//                        set_L_list[q_i],
+////                        set_L,
+//                        init_ids,
+//                        set_K_list[q_i]);
             }
+            engine.count_distance_computation_ += tmp_distance_computation;
             auto e = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> diff = e - s;
 
             std::unordered_map<unsigned, double> recalls;
             {// Recall values
-                std::vector< std::vector<PANNS::idi> > true_nn_list;
-                engine.load_true_NN(
-                        argv[7],
-                        true_nn_list);
+
                 engine.get_recall_for_all_queries(
                         true_nn_list,
                         set_K_list,
@@ -103,7 +115,11 @@ int main(int argc, char **argv)
                        "query_num: %u "
                        "query_per_sec: %f "
                        "average_latency(ms.): %f "
-                       "P@100: %f\n",
+                       "P@100: %f "
+                       "P@1: %f "
+                       "G/s: %f "
+                       "GFLOPS: %f "
+                       "\n",
                        num_threads,
                        L,
                        diff.count(),
@@ -116,7 +132,10 @@ int main(int argc, char **argv)
                        query_num,
                        query_num / diff.count(),
                        diff.count() * 1000 / query_num,
-                       recalls[100]);
+                       recalls[100],
+                       recalls[1],
+                       data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
+                       data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) / diff.count());
 //                index.time_distance_computation = 0.0;
 //                    index.count_distance_computation = 0;
                 engine.count_distance_computation_ = 0;

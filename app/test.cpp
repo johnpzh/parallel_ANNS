@@ -10,6 +10,7 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <cmath>
 #include "../include/bitvector.h"
 
 double print_c(double *C, int n)
@@ -356,8 +357,8 @@ void test_level2(int parent)
     for (int i = 0; i < 3; ++i) {
 //#pragma omp master
         {
-            printf("level2: num_threads: %u parent: %u i: %u\n",
-                   omp_get_num_threads(), parent, i);
+            printf("level2: num_threads: %u parent: %u i: %u tid: %u\n",
+                   omp_get_num_threads(), parent, i, omp_get_thread_num());
         }
     }
 }
@@ -368,8 +369,8 @@ void test_level1(int parent)
     for (int i = 0; i < 2; ++i) {
 //#pragma omp master
         {
-            printf("level1: num_threads: %u parent: %u i: %u\n",
-                   omp_get_num_threads(), parent, i);
+            printf("level1: num_threads: %u parent: %u i: %u tid: %u\n",
+                   omp_get_num_threads(), parent, i, omp_get_thread_num());
             test_level2(i);
         }
     }
@@ -413,6 +414,72 @@ void test_thread()
     }
 }
 
+//void test_reduction()
+//{
+//    int sum = 0;
+//#pragma omp parallel for reduction(+ : sum)
+//    for (int i = 0; i < 10; ++i) {
+//        int tmp = sum;
+//        sum += 10;
+//        printf("difference: %u\n", sum - tmp);
+//    }
+//}
+
+void test_sections()
+{
+//    omp_set_nested(1);
+    omp_set_max_active_levels(2);
+    uint64_t count_iter = 0;
+#pragma omp parallel sections reduction(+ : count_iter)
+{
+#pragma omp section
+    {
+        int g_i = 0;
+        double sum = 0;
+        count_iter = 4;
+#pragma omp parallel for num_threads(4) reduction(+ : sum, count_iter)
+        for (int i = 0; i < 1000000000; ++i) {
+            sum += i;
+            ++count_iter;
+        }
+        printf("g_i: %u "
+               "sum: %f "
+               "count_iter: %lu\n",
+               g_i,
+               sum,
+               count_iter);
+    }
+#pragma omp section
+    {
+        int g_i = 1;
+        double sum = 0;
+        count_iter = 1;
+#pragma omp parallel for num_threads(4) reduction(+ : sum, count_iter)
+        for (int i = 0; i < 1000000000; ++i) {
+            sum += i;
+            ++count_iter;
+        }
+        printf("g_i: %u "
+               "sum: %f "
+               "count_iter: %lu\n",
+               g_i,
+               sum,
+               count_iter);
+    }
+}
+    printf("counter_iter: %lu\n", count_iter);
+}
+
+void test_reduction()
+{
+    int sum = 10;
+#pragma omp parallel for reduction(+ : sum)
+    for (int i = 0; i < 7; ++i) {
+        ++sum;
+    }
+    printf("sum: %u\n", sum);
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -420,7 +487,9 @@ int main(int argc, char *argv[])
 //    test_bitvector(argc, argv);
 //    test_omp_static(argc, argv);
 //    test_run_levels();
-    test_thread();
+//    test_thread();
+    test_reduction();
+//    test_sections();
 
     return 0;
 }
