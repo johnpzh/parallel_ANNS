@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/14/2020.
+// Created by Zhen Peng on 08/21/2020.
 //
 
 #include <iostream>
@@ -26,18 +26,19 @@
 //#include "../core/Searching.202008062049.computation_quota.h"
 //#include "../core/Searching.202008090117.interval_merge.h"
 //#include "../core/Searching.202008101718.interval_merge_v2.h"
-#include "../core/Searching.202008141252.interval_merge_v4.h"
+//#include "../core/Searching.202008141252.interval_merge_v4.h"
+#include "../core/Searching.202008152055.interval_merge_v5.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file> <num_threads> <M_middle> <local_L> <sub_iters> <compt_quota>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file> <num_threads> <local_L> <sub_iters> <compt_quota>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 14) {
+    if (argc != 13) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -82,18 +83,17 @@ int main(int argc, char **argv)
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
 
-    unsigned M_middle = strtoull(argv[10], nullptr, 0);
-    unsigned local_queue_capacity = strtoull(argv[11], nullptr, 0);
-//    unsigned local_master_queue_capacity = strtoull(argv[12], nullptr, 0);
-    unsigned subsearch_iterations = strtoull(argv[12], nullptr, 0);
-    uint64_t thread_compt_quota = strtoull(argv[13], nullptr, 0);
+//    unsigned M_middle = strtoull(argv[10], nullptr, 0);
+    unsigned local_queue_capacity = strtoull(argv[10], nullptr, 0);
+    unsigned subsearch_iterations = strtoull(argv[11], nullptr, 0);
+    uint64_t thread_compt_quota = strtoull(argv[12], nullptr, 0);
     engine.thread_compuation_quota_ = thread_compt_quota / query_num / num_threads;
     engine.threads_computations_.resize(num_threads, 0);
 
 //    const unsigned group_size = 4;
 //    const unsigned num_groups = (num_threads - 1) / group_size + 1;
     unsigned value_M = M_max;
-//    unsigned local_M_max = value_M / num_threads;
+    unsigned worker_M = value_M / num_threads;
     unsigned warmup_max = 2;
     for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
         std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
@@ -122,9 +122,9 @@ int main(int argc, char **argv)
         engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
         for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-            engine.para_search_with_top_m_interval_merge_v4(
-                    M_middle,
+            engine.para_search_with_top_m_interval_merge_v5(
                     value_M,
+                    worker_M,
                     q_i,
                     K,
                     L,
@@ -207,20 +207,16 @@ int main(int argc, char **argv)
                         "G/s: %f "
                         "GFLOPS: %f "
                         "local_L: %u "
-                        "M_middle: %u "
+//                        "M_middle: %u "
                         "sub_iters: %u "
                         "thd_quota: %lu ",
-//                        "seq(s.): %f "
-//                        "para(s.): %f "
-//                        "init(s.): %f "
-//                        "end(s.): %f\n",
-//                        "seq(s.): %f,%.2f%% "
-//                        "para(s.): %f,%.2f%% "
-//                        "init(s.): %f,%.2f%% "
-//                        "end(s.): %f,%.2f%%\n",
+//                        "iters: %lu "
+//                        "avg_iter: %f "
+//                        "min_iter: %u "
+//                        "max_iter: %u\n",
                         //                    "move_top_m(s.): %f "
 //                        "full_merge(s.): %f "
-//                        "full_merge: %lu "
+//                        "full_merge: %lu ",
 //                        "pick(s.): %f "
 //                        "expand(s.): %f \n",
 //                        "thd_compt: %lu\n",
@@ -244,20 +240,16 @@ int main(int argc, char **argv)
                         data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
                         diff.count(),
                         local_queue_capacity,
-                        M_middle,
+//                        M_middle,
                         subsearch_iterations,
                         engine.thread_compuation_quota_);
-//                        engine.time_sequential_phase_,
-//                        engine.time_parallel_phase_,
-//                        engine.time_initialization_,
-//                        engine.time_ending_);
-//                        engine.time_sequential_phase_, 100.0 * engine.time_sequential_phase_ / diff.count(),
-//                        engine.time_parallel_phase_, 100.0 * engine.time_parallel_phase_ / diff.count(),
-//                        engine.time_initialization_, 100.0 * engine.time_initialization_ / diff.count(),
-//                        engine.time_ending_, 100.0 * engine.time_ending_ / diff.count());
+//                        engine.count_iterations_,
+//                        engine.count_iterations_ * 1.0 / query_num,
+//                        engine.min_iterations_,
+//                        engine.max_iterations_);
 //                    engine.time_move_top_m_,
 //                        engine.time_full_merge_,
-//                        engine.count_full_merge_,
+//                        engine.count_full_merge_);
 //                        engine.time_pick_top_m_,
 //                        engine.time_expand_);
 //                        engine.count_threads_computation_);
@@ -266,15 +258,14 @@ int main(int argc, char **argv)
             printf("\n");
         }
         engine.count_distance_computation_ = 0;
-//        engine.time_sequential_phase_ = 0;
-//        engine.time_parallel_phase_ = 0;
-//        engine.time_initialization_ = 0;
-//        engine.time_ending_ = 0;
 //            engine.time_move_top_m_ = 0;
 //            engine.time_full_merge_ = 0;
-//            engine.count_full_merge_ = 0;
+//        engine.count_full_merge_ = 0;
 //            engine.time_pick_top_m_ = 0;
 //            engine.time_expand_ = 0;
+//            engine.count_iterations_ = 0;
+//            engine.min_iterations_ = UINT_MAX;
+//            engine.max_iterations_ = 0;
 //            engine.count_threads_computation_ = 0;
 //            engine.time_merge_ = 0;
 //                    engine.number_local_elements_ = 0;

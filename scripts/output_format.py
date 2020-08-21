@@ -9,7 +9,20 @@ with open(sys.argv[1]) as fin, \
         open(sys.argv[2], 'w') as fout:
     # selected_indices = [0, 1, 2, 3]
     # Get indices selected
-    selected_indices = [int(i) for i in sys.argv[3:]]
+    # selected_indices = [int(i) for i in sys.argv[3:]]
+    selected_indices = []
+    for arg in sys.argv[3:]:
+        if ":" not in arg:
+            selected_indices.append(int(arg))
+        else:
+            # Support A:B
+            mid = arg.find(":")
+            start = int(arg[0:mid])
+            bound = int(arg[mid + 1:len(arg)])
+            for index in range(start, bound):
+                selected_indices.append(index)
+
+
     is_first_line = True
     for line in fin:
         line = line.strip()

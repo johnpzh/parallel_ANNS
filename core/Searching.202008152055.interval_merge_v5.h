@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/14/2020.
+// Created by Zhen Peng on 08/15/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -131,14 +131,6 @@ public:
             const idi group_id,
             const idi local_queue_capacity,
             const idi master_queue_capacity);
-    idi merge_all_queues_to_master(
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes,
-            const idi local_queue_capacity,
-            const idi local_master_queue_capacity,
-            const idi master_queue_capacity,
-            const idi group_size);
     void subsearch_with_top_m(
             const idi value_M_max,
             const idi query_id,
@@ -174,29 +166,6 @@ public:
             boost::dynamic_bitset<> &is_visited,
             uint64_t &local_count_computation,
             bool &is_quota_done);
-    void group_search_for_one_iteration(
-            const idi g_i,
-            const dataf *query_data,
-            const idi M_group,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const idi local_queue_capacity, // Maximum size of local queue
-            const idi local_master_queue_capacity, // Maximum size of local master queue
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes, // Sizes of local queue
-            std::vector<idi> &top_m_candidates,
-            const idi top_m_candidates_start,
-            idi &top_m_candidates_size,
-            boost::dynamic_bitset<> &is_visited,
-            idi &k_uc,
-            idi &last_k,
-            idi &nk,
-            const idi para_iter,
-            const idi group_size, // Should be 4
-            const idi num_groups,
-            const idi full_merge_freq,
-            bool &is_finished,
-            uint64_t &group_distance_computation);
     idi pick_top_m_to_workers(
             std::vector<Candidate> &set_L,
             const std::vector<idi> &local_queues_starts,
@@ -228,18 +197,6 @@ public:
             int &queue_i_end,
             const std::vector<idi> &ks,
             std::vector<idi> &last_ks) const;
-    void interval_expand(
-            idi M,
-//            const idi M_max,
-            const dataf* query_data,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const idi local_queue_capacity,
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited,
-            const idi subsearch_iterations);
     void worker_subsearch_top_m(
 //    idi worker_subsearch_top_m(
             const int queue_i,
@@ -261,6 +218,9 @@ public:
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
 //    uint64_t count_full_merge_ = 0;
+//    uint64_t count_iterations_ = 0;
+//    idi min_iterations_ = UINT_MAX;
+//    idi max_iterations_ = 0;
 //    uint64_t count_threads_computation_ = 0;
 //    uint64_t count_add_to_queue_ = 0;
 //    uint64_t count_single_query_computation_ = 0;
@@ -320,10 +280,10 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls) const;
 
-    void para_search_with_top_m_interval_merge_v3(
+    void para_search_with_top_m_interval_merge_v4(
             const idi value_M_middle,
             const idi value_M_max,
-//            const idi local_M_max,
+//        const idi value_M,
             const idi query_id,
             const idi K,
             const idi L,
@@ -336,10 +296,9 @@ public:
             std::vector<idi> &top_m_candidates,
             boost::dynamic_bitset<> &is_visited,
             const idi subsearch_iterations);
-    void para_search_with_top_m_interval_merge_v4(
-            const idi value_M_middle,
-            const idi value_M_max,
-//        const idi value_M,
+    void para_search_with_top_m_interval_merge_v5(
+            const idi M,
+            const idi worker_M,
             const idi query_id,
             const idi K,
             const idi L,

@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/14/2020.
+// Created by Zhen Peng on 08/18/2020.
 //
 
 #include <iostream>
@@ -26,18 +26,22 @@
 //#include "../core/Searching.202008062049.computation_quota.h"
 //#include "../core/Searching.202008090117.interval_merge.h"
 //#include "../core/Searching.202008101718.interval_merge_v2.h"
-#include "../core/Searching.202008141252.interval_merge_v4.h"
+//#include "../core/Searching.202008141252.interval_merge_v4.h"
+//#include "../core/Searching.202008152055.interval_merge_v5.h"
+#include "../core/Searching.202008170756.scale_m.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file> <num_threads> <M_middle> <local_L> <sub_iters> <compt_quota>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file> <mid_iter>\n",
+//            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <M_max> <true_NN_file> <num_threads> <local_L> <sub_iters> <compt_quota>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 14) {
+    if (argc != 9) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -73,27 +77,27 @@ int main(int argc, char **argv)
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
+//    unsigned middle_iter = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = strtoull(argv[9], nullptr, 0);
 //    int num_threads_max = 20;
 //    for (int num_threads = 1; num_threads < num_threads_max + 1; num_threads *= 2) {
-    int num_threads = strtoull(argv[9], nullptr, 0);
-    engine.num_threads_ = num_threads;
-    omp_set_num_threads(num_threads);
+//    int num_threads = strtoull(argv[9], nullptr, 0);
+//    engine.num_threads_ = num_threads;
+//    omp_set_num_threads(num_threads);
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
 
-    unsigned M_middle = strtoull(argv[10], nullptr, 0);
-    unsigned local_queue_capacity = strtoull(argv[11], nullptr, 0);
-//    unsigned local_master_queue_capacity = strtoull(argv[12], nullptr, 0);
-    unsigned subsearch_iterations = strtoull(argv[12], nullptr, 0);
-    uint64_t thread_compt_quota = strtoull(argv[13], nullptr, 0);
-    engine.thread_compuation_quota_ = thread_compt_quota / query_num / num_threads;
-    engine.threads_computations_.resize(num_threads, 0);
+//    unsigned M_middle = strtoull(argv[10], nullptr, 0);
+//    unsigned local_queue_capacity = strtoull(argv[10], nullptr, 0);
+//    unsigned subsearch_iterations = strtoull(argv[11], nullptr, 0);
+//    uint64_t thread_compt_quota = strtoull(argv[12], nullptr, 0);
+//    engine.thread_compuation_quota_ = thread_compt_quota / query_num / num_threads;
+//    engine.threads_computations_.resize(num_threads, 0);
 
 //    const unsigned group_size = 4;
 //    const unsigned num_groups = (num_threads - 1) / group_size + 1;
     unsigned value_M = M_max;
-//    unsigned local_M_max = value_M / num_threads;
+//    unsigned worker_M = value_M / num_threads;
     unsigned warmup_max = 2;
     for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
         std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
@@ -102,12 +106,13 @@ int main(int argc, char **argv)
         std::vector<PANNS::idi> init_ids(L);
 //                std::vector<uint8_t> is_visited(points_num, 0);
         boost::dynamic_bitset<> is_visited(points_num);
-        std::vector<PANNS::Candidate> set_L((num_threads - 1) * local_queue_capacity + L);
-        std::vector<PANNS::idi> local_queues_sizes(num_threads, 0);
-        std::vector<PANNS::idi> local_queues_starts(num_threads);
-        for (int q_i = 0; q_i < num_threads; ++q_i) {
-            local_queues_starts[q_i] = q_i * local_queue_capacity;
-        }
+        std::vector<PANNS::Candidate> set_L(L);
+//        std::vector<PANNS::Candidate> set_L((num_threads - 1) * local_queue_capacity + L);
+//        std::vector<PANNS::idi> local_queues_sizes(num_threads, 0);
+//        std::vector<PANNS::idi> local_queues_starts(num_threads);
+//        for (int q_i = 0; q_i < num_threads; ++q_i) {
+//            local_queues_starts[q_i] = q_i * local_queue_capacity;
+//        }
         std::vector<PANNS::idi> top_m_candidates(value_M);
 //        std::vector<PANNS::idi> top_m_candidates((num_threads - 1) * (value_M / num_threads) + value_M);
 //        std::vector<PANNS::idi> top_m_candidates_starts(num_threads);
@@ -122,21 +127,21 @@ int main(int argc, char **argv)
         engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
         for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-            engine.para_search_with_top_m_interval_merge_v4(
-                    M_middle,
+//            engine.seq_search_with_top_m_middle(
+//            engine.seq_search_simple_search(
+            engine.seq_search_with_top_m_pure(
+//            engine.seq_search_with_top_m_scale_m(
+//                    value_M,
                     value_M,
+//                    middle_iter,
                     q_i,
                     K,
                     L,
                     set_L,
                     init_ids,
                     set_K_list[q_i],
-                    local_queue_capacity,
-                    local_queues_starts,
-                    local_queues_sizes,
                     top_m_candidates,
-                    is_visited,
-                    subsearch_iterations);
+                    is_visited);
         }
         auto e = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> diff = e - s;
@@ -191,7 +196,7 @@ int main(int argc, char **argv)
         {// Basic output
                 printf(
 //                            "local_queue_length: %u "
-                        "num_threads: %d "
+//                        "num_threads: %d "
                         "M: %u "
                         "L: %u "
                         "runtime(s.): %f "
@@ -205,19 +210,20 @@ int main(int argc, char **argv)
                         "P@100: %f "
                         "P@1: %f "
                         "G/s: %f "
-                        "GFLOPS: %f "
-                        "local_L: %u "
-                        "M_middle: %u "
-                        "sub_iters: %u "
-                        "thd_quota: %lu ",
+                        "GFLOPS: %f",
+//                        "mid_iter: %u "
 //                        "seq(s.): %f "
 //                        "para(s.): %f "
 //                        "init(s.): %f "
 //                        "end(s.): %f\n",
-//                        "seq(s.): %f,%.2f%% "
-//                        "para(s.): %f,%.2f%% "
-//                        "init(s.): %f,%.2f%% "
-//                        "end(s.): %f,%.2f%%\n",
+//                        "local_L: %u "
+////                        "M_middle: %u "
+//                        "sub_iters: %u "
+//                        "thd_quota: %lu \n",
+//                        "iters: %lu "
+//                        "avg_iter: %f "
+//                        "min_iter: %u "
+//                        "max_iter: %u\n",
                         //                    "move_top_m(s.): %f "
 //                        "full_merge(s.): %f "
 //                        "full_merge: %lu "
@@ -227,7 +233,7 @@ int main(int argc, char **argv)
 //                    "merge_time(s.): %f\n",
 //                           "num_local_elements: %lu\n",
 //                           local_queue_length,
-                        num_threads,
+//                        num_threads,
                         value_M,
                         L,
                         diff.count(),
@@ -241,20 +247,20 @@ int main(int argc, char **argv)
                         recalls[100],
                         recalls[1],
                         data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
-                        data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
-                        diff.count(),
-                        local_queue_capacity,
-                        M_middle,
-                        subsearch_iterations,
-                        engine.thread_compuation_quota_);
+                        data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /diff.count());
+//                        middle_iter,
 //                        engine.time_sequential_phase_,
 //                        engine.time_parallel_phase_,
 //                        engine.time_initialization_,
 //                        engine.time_ending_);
-//                        engine.time_sequential_phase_, 100.0 * engine.time_sequential_phase_ / diff.count(),
-//                        engine.time_parallel_phase_, 100.0 * engine.time_parallel_phase_ / diff.count(),
-//                        engine.time_initialization_, 100.0 * engine.time_initialization_ / diff.count(),
-//                        engine.time_ending_, 100.0 * engine.time_ending_ / diff.count());
+//                        local_queue_capacity,
+////                        M_middle,
+//                        subsearch_iterations,
+//                        engine.thread_compuation_quota_);
+//                        engine.count_iterations_,
+//                        engine.count_iterations_ * 1.0 / query_num,
+//                        engine.min_iterations_,
+//                        engine.max_iterations_);
 //                    engine.time_move_top_m_,
 //                        engine.time_full_merge_,
 //                        engine.count_full_merge_,
@@ -263,18 +269,28 @@ int main(int argc, char **argv)
 //                        engine.count_threads_computation_);
 //                    engine.time_merge_);
 //                           engine.number_local_elements_);
-            printf("\n");
+            for (unsigned iter = 0; iter < engine.time_iterations_.size(); ++iter) {
+                printf(" [%u](s.): %f",
+                       iter + 1, engine.time_iterations_[iter]);
+                if (iter == engine.time_iterations_.size() - 1) {
+                    printf("\n");
+                }
+            }
         }
         engine.count_distance_computation_ = 0;
-//        engine.time_sequential_phase_ = 0;
-//        engine.time_parallel_phase_ = 0;
-//        engine.time_initialization_ = 0;
-//        engine.time_ending_ = 0;
+        std::fill(engine.time_iterations_.begin(), engine.time_iterations_.end(), 0);
+        engine.time_sequential_phase_ = 0;
+        engine.time_parallel_phase_ = 0;
+        engine.time_initialization_ = 0;
+        engine.time_ending_ = 0;
 //            engine.time_move_top_m_ = 0;
 //            engine.time_full_merge_ = 0;
 //            engine.count_full_merge_ = 0;
 //            engine.time_pick_top_m_ = 0;
 //            engine.time_expand_ = 0;
+//            engine.count_iterations_ = 0;
+//            engine.min_iterations_ = UINT_MAX;
+//            engine.max_iterations_ = 0;
 //            engine.count_threads_computation_ = 0;
 //            engine.time_merge_ = 0;
 //                    engine.number_local_elements_ = 0;
