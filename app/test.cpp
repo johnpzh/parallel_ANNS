@@ -11,6 +11,7 @@
 #include <thread>
 #include <atomic>
 #include <cmath>
+#include <memory>
 #include "../include/bitvector.h"
 
 double print_c(double *C, int n)
@@ -480,6 +481,304 @@ void test_reduction()
     printf("sum: %u\n", sum);
 }
 
+void test_small_vector(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            std::vector<uint64_t> v(capacity);
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[v_i];
+            }
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("small_vector: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+
+void test_large_vector(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        std::vector<uint64_t> v(bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[i * capacity + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[i * capacity + v_i];
+            }
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_vector: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+
+void test_large_vector_with_tmp(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        std::vector<uint64_t> v(bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            uint64_t start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_vector_with_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_vector_with_outside(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        std::vector<uint64_t> v(bound * capacity);
+        uint64_t start;
+        for (uint64_t i = 0; i < bound; ++i) {
+            start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_vector_out_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_small_array(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * capacity);
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[v_i];
+            }
+            free(v);
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("small_array: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_array(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[i * capacity + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[i * capacity + v_i];
+            }
+        }
+        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_array: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_array_with_tmp(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            uint64_t start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_array_with_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_array_with_outside(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+        uint64_t start;
+        for (uint64_t i = 0; i < bound; ++i) {
+            start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_array_out_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+
+void test_small_unique_ptr(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+
+        for (uint64_t i = 0; i < bound; ++i) {
+//            uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * capacity);
+        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(capacity);
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[v_i];
+            }
+//            free(v);
+        }
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("small_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_unique_ptr(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[i * capacity + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[i * capacity + v_i];
+            }
+        }
+//        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+void test_large_unique_ptr_with_tmp(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+
+        for (uint64_t i = 0; i < bound; ++i) {
+            uint64_t start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+//        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_u_ptr_with_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
+
+void test_large_unique_ptr_with_outside(const uint64_t bound)
+{
+    auto s = std::chrono::high_resolution_clock::now();
+    uint64_t sum = 0;
+    {
+        const int capacity = 10;
+//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+        uint64_t start;
+        for (uint64_t i = 0; i < bound; ++i) {
+            start = i * capacity;
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                v[start + v_i] = i;
+            }
+            for (int v_i = 0; v_i < capacity; ++v_i) {
+                sum += v[start + v_i];
+            }
+        }
+//        free(v);
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("large_u_ptr_out_tmp: \tsum: %lu runtime(s.): %f\n",
+           sum,
+           diff.count());
+}
 int main(int argc, char *argv[])
 {
 
@@ -488,8 +787,21 @@ int main(int argc, char *argv[])
 //    test_omp_static(argc, argv);
 //    test_run_levels();
 //    test_thread();
-    test_reduction();
+//    test_reduction();
 //    test_sections();
+    const uint64_t bound = strtoull(argv[1], nullptr, 0);
+    test_small_vector(bound);
+    test_large_vector(bound);
+    test_large_vector_with_tmp(bound);
+    test_large_vector_with_outside(bound);
+    test_small_array(bound);
+    test_large_array(bound);
+    test_large_array_with_tmp(bound);
+    test_large_array_with_outside(bound);
+    test_small_unique_ptr(bound);
+    test_large_unique_ptr(bound);
+    test_large_unique_ptr_with_tmp(bound);
+    test_large_unique_ptr_with_outside(bound);
 
     return 0;
 }

@@ -205,14 +205,19 @@ endif()
 ##target_link_libraries(profile_visited_array_top_m_seq_search PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(test app/test.cpp)
+if(FOUND_GCC930 AND FOUND_CPP6)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native -mavx)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native)
 #target_compile_options(test PRIVATE ${CXX_OPTION} -xHost)
-target_compile_options(test PRIVATE ${CXX_OPTION})
+target_compile_options(test PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
 #target_compile_options(test PRIVATE ${CXX_OPTION} -march=native -qopt-report -no-vec -unroll=0)
 #target_link_libraries(test PRIVATE ${LIBPAPI} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-target_link_libraries(test PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(test PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+else()
+    target_compile_options(test PRIVATE ${CXX_OPTION})
+    target_link_libraries(test PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+endif()
 
 #add_executable(test_omp_yes app/test_omp_yes.cpp)
 #target_compile_options(test_omp_yes PRIVATE ${CXX_OPTION} -march=native -qopt-report)
@@ -520,3 +525,31 @@ target_link_libraries(profile_seq_single_query_simple_search PRIVATE ${Boost_LIB
 add_executable(profile_para_single_query_top_m_search_pure app/profile_para_single_query_top_m_search_pure.cpp core/Searching.202008170756.scale_m.cpp)
 target_compile_options(profile_para_single_query_top_m_search_pure PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_top_m_search_pure PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_simple_top_m app/profile_para_single_query_top_m_search_simple_top_m.cpp core/Searching.202008211350.simple_top_m.cpp)
+target_compile_options(profile_para_single_query_top_m_search_simple_top_m PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_simple_top_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_m_width app/profile_para_single_query_top_m_search_m_width.cpp core/Searching.202008231534.m_width.cpp)
+target_compile_options(profile_para_single_query_top_m_search_m_width PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_m_width PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_simple_top_m.v2 app/profile_para_single_query_top_m_search_simple_top_m.v2.cpp core/Searching.202008211350.simple_top_m.cpp)
+target_compile_options(profile_para_single_query_top_m_search_simple_top_m.v2 PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_simple_top_m.v2 PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_top_m_search_m_width.v2 app/profile_para_single_query_top_m_search_m_width.v2.cpp core/Searching.202008251657.m_width.v2.cpp)
+target_compile_options(profile_para_single_query_top_m_search_m_width.v2 PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_top_m_search_m_width.v2 PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_find_L_seq_single_query_simple_search app/profile_find_L_seq_single_query_simple_search.cpp core/Searching.202008170756.scale_m.cpp)
+target_compile_options(profile_find_L_seq_single_query_simple_search PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_find_L_seq_single_query_simple_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_async_search_error_count app/profile_para_single_query_async_search_error_count.cpp core/Searching.202008281536.error_count.cpp)
+target_compile_options(profile_para_single_query_async_search_error_count PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_async_search_error_count PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_search_simple_v3 app/profile_para_single_query_search_simple_v3.cpp core/Searching.202008310636.simple_v3.cpp)
+target_compile_options(profile_para_single_query_search_simple_v3 PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_simple_v3 PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

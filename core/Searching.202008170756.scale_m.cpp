@@ -190,7 +190,8 @@ void Searching::load_true_NN(
 void Searching::get_recall_for_all_queries(
         const std::vector< std::vector<idi> > &true_nn_list,
         const std::vector<std::vector<unsigned>> &set_K_list,
-        std::unordered_map<unsigned, double> &recalls) const
+        std::unordered_map<unsigned, double> &recalls,
+        const idi K) const
 {
     if (true_nn_list[0].size() < 100) {
         fprintf(stderr, "Error: Number of true nearest neighbors of a query is smaller than 100.\n");
@@ -202,13 +203,15 @@ void Searching::get_recall_for_all_queries(
     recalls[20] = 0.0;
     recalls[50] = 0.0;
     recalls[100] = 0.0;
+
+    idi set_K_size = K < 100 ? K : 100;
     for (unsigned q_i = 0; q_i < num_queries_; ++q_i) {
 
 //        double test_last_recall = recalls[100]; //test
 
         for (unsigned top_i = 0; top_i < 100; ++top_i) {
             unsigned true_id = true_nn_list[q_i][top_i];
-            for (unsigned n_i = 0; n_i < 100; ++n_i) {
+            for (unsigned n_i = 0; n_i < set_K_size; ++n_i) {
                 if (set_K_list[q_i][n_i] == true_id) {
                     if (n_i < 1) recalls[1] += 1;
                     if (n_i < 5) recalls[5] += 1;
@@ -1334,7 +1337,7 @@ void Searching::seq_search_with_top_m_scale_m(
 
     uint64_t tmp_count_computation = 0;
     while (k < L) {
-        double test_time_iter = -WallTimer::get_time_mark();
+//        double test_time_iter = -WallTimer::get_time_mark();
         ++iter;
         subsearch_top_m_for_one_iteration(
                 iter,
@@ -1358,12 +1361,12 @@ void Searching::seq_search_with_top_m_scale_m(
                 M <<= 1U;
             }
         }
-        test_time_iter += WallTimer::get_time_mark();
-        if (iter > time_iterations_.size()) {
-            time_iterations_.push_back(test_time_iter);
-        } else {
-            time_iterations_[iter - 1] += test_time_iter;
-        }
+//        test_time_iter += WallTimer::get_time_mark();
+//        if (iter > time_iterations_.size()) {
+//            time_iterations_.push_back(test_time_iter);
+//        } else {
+//            time_iterations_[iter - 1] += test_time_iter;
+//        }
     }
 
 //#pragma omp parallel for
@@ -1443,7 +1446,7 @@ void Searching::seq_search_with_top_m_pure(
 
     uint64_t tmp_count_computation = 0;
     while (k < L) {
-        double test_time_iter = -WallTimer::get_time_mark();
+//        double test_time_iter = -WallTimer::get_time_mark();
         ++iter;
         subsearch_top_m_for_one_iteration(
                 iter,
@@ -1462,17 +1465,12 @@ void Searching::seq_search_with_top_m_pure(
 //            threads_computations_[0] += tmp_count_computation;
         tmp_count_computation = 0;
 
-//        {// Double M
-//            if (M < M_max) {
-//                M <<= 1U;
-//            }
+//        test_time_iter += WallTimer::get_time_mark();
+//        if (iter > time_iterations_.size()) {
+//            time_iterations_.push_back(test_time_iter);
+//        } else {
+//            time_iterations_[iter - 1] += test_time_iter;
 //        }
-        test_time_iter += WallTimer::get_time_mark();
-        if (iter > time_iterations_.size()) {
-            time_iterations_.push_back(test_time_iter);
-        } else {
-            time_iterations_[iter - 1] += test_time_iter;
-        }
     }
 
 //#pragma omp parallel for
@@ -1495,14 +1493,12 @@ void Searching::seq_search_with_top_m_pure(
 }
 
 void Searching::seq_search_simple_search(
-//        const idi M,
         const idi query_id,
         const idi K,
         const idi L,
         std::vector<Candidate> &set_L,
         const std::vector<idi> &init_ids,
         std::vector<idi> &set_K,
-        std::vector<idi> &top_m_candidates,
         boost::dynamic_bitset<> &is_visited)
 {
 //    time_initialization_ -= WallTimer::get_time_mark();
@@ -1511,78 +1507,92 @@ void Searching::seq_search_simple_search(
     idi set_L_size;
 
     // Initialization Phase
-    {
-        //#pragma omp parallel for
-        for (idi c_i = 0; c_i < L; ++c_i) {
-            is_visited[init_ids[c_i]] = true;
-        }
-
-//#pragma omp parallel for
-//        for (idi v_i = 0; v_i < L; ++v_i) {
-//            idi v_id = init_ids[v_i];
-//            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+    initialize_set_L_seq(
+            query_data,
+            L,
+            set_L,
+            0,
+            set_L_size,
+            init_ids,
+            is_visited);
+//    {
+//        //#pragma omp parallel for
+//        for (idi c_i = 0; c_i < L; ++c_i) {
+//            is_visited[init_ids[c_i]] = true;
 //        }
-
-        // Get the distances of all candidates, store in the set set_L.
-        uint64_t tmp_count_computation = 0;
-        for (unsigned i = 0; i < L; i++) {
-            unsigned v_id = init_ids[i];
-            auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
-            dataf norm = *v_data++;
-            ++tmp_count_computation;
-            distf dist = compute_distance_with_norm(v_data, query_data, norm);
-            set_L[i] = Candidate(v_id, dist, false); // False means not checked.
-        }
-        count_distance_computation_ += tmp_count_computation;
-//        threads_computations_[0] += tmp_count_computation;
-//        tmp_count_computation = 0;
-        std::sort(
-                set_L.begin(),
-                set_L.begin() + L);
-        set_L_size = L;
-    } // Initialization Phase
+//
+////#pragma omp parallel for
+////        for (idi v_i = 0; v_i < L; ++v_i) {
+////            idi v_id = init_ids[v_i];
+////            _mm_prefetch(opt_nsg_graph_ + v_id * vertex_bytes_, _MM_HINT_T0);
+////        }
+//
+//        // Get the distances of all candidates, store in the set set_L.
+//        uint64_t tmp_count_computation = 0;
+//        for (unsigned i = 0; i < L; i++) {
+//            unsigned v_id = init_ids[i];
+//            auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+//            dataf norm = *v_data++;
+//            ++tmp_count_computation;
+//            distf dist = compute_distance_with_norm(v_data, query_data, norm);
+//            set_L[i] = Candidate(v_id, dist, false); // False means not checked.
+//        }
+//        count_distance_computation_ += tmp_count_computation;
+////        threads_computations_[0] += tmp_count_computation;
+////        tmp_count_computation = 0;
+//        std::sort(
+//                set_L.begin(),
+//                set_L.begin() + L);
+//        set_L_size = L;
+//    } // Initialization Phase
 //    time_initialization_ += WallTimer::get_time_mark();
 
 //    idi top_m_candidates_end = 0;
 
     idi iter = 0; // for debug
-    idi M = 1;
+//    idi M = 1;
     idi k = 0; // Index of first unchecked candidate.
+    const distf &last_dist = set_L[L - 1].distance_;
     // Sequential Phase
 
     uint64_t tmp_count_computation = 0;
     while (k < L) {
-        double test_time_iter = -WallTimer::get_time_mark();
-        ++iter;
-        subsearch_top_m_for_one_iteration(
-                iter,
-                k,
-                M,
-                query_id,
-                query_data,
-                L,
-                set_L,
-                0,
-                set_L_size,
-                top_m_candidates,
-                is_visited,
-                tmp_count_computation);
-        count_distance_computation_ += tmp_count_computation;
-//            threads_computations_[0] += tmp_count_computation;
-        tmp_count_computation = 0;
-
-//        {// Double M
-//            if (M < M_max) {
-//                M <<= 1U;
-//            }
-//        }
-        test_time_iter += WallTimer::get_time_mark();
-        if (iter > time_iterations_.size()) {
-            time_iterations_.push_back(test_time_iter);
+//    while (k < L) {
+//        double test_time_iter = -WallTimer::get_time_mark();
+        if (!set_L[k].is_checked_) {
+            set_L[k].is_checked_ = true;
+            ++iter;
+            idi cand_id = set_L[k].id_;
+            idi r = expand_one_candidate(
+                    0,
+                    cand_id,
+                    query_data,
+                    last_dist,
+                    set_L,
+                    0,
+                    set_L_size,
+                    L,
+                    is_visited,
+                    tmp_count_computation);
+            if (r <= k) {
+                k = r;
+            } else {
+                ++k;
+            }
+            count_distance_computation_ += tmp_count_computation;
+            tmp_count_computation = 0;
         } else {
-            time_iterations_[iter - 1] += test_time_iter;
+            ++k;
         }
+//        test_time_iter += WallTimer::get_time_mark();
+//        if (iter > time_iterations_.size()) {
+//            time_iterations_.push_back(test_time_iter);
+//        } else {
+//            time_iterations_[iter - 1] += test_time_iter;
+//        }
     }
+
+
 
 //#pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
@@ -1749,7 +1759,7 @@ void Searching::seq_search_with_top_m_middle(
         std::vector<idi> &top_m_candidates,
         boost::dynamic_bitset<> &is_visited)
 {
-    time_initialization_ -= WallTimer::get_time_mark();
+//    time_initialization_ -= WallTimer::get_time_mark();
 //    const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
     idi set_L_size;
@@ -1785,10 +1795,10 @@ void Searching::seq_search_with_top_m_middle(
                 set_L.begin() + L);
         set_L_size = L;
     } // Initialization Phase
-    time_initialization_ += WallTimer::get_time_mark();
+//    time_initialization_ += WallTimer::get_time_mark();
 
 
-    time_sequential_phase_ -= WallTimer::get_time_mark();
+//    time_sequential_phase_ -= WallTimer::get_time_mark();
 //    idi top_m_candidates_end = 0;
 
     idi iter = 0; // for debug
@@ -1798,7 +1808,7 @@ void Searching::seq_search_with_top_m_middle(
 
     uint64_t tmp_count_computation = 0;
     while (k < L && iter < seq_iter) {
-        double test_time_iter = -WallTimer::get_time_mark();
+//        double test_time_iter = -WallTimer::get_time_mark();
         ++iter;
         subsearch_top_m_for_one_iteration(
                 iter,
@@ -1817,18 +1827,18 @@ void Searching::seq_search_with_top_m_middle(
 //            threads_computations_[0] += tmp_count_computation;
         tmp_count_computation = 0;
 
-        test_time_iter += WallTimer::get_time_mark();
-        if (iter > time_iterations_.size()) {
-            time_iterations_.push_back(test_time_iter);
-        } else {
-            time_iterations_[iter - 1] += test_time_iter;
-        }
+//        test_time_iter += WallTimer::get_time_mark();
+//        if (iter > time_iterations_.size()) {
+//            time_iterations_.push_back(test_time_iter);
+//        } else {
+//            time_iterations_[iter - 1] += test_time_iter;
+//        }
     }
-    time_sequential_phase_ += WallTimer::get_time_mark();
+//    time_sequential_phase_ += WallTimer::get_time_mark();
 
-    time_parallel_phase_ -= WallTimer::get_time_mark();
+//    time_parallel_phase_ -= WallTimer::get_time_mark();
     while (k < L) {
-        double test_time_iter = -WallTimer::get_time_mark();
+//        double test_time_iter = -WallTimer::get_time_mark();
         ++iter;
         subsearch_top_m_for_one_iteration(
                 iter,
@@ -1847,21 +1857,16 @@ void Searching::seq_search_with_top_m_middle(
 //            threads_computations_[0] += tmp_count_computation;
         tmp_count_computation = 0;
 
-//        {// Double M
-//            if (M < M_max) {
-//                M <<= 1U;
-//            }
+//        test_time_iter += WallTimer::get_time_mark();
+//        if (iter > time_iterations_.size()) {
+//            time_iterations_.push_back(test_time_iter);
+//        } else {
+//            time_iterations_[iter - 1] += test_time_iter;
 //        }
-        test_time_iter += WallTimer::get_time_mark();
-        if (iter > time_iterations_.size()) {
-            time_iterations_.push_back(test_time_iter);
-        } else {
-            time_iterations_[iter - 1] += test_time_iter;
-        }
     }
-    time_parallel_phase_ += WallTimer::get_time_mark();
+//    time_parallel_phase_ += WallTimer::get_time_mark();
 
-    time_ending_ -= WallTimer::get_time_mark();
+//    time_ending_ -= WallTimer::get_time_mark();
 //#pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i].id_;
@@ -1879,7 +1884,7 @@ void Searching::seq_search_with_top_m_middle(
 //            exit(1);
 //        }
 //    }
-    time_ending_ += WallTimer::get_time_mark();
+//    time_ending_ += WallTimer::get_time_mark();
 }
 
 void Searching::para_search_with_top_m_pure(

@@ -1,8 +1,8 @@
 //
-// Created by Zhen Peng on 08/21/2020.
+// Created by Zhen Peng on 08/28/2020.
 //
 
-#include "Searching.202008211350.simple_top_m.h"
+#include "Searching.202008281536.error_count.h"
 
 namespace PANNS {
 
@@ -510,9 +510,10 @@ idi Searching::merge_two_queues_into_1st_queue_seq_fixed(
                 insert_index,
                 queue1_start,
                 queue1_size);
-    } else if (!queue2[queue2_start].is_checked_ && it_loc->is_checked_) {
-        it_loc->is_checked_ = false;
     }
+//    else if (!queue2[queue2_start].is_checked_ && it_loc->is_checked_) {
+//        it_loc->is_checked_ = false;
+//    }
     if (queue2_size == 1) {
         return insert_index;
     }
@@ -540,9 +541,9 @@ idi Searching::merge_two_queues_into_1st_queue_seq_fixed(
             ++q_i_1;
         } else {
             // Duplicate
-            if (!queue2[q_i_2].is_checked_ && queue1[q_i_1].is_checked_) {
-                queue1[q_i_1].is_checked_ = false;
-            }
+//            if (!queue2[q_i_2].is_checked_ && queue1[q_i_1].is_checked_) {
+//                queue1[q_i_1].is_checked_ = false;
+//            }
             ++q_i_2;
             ++q_i_1;
         }
@@ -591,9 +592,10 @@ idi Searching::merge_two_queues_into_1st_queue_seq_incr(
                 queue1_start,
                 queue1_size,
                 queue1_length);
-    } else if (!queue2[queue2_start].is_checked_ && it_loc->is_checked_) {
-        it_loc->is_checked_ = false;
     }
+//    else if (!queue2[queue2_start].is_checked_ && it_loc->is_checked_) {
+//        it_loc->is_checked_ = false;
+//    }
     if (queue2_size == 1) {
         return insert_index;
     }
@@ -627,9 +629,9 @@ idi Searching::merge_two_queues_into_1st_queue_seq_incr(
             q_i_1_bound = queue1_start + queue1_size;
         } else {
             // Duplicate
-            if (!queue2[q_i_2].is_checked_ && queue1[q_i_1].is_checked_) {
-                queue1[q_i_1].is_checked_ = false;
-            }
+//            if (!queue2[q_i_2].is_checked_ && queue1[q_i_1].is_checked_) {
+//                queue1[q_i_1].is_checked_ = false;
+//            }
             ++q_i_2;
             ++q_i_1;
         }
@@ -685,9 +687,17 @@ idi Searching::merge_all_queues_to_master(
                         b_start,
                         b_size);
             } else {
-                idi r = merge_two_queues_into_1st_queue_seq_fixed(
+//                idi r = merge_two_queues_into_1st_queue_seq_fixed(
+//                        set_L,
+//                        a_start,
+//                        L,
+//                        set_L,
+//                        b_start,
+//                        b_size);
+                idi r = merge_two_queues_into_1st_queue_seq_incr(
                         set_L,
                         a_start,
+                        a_size,
                         L,
                         set_L,
                         b_start,
@@ -714,20 +724,42 @@ idi Searching::merge_all_queues_to_master(
  * Function: pick master queue's top-M unchecked elements to top_m_candidates.
  * Used by interval merge.
  */
-idi Searching::pick_top_m_to_workers(
-        const idi M,
+bool Searching::assign_to_workers(
+//        const idi M,
         std::vector<Candidate> &set_L,
         const std::vector<idi> &local_queues_starts,
         std::vector<idi> &local_queues_sizes,
-        const idi local_queue_capacity,
-        const idi k_uc) const
+        const idi local_queue_capacity) const
+//        const idi k_uc) const
 {
+//    bool has_unchecked = false;
+//    idi c_i_start = local_queues_starts[num_threads_ - 1];
+//    idi c_i_bound = c_i_start + local_queues_sizes[num_threads_ - 1];
+//    local_queues_sizes[num_threads_ - 1] = 0;
+//    int dest_queue = 0;
+//    for (idi c_i = c_i_start; c_i < c_i_bound; ++c_i) {
+//        set_L[local_queues_starts[dest_queue] + local_queues_sizes[dest_queue]++] = set_L[c_i];
+//        if (!has_unchecked && !set_L[c_i].is_checked_) {
+//            has_unchecked = true;
+//        }
+//        if (local_queues_sizes[dest_queue] == local_queue_capacity) {
+//            break;
+//        }
+//        if (num_threads_ - 1 != dest_queue) {
+//            ++dest_queue;
+//        } else {
+//            dest_queue = 0;
+//        }
+//    }
+//
+//    return has_unchecked;
+
     const idi last_queue_start = local_queues_starts[num_threads_ - 1];
-    idi c_i_start = k_uc + last_queue_start;
-    idi c_i_bound = last_queue_start + local_queues_sizes[num_threads_ - 1];
+    idi c_i_start = last_queue_start;
+    idi c_i_bound = c_i_start + local_queues_sizes[num_threads_ - 1];
     idi top_m_count = 0;
     int dest_queue = 0;
-    for (idi c_i = c_i_start; c_i < c_i_bound && top_m_count < M; ++c_i) {
+    for (idi c_i = c_i_start; c_i < c_i_bound; ++c_i) {
         if (set_L[c_i].is_checked_) {
             continue;
         }
@@ -744,6 +776,7 @@ idi Searching::pick_top_m_to_workers(
         }
     }
     return top_m_count;
+
 }
 
 
@@ -873,220 +906,32 @@ void Searching::initialize_set_L_para(
     set_L_size = L;
 }
 
-/*
- * 08/21/2020-07:03
- * Top-M with Simple Search for expansion, and interval
- */
-void Searching::para_search_with_top_m_simple_v1(
-        const idi M,
-        const idi worker_M,
-        const idi query_id,
-        const idi K,
-        const idi L,
-        std::vector<Candidate> &set_L,
-        const std::vector<idi> &init_ids,
-        std::vector<idi> &set_K,
-        const idi local_queue_capacity, // Maximum size of local queue
+bool Searching::is_error_happened(
+        const int worker_id,
+        const std::vector<Candidate> &set_L,
         const std::vector<idi> &local_queues_starts,
-        std::vector<idi> &local_queues_sizes, // Sizes of local queue
-//        std::vector<idi> &top_m_candidates,
-        boost::dynamic_bitset<> &is_visited,
-        const idi subsearch_iterations)
+        const std::vector<idi> &local_queues_sizes) const
 {
-//    time_initialization_ -= WallTimer::get_time_mark();
-    const idi master_queue_start = local_queues_starts[num_threads_ - 1];
-    idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
-    const dataf *query_data = queries_load_ + query_id * dimension_;
-
-    // Initialization Phase
-    initialize_set_L_para(
-            query_data,
-            L,
-            set_L,
-            master_queue_start,
-            master_queue_size,
-            init_ids,
-            is_visited);
-//    time_initialization_ += WallTimer::get_time_mark();
-
-//    idi top_m_candidates_end = 0;
-    const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
-    idi iter = 0; // for debug
-
-    // Sequential Version
-    if (num_threads_ == 1) {
-        idi k = 0; // Index of first unchecked candidate.
-        idi r;
-        idi cand_id;
-        bool is_quota_done = false;
-        uint64_t tmp_count_computation = 0;
-        while (k < L && !is_quota_done) {
-            ++iter;
-            auto &cand = set_L[master_queue_start + k];
-            if (!cand.is_checked_) {
-                cand.is_checked_ = true;
-                cand_id = cand.id_;
-                r = expand_one_candidate(
-                        0,
-                        cand_id,
-                        query_data,
-                        last_dist,
-                        set_L,
-                        master_queue_start,
-                        master_queue_size,
-                        L,
-                        is_visited,
-                        tmp_count_computation,
-                        is_quota_done);
-                count_distance_computation_ += tmp_count_computation;
-                tmp_count_computation = 0;
-            } else {
-                r = L;
-            }
-            if (r <= k) {
-                k = r;
-            } else {
-                ++k;
-            }
-        }
-    } else { // Parallel Version
-        // Divide computation cost from thread 0 to others
-        std::fill(
-                threads_computations_.begin(),
-                threads_computations_.end(),
-                threads_computations_[0] / num_threads_);
-
-        idi k = 0; // Index of first unchecked candidate.
-        idi para_iter = 0;
-        uint64_t tmp_count_computation = 0;
-        uint8_t count_workers_done = 0;
-        while (count_workers_done < num_threads_) {
-            ++iter;
-            ++para_iter;
-            // Pick and copy top-M unchecked from Master to other workers
-            if (!pick_top_m_to_workers(
-                    M,
-                    set_L,
-                    local_queues_starts,
-                    local_queues_sizes,
-                    local_queue_capacity,
-                    k)) {
-                break;
-            }
-
-            // Expand
-#pragma omp parallel reduction(+ : tmp_count_computation, count_workers_done)
-            {
-                bool is_quota_done = false;
-                int w_i = omp_get_thread_num();
-                const idi local_queue_start = local_queues_starts[w_i];
-                idi &local_queue_size = local_queues_sizes[w_i];
-                const idi queue_capacity = num_threads_ - 1 != w_i ? local_queue_capacity : L;
-                idi k_uc = num_threads_ - 1 != w_i ? 0 : k;
-                idi cand_id;
-                idi r;
-                for (idi sub_i = 0; sub_i < subsearch_iterations && k_uc < local_queue_size && !is_quota_done; ++sub_i) {
-                    idi worker_iter = 0;
-                    while (worker_iter < worker_M && k_uc < local_queue_size && !is_quota_done) {
-                        auto &cand = set_L[local_queue_start + k_uc];
-                        if (!cand.is_checked_) {
-                            cand.is_checked_ = true;
-                            ++worker_iter;
-                            cand_id = cand.id_;
-                            r = expand_one_candidate(
-                                    w_i,
-                                    cand_id,
-                                    query_data,
-                                    last_dist,
-                                    set_L,
-                                    local_queue_start,
-                                    local_queue_size,
-                                    queue_capacity,
-                                    is_visited,
-                                    tmp_count_computation,
-                                    is_quota_done);
-                            if (r <= k_uc) {
-                                k_uc = r;
-                            } else {
-                                ++k_uc;
-                            }
-                        } else {
-                            ++k_uc;
-                        }
-                    } // Expand Top-1
-                } // Subsearch Iterations
-                if (k_uc == local_queue_size || is_quota_done) {
-                    ++count_workers_done;
-                }
-            } // Workers
-            count_distance_computation_ += tmp_count_computation;
-            tmp_count_computation = 0;
-
-            // Merge
-            {
-                idi r = merge_all_queues_to_master(
-                        set_L,
-                        local_queues_starts,
-                        local_queues_sizes,
-                        local_queue_capacity,
-                        L);
-                if (r <= k) {
-                    k = r;
-                } else {
-                    ++k;
-                }
-            }
-        } // Search Iterations
-    } // Parallel Phase
-
-#pragma omp parallel for
-    for (idi k_i = 0; k_i < K; ++k_i) {
-        set_K[k_i] = set_L[k_i + master_queue_start].id_;
-    }
-
-//    {//test
-//        for (idi k_i = 1; k_i < K; ++k_i) {
-//            if (set_K[k_i - 1] == set_K[k_i]) {
-//                printf("Error: set_K[%u] == set_K[%u] == %u\n",
-//                       k_i - 1, k_i, set_K[k_i]);
-//            }
-//            if (set_L[master_queue_start + k_i - 1].distance_ > set_L[master_queue_start + k_i].distance_) {
-//                printf("Error: set_L[%u]: %f > set_L[%u]: %f\n",
-//                       master_queue_start + k_i - 1,
-//                       set_L[master_queue_start + k_i - 1].distance_,
-//                       master_queue_start + k_i,
-//                       set_L[master_queue_start + k_i].distance_);
-//            }
+//    const int dest_id = (num_threads_ - 1 != worker_id ? worker_id + 1 : 0);
+//    idi size_d = local_queues_sizes[dest_id];
+//    if (size_d) {
+//        distf dist_d = set_L[local_queues_starts[dest_id] + (size_d >> 1U)].distance_; // half location
+//        distf dist_w = set_L[local_queues_starts[worker_id]].distance_;
+//        if (dist_w <= dist_d) {
+//            return false;
 //        }
 //    }
-    {// Reset
-//        std::fill(is_visited.begin(), is_visited.end(), 0);
-        is_visited.reset();
-//        is_visited.clear_all();
-//        std::fill(local_queues_sizes.begin(), local_queues_sizes.end(), 0);
-        std::fill(threads_computations_.begin(), threads_computations_.end(), 0);
-    }
-//    {//test
-//        printf("query_id: %u "
-//               "iter: %u\n",
-//               query_id,
-//               iter);
-//    }
-//    {//test
-//        if (0 == query_id) {
-//            exit(1);
-//        }
-//    }
+
+    return true;
 }
 
 /*
- * 08/24/2020-08:37
- * Top-M with Simple Search.
- * The expansion iterations is irrelevant with M.
+ * 08/28/2020-15:43
+ * Asynchronous search with global error count
  */
-void Searching::para_search_with_top_m_simple_v2(
-        const idi M,
-        const idi worker_M,
+void Searching::para_search_with_error_count_v1(
+//        const idi M,
+//        const idi worker_M,
         const idi query_id,
         const idi K,
         const idi L,
@@ -1097,7 +942,8 @@ void Searching::para_search_with_top_m_simple_v2(
         const std::vector<idi> &local_queues_starts,
         std::vector<idi> &local_queues_sizes, // Sizes of local queue
         boost::dynamic_bitset<> &is_visited,
-        const idi subsearch_iterations)
+        const idi errors_bound)
+//        const idi subsearch_iterations)
 {
 //    time_initialization_ -= WallTimer::get_time_mark();
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
@@ -1116,11 +962,12 @@ void Searching::para_search_with_top_m_simple_v2(
 //    time_initialization_ += WallTimer::get_time_mark();
 
 //    idi top_m_candidates_end = 0;
-    const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
+
     idi iter = 0; // for debug
 
     // Sequential Version
     if (num_threads_ == 1) {
+        const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
         idi k = 0; // Index of first unchecked candidate.
         idi r;
         idi cand_id;
@@ -1162,24 +1009,20 @@ void Searching::para_search_with_top_m_simple_v2(
                 threads_computations_.end(),
                 threads_computations_[0] / num_threads_);
 
-        idi k_master = 0; // Index of first unchecked candidate.
+        std::atomic_uint count_errors = 0;
+//        idi k_master = 0; // Index of first unchecked candidate.
         idi para_iter = 0;
         uint64_t tmp_count_computation = 0;
         uint8_t count_workers_done = 0;
         while (count_workers_done < num_threads_) {
             ++iter;
             ++para_iter;
-//            {//test
-//                printf("------- iter: %u -------\n", iter);
-//            }
-            // Pick and copy top-M unchecked from Master to other workers
-            if (!pick_top_m_to_workers(
-                    M,
+            // Assign candidates to workers
+            if (!assign_to_workers(
                     set_L,
                     local_queues_starts,
                     local_queues_sizes,
-                    local_queue_capacity,
-                    k_master)) {
+                    local_queue_capacity)) {
                 break;
             }
 
@@ -1191,14 +1034,16 @@ void Searching::para_search_with_top_m_simple_v2(
                 int w_i = omp_get_thread_num();
                 const idi local_queue_start = local_queues_starts[w_i];
                 idi &local_queue_size = local_queues_sizes[w_i];
-                const idi queue_capacity = num_threads_ - 1 != w_i ? local_queue_capacity : L;
-                idi k_uc = num_threads_ - 1 != w_i ? 0 : k_master;
+//                const idi queue_capacity = num_threads_ - 1 != w_i ? local_queue_capacity : L;
+                const distf &last_dist_local = set_L[local_queue_start + local_queue_size].distance_;
+                idi k_uc = 0;
                 idi cand_id;
                 idi r;
-//                for (idi sub_i = 0; sub_i < subsearch_iterations && k_uc < local_queue_size && !is_quota_done; ++sub_i) {
                 idi worker_iter = 0;
-                while (worker_iter < subsearch_iterations && k_uc < local_queue_size && !is_quota_done) {
-//                    while (worker_iter < worker_M && k_uc < local_queue_size && !is_quota_done) {
+                while (count_errors.load(std::memory_order_relaxed) < errors_bound
+                        && k_uc < local_queue_size
+                        && !is_quota_done) {
+//                while (worker_iter < subsearch_iterations && k_uc < local_queue_size && !is_quota_done) {
                     auto &cand = set_L[local_queue_start + k_uc];
                     if (!cand.is_checked_) {
                         cand.is_checked_ = true;
@@ -1208,11 +1053,13 @@ void Searching::para_search_with_top_m_simple_v2(
                                 w_i,
                                 cand_id,
                                 query_data,
-                                last_dist,
+//                                last_dist,
+                                last_dist_local,
                                 set_L,
                                 local_queue_start,
                                 local_queue_size,
-                                queue_capacity,
+//                                queue_capacity,
+                                local_queue_capacity,
                                 is_visited,
                                 tmp_count_computation,
                                 is_quota_done);
@@ -1221,63 +1068,40 @@ void Searching::para_search_with_top_m_simple_v2(
                         } else {
                             ++k_uc;
                         }
+
+                        // Error acculate
+                        if (is_error_happened(
+                                w_i,
+                                set_L,
+                                local_queues_starts,
+                                local_queues_sizes)) {
+                            ++count_errors;
+                        }
                     } else {
                         ++k_uc;
                     }
                 } // Expand Top-1
-//                } // Subsearch Iterations
-                if (num_threads_ - 1 == w_i) {
-                    k_master = k_uc;
-                }
+//                if (num_threads_ - 1 == w_i) {
+//                    k_master = k_uc;
+//                }
                 if (k_uc == local_queue_size || is_quota_done) {
                     ++count_workers_done;
-//                    {//test
-//                        if (k_uc == local_queue_size) {
-//                            printf("w_i: %u "
-//                                   "k_uc == local_queue_size: %u\n",
-//                                   w_i,
-//                                   local_queue_size);
-//                        }
-//                    }
                 }
             } // Workers
+            count_errors = 0;
             count_distance_computation_ += tmp_count_computation;
             tmp_count_computation = 0;
-//            {//test
-//                for (int w_i = 0; w_i < num_threads_; ++w_i) {
-//                    printf("iter: %u "
-//                           "count_workers_done: %u "
-//                           "local_queues_sizes[%u]: %u\n",
-//                           iter,
-//                           count_workers_done,
-//                           w_i,
-//                           local_queues_sizes[w_i]);
-//                }
-//            }
             // Merge
             {
-                idi r = merge_all_queues_to_master(
+//                idi r =
+                merge_all_queues_to_master(
                         set_L,
                         local_queues_starts,
                         local_queues_sizes,
                         local_queue_capacity,
                         L);
-                if (r <= k_master) {
-                    k_master = r;
-                }
-//                else {
-//                    ++k_master;
-//                }
-//                {//test
-////                    if (1 == iter) {
-//                        for (idi c_i = master_queue_start; c_i < master_queue_start + master_queue_size; ++c_i) {
-//                            printf("[%u]: %u %f %d\n",
-//                                   c_i,
-//                                   set_L[c_i].id_,
-//                                   set_L[c_i].distance_,
-//                                   set_L[c_i].is_checked_);
-//                        }
-////                    }
+//                if (r <= k_master) {
+//                    k_master = r;
 //                }
             }
         } // Search Iterations
@@ -1288,21 +1112,6 @@ void Searching::para_search_with_top_m_simple_v2(
         set_K[k_i] = set_L[k_i + master_queue_start].id_;
     }
 
-//    {//test
-//        for (idi k_i = 1; k_i < K; ++k_i) {
-//            if (set_K[k_i - 1] == set_K[k_i]) {
-//                printf("Error: set_K[%u] == set_K[%u] == %u\n",
-//                       k_i - 1, k_i, set_K[k_i]);
-//            }
-//            if (set_L[master_queue_start + k_i - 1].distance_ > set_L[master_queue_start + k_i].distance_) {
-//                printf("Error: set_L[%u]: %f > set_L[%u]: %f\n",
-//                       master_queue_start + k_i - 1,
-//                       set_L[master_queue_start + k_i - 1].distance_,
-//                       master_queue_start + k_i,
-//                       set_L[master_queue_start + k_i].distance_);
-//            }
-//        }
-//    }
     {// Reset
 //        std::fill(is_visited.begin(), is_visited.end(), 0);
         is_visited.reset();

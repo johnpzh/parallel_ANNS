@@ -18,6 +18,10 @@ with open(sys.argv[1]) as fin, \
     row_i = 0
     for line in fin:
         line = line.strip()
+        if line[0] in ['%', '#', '-', '=', '+', 'F', 'N']:
+            is_first_line = True
+            fout.write(line + '\n')
+            continue
         if is_first_line:
             is_first_line = False
             fout.write(line + "\n")

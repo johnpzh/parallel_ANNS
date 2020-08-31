@@ -149,7 +149,8 @@ int main(int argc, char **argv)
             engine.get_recall_for_all_queries(
                     true_nn_list,
                     set_K_list,
-                    recalls);
+                    recalls,
+                    K);
 //                printf("P@1: %f "
 //                       "P@5: %f "
 //                       "P@10: %f "
@@ -210,11 +211,11 @@ int main(int argc, char **argv)
                         "P@1: %f "
                         "G/s: %f "
                         "GFLOPS: %f "
-                        "mid_iter: %u "
-                        "seq(s.): %f "
-                        "para(s.): %f "
-                        "init(s.): %f "
-                        "end(s.): %f\n",
+                        "mid_iter: %u ",
+//                        "seq(s.): %f "
+//                        "para(s.): %f "
+//                        "init(s.): %f "
+//                        "end(s.): %f\n",
 //                        "local_L: %u "
 ////                        "M_middle: %u "
 //                        "sub_iters: %u "
@@ -247,11 +248,11 @@ int main(int argc, char **argv)
                         recalls[1],
                         data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                         data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /diff.count(),
-                        middle_iter,
-                        engine.time_sequential_phase_,
-                        engine.time_parallel_phase_,
-                        engine.time_initialization_,
-                        engine.time_ending_);
+                        middle_iter);
+//                        engine.time_sequential_phase_,
+//                        engine.time_parallel_phase_,
+//                        engine.time_initialization_,
+//                        engine.time_ending_);
 //                        local_queue_capacity,
 ////                        M_middle,
 //                        subsearch_iterations,
@@ -275,13 +276,14 @@ int main(int argc, char **argv)
 //                    printf("\n");
 //                }
 //            }
+            printf("\n");
         }
         engine.count_distance_computation_ = 0;
-        std::fill(engine.time_iterations_.begin(), engine.time_iterations_.end(), 0);
-        engine.time_sequential_phase_ = 0;
-        engine.time_parallel_phase_ = 0;
-        engine.time_initialization_ = 0;
-        engine.time_ending_ = 0;
+//        std::fill(engine.time_iterations_.begin(), engine.time_iterations_.end(), 0);
+//        engine.time_sequential_phase_ = 0;
+//        engine.time_parallel_phase_ = 0;
+//        engine.time_initialization_ = 0;
+//        engine.time_ending_ = 0;
 //            engine.time_move_top_m_ = 0;
 //            engine.time_full_merge_ = 0;
 //            engine.count_full_merge_ = 0;

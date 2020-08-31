@@ -27,7 +27,8 @@
 //#include "../core/Searching.202008090117.interval_merge.h"
 //#include "../core/Searching.202008101718.interval_merge_v2.h"
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
-#include "../core/Searching.202008152055.interval_merge_v5.h"
+//#include "../core/Searching.202008152055.interval_merge_v5.h"
+#include "../core/Searching.202008211350.simple_top_m.h"
 
 void usage(char *argv[])
 {
@@ -108,21 +109,12 @@ int main(int argc, char **argv)
         for (int q_i = 0; q_i < num_threads; ++q_i) {
             local_queues_starts[q_i] = q_i * local_queue_capacity;
         }
-        std::vector<PANNS::idi> top_m_candidates(value_M);
-//        std::vector<PANNS::idi> top_m_candidates((num_threads - 1) * (value_M / num_threads) + value_M);
-//        std::vector<PANNS::idi> top_m_candidates_starts(num_threads);
-//        for (int q_i = 0; q_i < num_threads; ++q_i) {
-//            top_m_candidates_starts[q_i] = q_i * (value_M / num_threads);
-//        }
-//        std::vector<PANNS::idi> top_m_candidates_sizes(num_threads, 0);
-//        std::vector<PANNS::idi> ks(num_threads, 0);
-//        std::vector<PANNS::idi> last_ks(num_threads);
-//        std::vector<PANNS::idi> nks(num_threads);
+//        std::vector<PANNS::idi> top_m_candidates(value_M);
         auto s = std::chrono::high_resolution_clock::now();
         engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
         for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-            engine.para_search_with_top_m_interval_merge_v5(
+            engine.para_search_with_top_m_simple_v1(
                     value_M,
                     worker_M,
                     q_i,
@@ -134,7 +126,6 @@ int main(int argc, char **argv)
                     local_queue_capacity,
                     local_queues_starts,
                     local_queues_sizes,
-                    top_m_candidates,
                     is_visited,
                     subsearch_iterations);
         }

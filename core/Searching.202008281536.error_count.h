@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/17/2020.
+// Created by Zhen Peng on 08/28/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -17,6 +17,7 @@
 #include <set>
 #include <cfloat>
 #include <algorithm>
+#include <atomic>
 //#include <omp.h>
 #include "../include/definitions.h"
 //#include "../include/efanna2e/neighbor.h"
@@ -63,8 +64,8 @@ public:
 //    int num_real_threads_ = 1;
 //    int num_threads_intra_query_ = 1;
 //    int num_threads_inter_query_ = 1;
-//    uint64_t thread_compuation_quota_ = 0;
-//    std::vector<uint64_t> threads_computations_;
+    uint64_t thread_compuation_quota_ = 0;
+    std::vector<uint64_t> threads_computations_;
 
     dataf compute_norm(
             const dataf *data) const;
@@ -123,45 +124,7 @@ public:
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes,
             const idi local_queue_capacity,
-            const idi L);
-    idi merge_queues_of_four(
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes,
-            const idi group_id,
-            const idi local_queue_capacity,
-            const idi master_queue_capacity);
-    idi merge_all_queues_to_master(
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes,
-            const idi local_queue_capacity,
-            const idi local_master_queue_capacity,
-            const idi master_queue_capacity,
-            const idi group_size);
-    void subsearch_with_top_m(
-            const idi value_M_max,
-            const idi query_id,
-            const idi local_L,
-            std::vector<Candidate> &set_L,
-            const idi set_L_start,
-            idi &set_L_size,
-            std::vector<idi> &local_top_m_candidates,
-            boost::dynamic_bitset<> &is_visited,
-            uint64_t &local_count_distance_computation);
-    void subsearch_top_m_for_one_iteration(
-            const idi iter,
-            idi &k_uc,
-            const idi value_M,
-            const idi query_id,
-            const dataf *query_data,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const idi set_L_start,
-            idi &set_L_size,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited,
-            uint64_t &count_distance_computation);
+            const idi L) const;
     idi expand_one_candidate(
             const idi q_i,
             const idi cand_id,
@@ -172,39 +135,13 @@ public:
             idi &local_queue_size,
             const idi &local_queue_capacity,
             boost::dynamic_bitset<> &is_visited,
-            uint64_t &local_count_computation);
-//            bool &is_quota_done);
-    idi pick_top_m_to_workers(
+            uint64_t &local_count_computation,
+            bool &is_quota_done);
+    bool assign_to_workers(
             std::vector<Candidate> &set_L,
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes,
-            std::vector<idi> &top_m_candidates,
-            const std::vector<idi> &top_m_candidates_starts,
-            std::vector<idi> &top_m_candidates_sizes,
-            const idi k_uc,
-            idi &last_k,
-            const idi M);
-    void pick_top_m_unchecked(
-            const idi M,
-            const idi k_uc,
-            std::vector<Candidate> &set_L,
-            const idi local_queue_start,
-            const idi local_queue_size,
-            std::vector<idi> &top_m_candidates,
-//            const idi top_m_candidates_start,
-            idi &top_m_candidates_size,
-            idi &last_k);
-    void pick_top_m_unchecked_from_queues(
-            const idi M,
-            const int queue_i_start,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            const std::vector<idi> &local_queues_sizes,
-            std::vector<idi> &top_m_candidates,
-            idi &top_m_candidates_size,
-            int &queue_i_end,
-            const std::vector<idi> &ks,
-            std::vector<idi> &last_ks) const;
+            const idi local_queue_capacity) const;
     void initialize_set_L_para(
             const dataf *query_data,
             const idi L,
@@ -213,14 +150,11 @@ public:
             idi &set_L_size,
             const std::vector<idi> &init_ids,
             boost::dynamic_bitset<> &is_visited);
-    void initialize_set_L_seq(
-            const dataf *query_data,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const idi set_L_start,
-            idi &set_L_size,
-            const std::vector<idi> &init_ids,
-            boost::dynamic_bitset<> &is_visited);
+    bool is_error_happened(
+            const int worker_id,
+            const std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            const std::vector<idi> &local_queues_sizes) const;
 
 public:
     // For Profiling
@@ -254,7 +188,6 @@ public:
 //    double time_insert_ = 0;
 //    double time_compare_minimum_ = 0;
 //    double time_memmove_ = 0;
-//    std::vector<double> time_iterations_;
 //    std::vector<double> time_memmove_list_;
 //    L3CacheMissRate profile_miss_rate;
 //    uint64_t number_local_elements_ = 0;
@@ -288,71 +221,20 @@ public:
     void get_recall_for_all_queries(
             const std::vector< std::vector<idi> > &true_nn_list,
             const std::vector<std::vector<unsigned>> &set_K_list,
-            std::unordered_map<unsigned, double> &recalls,
-            const idi K) const;
+            std::unordered_map<unsigned, double> &recalls) const;
 
-    void seq_search_with_top_m_scale_m(
-            const idi M_max,
+    void para_search_with_error_count_v1(
             const idi query_id,
             const idi K,
             const idi L,
             std::vector<Candidate> &set_L,
             const std::vector<idi> &init_ids,
             std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_with_top_m_pure(
-            const idi M,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_simple_search(
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_simple_search_early_termination(
-            const idi query_id,
-            const idi K,
-            const idi L,
-            const idi L_termn,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-//            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_with_top_m_middle(
-            const idi M,
-            const idi seq_iter,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void para_search_with_top_m_pure(
-            const idi M,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            const idi local_queue_capacity,
+            const idi local_queue_capacity, // Maximum size of local queue
             const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            boost::dynamic_bitset<> &is_visited,
+            const idi errors_bound);
 
 }; // Class Searching
 
