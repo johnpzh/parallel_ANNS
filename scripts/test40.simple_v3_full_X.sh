@@ -21,39 +21,77 @@ export KMP_AFFINITY="granularity=core,compact,1,0"
 
 cd ../cmake-build-release || exit
 
-bin="./profile_para_single_query_top_m_search_simple_top_m.v2"
+bin="./profile_para_single_query_search_simple_v3"
 
-#for T in 2 4 16 32 64; do
-#for T in 1; do
-#label="${tag}.T${T}.M200.intv1-12"
-#:> output.${label}.raw.txt
-#M=200
-###for ((M = T; M <= 128; M *= 2)); do
-#    for ((sub_iter = 1; sub_iter <= 12; ++sub_iter)); do
-#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${M} ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${T} 200 ${sub_iter} 200000000 | tee -a output.${label}.raw.txt
+label="${tag}"
+:> output.${label}.raw.txt
+num_t=2
+
+#########################
+
+num_t=2
+label="${tag}"
+:> output.${label}.raw.txt
+for ((L = 220; L >= 101; --L)); do
+#for ((L = 100; L >= 60; --L)); do
+        sub_iter=$((L + 5))
+        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+        sub_iter=1
+        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
 #    done
-###done
-#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 3 4 11 13 14 16 1;
+done
+
+python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
+python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+
+
+#label="${tag}.intvl40-120"
+#:> output.${label}.raw.txt
+#for L in 100; do
+#    for ((sub_iter = 37; sub_iter <= 60; sub_iter += 1)); do
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8  ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#    done
+#
+#    for ((sub_iter = 70; sub_iter <= 110; sub_iter += 10)); do
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8  ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#    done
+#done
+#
+#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
 #python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
 
-#label="${tag}.T${T}.M200.intv1-12"
-label=${tag}
-:> output.${label}.raw.txt
-
-#for ((M = 8; M <= 128; M *= 2)); do
-#    for ((sub_iter = 25; sub_iter <= 36; ++sub_iter)); do
-#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${M} ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8 200 ${sub_iter} 200000000 | tee -a output.${label}.raw.txt
+#label="${tag}.intvl1-12"
+#:> output.${label}.raw.txt
+#for L in 100 120 128 140 160 180 200 220 240; do
+#    for ((sub_iter = 1; sub_iter <= 12; ++sub_iter)); do
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8  ${L} ${sub_iter} | tee -a output.${label}.raw.txt
 #    done
 #done
-
-M=200
-    for ((sub_iter = 25; sub_iter <= 36; ++sub_iter)); do
-        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${M} ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8 200 ${sub_iter} 200000000 | tee -a output.${label}.raw.txt
-    done
-
-python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 3 4 11 13 14 16 1;
-python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+#
+#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15;
+#python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+#
+#label="${tag}.intvl13-24"
+#:> output.${label}.raw.txt
+#for L in 100 120 128 140 160 180 200 220 240; do
+#    for ((sub_iter = 13; sub_iter <= 24; ++sub_iter)); do
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8  ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#    done
 #done
+#
+#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
+#python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+#
+#label="${tag}.intvl25-36"
+#:> output.${label}.raw.txt
+#for L in 100 120 128 140 160 180 200 220 240; do
+#    for ((sub_iter = 25; sub_iter <= 36; ++sub_iter)); do
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8  ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#    done
+#done
+#
+#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15;
+#python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
 
 
 #${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs 16 ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 8 200 1 200000000

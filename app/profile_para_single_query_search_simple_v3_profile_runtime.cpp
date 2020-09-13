@@ -29,7 +29,7 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202008310636.simple_v3.h"
+#include "../core/Searching.202009021917.simple_v3.profile.h"
 
 void usage(char *argv[])
 {
@@ -106,18 +106,7 @@ int main(int argc, char **argv)
         engine.prepare_init_ids(init_ids, L);
 //#pragma omp parallel for
         for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-//            engine.para_search_with_simple_v4(
-//                    q_i,
-//                    K,
-//                    L,
-//                    set_L,
-//                    init_ids,
-//                    set_K_list[q_i],
-//                    local_queue_capacity,
-//                    local_queues_starts,
-//                    local_queues_sizes,
-//                    is_visited);
-            engine.para_search_with_simple_v3(
+            engine.para_search_with_simple_v3_profile_runtime(
                     q_i,
                     K,
                     L,
@@ -182,7 +171,6 @@ int main(int argc, char **argv)
         }
         {// Basic output
                 printf(
-//                            "local_queue_length: %u "
                         "num_threads: %d "
                         "L: %u "
                         "runtime(s.): %f "
@@ -198,21 +186,14 @@ int main(int argc, char **argv)
                         "G/s: %f "
                         "GFLOPS: %f "
                         "local_L: %u "
-                        "sub_iters: %u",
-//                        "thd_quota: %lu ",
-//                        "iters: %lu "
-//                        "avg_iter: %f "
-//                        "min_iter: %u "
-//                        "max_iter: %u\n",
-                        //                    "move_top_m(s.): %f "
-//                        "full_merge(s.): %f "
-//                        "full_merge: %lu ",
-//                        "pick(s.): %f "
-//                        "expand(s.): %f \n",
-//                        "thd_compt: %lu\n",
-//                    "merge_time(s.): %f\n",
-//                           "num_local_elements: %lu\n",
-//                           local_queue_length,
+                        "sub_iters: %u "
+                        "noneff_compt: %lu(%.2f%%) "
+                        "full_merge: %lu "
+                        "init(s.): %f(%.2f%%) "
+                        "ending(s.): %f(%.2f%%) "
+                        "pick(s.): %f(%.2f%%) "
+                        "expand(s.): %f(%.2f%%) "
+                        "merge(s.): %f(%.2f%%) ",
                         num_threads,
                         L,
                         diff.count(),
@@ -230,50 +211,24 @@ int main(int argc, char **argv)
                         diff.count(),
                         local_queue_capacity,
 //                        M_middle,
-                        subsearch_iterations);
-//                        engine.thread_compuation_quota_);
-//                        engine.count_iterations_,
-//                        engine.count_iterations_ * 1.0 / query_num,
-//                        engine.min_iterations_,
-//                        engine.max_iterations_);
-//                    engine.time_move_top_m_,
-//                        engine.time_full_merge_,
-//                        engine.count_full_merge_);
-//                        engine.time_pick_top_m_,
-//                        engine.time_expand_);
-//                        engine.count_threads_computation_);
-//                    engine.time_merge_);
-//                           engine.number_local_elements_);
+                        subsearch_iterations,
+                        engine.count_noneffective_computation_, 100.0 * engine.count_noneffective_computation_ / engine.count_distance_computation_,
+                        engine.count_full_merge_,
+                        engine.time_initialization_, 100.0 * engine.time_initialization_ / diff.count(),
+                        engine.time_ending_, 100.0 * engine.time_ending_ / diff.count(),
+                        engine.time_pick_, 100.0 * engine.time_pick_ / diff.count(),
+                        engine.time_expand_, 100.0 * engine.time_expand_ / diff.count(),
+                        engine.time_merge_, 100.0 * engine.time_merge_ / diff.count());
             printf("\n");
         }
         engine.count_distance_computation_ = 0;
-//            engine.time_move_top_m_ = 0;
-//            engine.time_full_merge_ = 0;
-//        engine.count_full_merge_ = 0;
-//            engine.time_pick_top_m_ = 0;
-//            engine.time_expand_ = 0;
-//            engine.count_iterations_ = 0;
-//            engine.min_iterations_ = UINT_MAX;
-//            engine.max_iterations_ = 0;
-//            engine.count_threads_computation_ = 0;
-//            engine.time_merge_ = 0;
-//                    engine.number_local_elements_ = 0;
-//                    cache_miss_rate.print();
-//        }
-//            { // Percentage of Sharing
-//                unsigned num_measure_quries = strtoull(argv[10], nullptr, 0);
-//                for (unsigned q_i = 0; q_i < num_measure_quries; q_i += 2) {
-//                    double pcnt_has_shared_iterations;
-//                    double avg_pcnt_shared_top_m;
-//                    get_percentage_of_sharing_in_top_m(
-//                            queries_top_m_list[q_i],
-//                            queries_top_m_list[q_i + 1],
-//                            pcnt_has_shared_iterations,
-//                            avg_pcnt_shared_top_m);
-//                    printf("%u-%u pcnt_has_shared_iterations: %f avg_pcnt_shared_top_m: %f\n",
-//                            q_i, q_i + 1, pcnt_has_shared_iterations, avg_pcnt_shared_top_m);
-//                }
-//            }
+        engine.count_noneffective_computation_ = 0;
+        engine.count_full_merge_ = 0;
+        engine.time_initialization_ = 0;
+        engine.time_ending_ = 0;
+        engine.time_pick_ = 0;
+        engine.time_expand_ = 0;
+        engine.time_merge_ = 0;
         PANNS::DiskIO::save_result(argv[6], set_K_list);
     }
 

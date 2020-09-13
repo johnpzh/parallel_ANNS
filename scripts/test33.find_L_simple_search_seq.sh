@@ -23,12 +23,23 @@ cd ../cmake-build-release || exit
 
 bin="./profile_find_L_seq_single_query_simple_search"
 
-:> output.${tag}.raw.txt
+label=${tag}
+:> output.${label}.raw.txt
 
-for PE in 0.998 0.999; do
+#for PE in 0.91 0.92 0.93 0.94; do
+##for PE in 0.998 0.999; do
+##for PE in 0.90 0.95 0.96 0.97 0.98 0.99 0.995; do
+#    ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 85 0 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 120 ${PE} | tee -a output.${tag}.raw.txt
+#done
+for PE in  0.991 0.992 0.993 0.994; do
+#for PE in 0.998 0.999; do
 #for PE in 0.90 0.95 0.96 0.97 0.98 0.99 0.995; do
-    ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 0 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 500 ${PE} | tee -a output.${tag}.raw.txt
+    ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 85 0 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 500 ${PE} | tee -a output.${tag}.raw.txt
 done
+
+python3 ../scripts/output_surrounding.py output.${label}.raw.txt output.${label}.row.txt;
+python3 ../scripts/output_format.py output.${label}.row.txt output.${label}.table.txt 0:6;
+
 #${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 300 0.995 | tee -a output.${tag}.raw.txt
 #${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 230 0.994 | tee -a output.${tag}.raw.txt
 #${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg 200 200 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary 230 0.993 | tee -a output.${tag}.raw.txt

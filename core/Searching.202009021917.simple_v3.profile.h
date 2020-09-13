@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/31/2020.
+// Created by Zhen Peng on 09/02/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -134,7 +134,8 @@ public:
             idi &local_queue_size,
             const idi &local_queue_capacity,
             boost::dynamic_bitset<> &is_visited,
-            uint64_t &local_count_computation);
+            uint64_t &local_count_computation,
+            uint64_t &local_count_noneffective_compt);
 //            bool &is_quota_done);
     idi pick_top_m_to_workers(
 //            const idi M,
@@ -156,7 +157,10 @@ public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
-//    uint64_t count_full_merge_ = 0;
+    uint64_t count_noneffective_computation_ = 0;
+    uint64_t count_full_merge_ = 0;
+    uint64_t thread_computation_quota_;
+
 //    uint64_t count_iterations_ = 0;
 //    idi min_iterations_ = UINT_MAX;
 //    idi max_iterations_ = 0;
@@ -165,19 +169,20 @@ public:
 //    uint64_t count_single_query_computation_ = 0;
 //    distf dist_min_ = 0;
 //    distf dist_max_ = 0;
-//    double time_merge_ = 0;
+    double time_initialization_ = 0;
+    double time_ending_ = 0.0;
+    double time_pick_ = 0.0;
+    double time_expand_ = 0.0;
+    double time_merge_ = 0;
 //    double time_gather_ = 0;
 //    double time_move_top_m_ = 0;
 //    double time_full_merge_ = 0;
 //    double time_select_ = 0;
 //    double time_select_L_ = 0.0;
 //    double time_select_M_ = 0.0;
-//    double time_initialization_ = 0;
 //    double time_sequential_phase_ = 0;
 //    double time_parallel_phase_ = 0;
-//    double time_ending_ = 0.0;
 //    double time_assign_s_ = 0.0;
-//    double time_expand_ = 0.0;
 //    double time_pick_top_m_ = 0.0;
 //    double time_distance_computation_ = 0.0;
 //    double time_add_to_queue_ = 0.0;
@@ -219,7 +224,7 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls) const;
 
-    void para_search_with_simple_v3(
+    void para_search_with_simple_v3_profile_runtime(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -233,16 +238,13 @@ public:
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
             const idi subsearch_iterations);
-    void para_search_with_simple_v4(
+    void para_search_with_sequential_access(
             const idi query_id,
             const idi K,
             const idi L,
             std::vector<Candidate> &set_L,
             const std::vector<idi> &init_ids,
             std::vector<idi> &set_K,
-            const idi local_queue_capacity, // Maximum size of local queue
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited);
 
 }; // Class Searching
