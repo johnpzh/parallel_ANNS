@@ -894,67 +894,67 @@ void IndexNSG::tree_grow(const Parameters &parameter)
     }
 }
 
-//// Get the true top-K nearest neighbors of the query.
-//void IndexNSG::get_true_NN(
-//        const float *query,
-//        unsigned K,
-//        std::vector<std::pair<unsigned, float> > &ngbrs)
-////        unsigned *indices)
-//{
-//    if (nd_ < K + 1) {
-//        fprintf(stderr, "Error: nd_ %lu is smaller than K + 1 %u\n", nd_, K + 1);
-//        exit(EXIT_FAILURE);
-//    }
-////    unsigned L = parameters.Get<unsigned>("L_search"); // Actually Top-L
-//    DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
-//    std::vector<Neighbor> retset(K + 1); // Return set
-////    std::vector<Neighbor> test_set(nd_); // For testing
-//
-//    // Initail retset by the first L vertices
-//    for (unsigned v_id = 0; v_id < K; ++v_id) {
-//        // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
-//        float *x = (float *) (opt_graph_ + node_size * v_id);
-//        float norm_x = *x;
-//        ++x;
-//        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
-//        retset[v_id] = Neighbor(v_id, dist, true);
-////        test_set[v_id] = retset[v_id];
-//    }
-//
-//    // Sort retset
-//    std::sort(retset.begin(), retset.begin() + K);
-//
-//    // Traverse all rest vertices (data)
-//    for (unsigned v_id = K; v_id < nd_; ++v_id) {
-//        // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
-//        float *x = (float *) (opt_graph_ + node_size * v_id);
-//        float norm_x = *x;
-//        ++x;
-//        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
-//        Neighbor tmp_n(v_id, dist, true);
-//        InsertIntoPool(retset.data(), K, tmp_n);
-////        test_set[v_id] = tmp_n;
-//    }
-//
-////    std::sort(test_set.begin(), test_set.end());
-////    for (unsigned i = 0; i < K; ++i) {
-////        if (test_set[i].id != retset[i].id
-////            && test_set[i].distance != test_set[i].distance) {
-////            printf("Wrong: test_set[%u]: [%u, %f] retset[%u]: [%u, %f]\n",
-////                    i, test_set[i].id, test_set[i].distance, i, retset[i].id, retset[i].distance);
-////            break;
-////        }
-////    }
-//    // Copy IDs to indices
-//    ngbrs.resize(K);
+// Get the true top-K nearest neighbors of the query.
+void IndexNSG::get_true_NN(
+        const float *query,
+        unsigned K,
+        std::vector<std::pair<unsigned, float> > &ngbrs)
+//        unsigned *indices)
+{
+    if (nd_ < K + 1) {
+        fprintf(stderr, "Error: nd_ %lu is smaller than K + 1 %u\n", nd_, K + 1);
+        exit(EXIT_FAILURE);
+    }
+//    unsigned L = parameters.Get<unsigned>("L_search"); // Actually Top-L
+    DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
+    std::vector<Neighbor> retset(K + 1); // Return set
+//    std::vector<Neighbor> test_set(nd_); // For testing
+
+    // Initail retset by the first L vertices
+    for (unsigned v_id = 0; v_id < K; ++v_id) {
+        // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
+        float *x = (float *) (opt_graph_ + node_size * v_id);
+        float norm_x = *x;
+        ++x;
+        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+        retset[v_id] = Neighbor(v_id, dist, true);
+//        test_set[v_id] = retset[v_id];
+    }
+
+    // Sort retset
+    std::sort(retset.begin(), retset.begin() + K);
+
+    // Traverse all rest vertices (data)
+    for (unsigned v_id = K; v_id < nd_; ++v_id) {
+        // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
+        float *x = (float *) (opt_graph_ + node_size * v_id);
+        float norm_x = *x;
+        ++x;
+        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+        Neighbor tmp_n(v_id, dist, true);
+        InsertIntoPool(retset.data(), K, tmp_n);
+//        test_set[v_id] = tmp_n;
+    }
+
+//    std::sort(test_set.begin(), test_set.end());
 //    for (unsigned i = 0; i < K; ++i) {
-//        ngbrs[i].first = retset[i].id;
-//        ngbrs[i].second = retset[i].distance;
+//        if (test_set[i].id != retset[i].id
+//            && test_set[i].distance != test_set[i].distance) {
+//            printf("Wrong: test_set[%u]: [%u, %f] retset[%u]: [%u, %f]\n",
+//                    i, test_set[i].id, test_set[i].distance, i, retset[i].id, retset[i].distance);
+//            break;
+//        }
 //    }
-////    for (unsigned i = 0; i < K; ++i) {
-////        indices[i] = retset[i].id;
-////    }
-//}
+    // Copy IDs to indices
+    ngbrs.resize(K);
+    for (unsigned i = 0; i < K; ++i) {
+        ngbrs[i].first = retset[i].id;
+        ngbrs[i].second = retset[i].distance;
+    }
+//    for (unsigned i = 0; i < K; ++i) {
+//        indices[i] = retset[i].id;
+//    }
+}
 
 //// Overloading of IndexNSG::SearchWithOptGraph:
 //void IndexNSG::SearchWithOptGraph(

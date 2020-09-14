@@ -45,11 +45,11 @@ public:
     void OptimizeGraph(float *data);
 
 
-//    // Added by Johnpzh
-//    void get_true_NN(
-//            const float *query,
-//            unsigned K,
-//            std::vector<std::pair<unsigned, float> > &ngbrs);
+    // Added by Johnpzh
+    void get_true_NN(
+            const float *query,
+            unsigned K,
+            std::vector<std::pair<unsigned, float> > &ngbrs);
 
 //    void SearchWithOptGraph(
 //            const float *query,
