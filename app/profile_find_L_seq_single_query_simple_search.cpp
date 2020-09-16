@@ -84,6 +84,12 @@ int main(int argc, char **argv)
     while (L_lower <= L_upper) {
         L = (L_lower + L_upper) / 2;
 //        L = L_lower / 2 + L_upper / 2;
+        printf("L: %u "
+               "L_lower: %u "
+               "L_upper: %u\n",
+               L,
+               L_lower,
+               L_upper);
         unsigned K = L;
         /* ----------------------
          * ------- Kernel ------- */

@@ -64,26 +64,19 @@ bin="./profile_para_single_query_search_simple_v3_ranged"
 # subprocess.run(F'python3 ../scripts/output_row_minimum.py {rows_file} {table_file} 2 0', shell=True, check=True)
 # subprocess.run(F'python3 ../scripts/output_find_runtime_above_presicion.py {table_file} {selected_file} 0 2', shell=True, check=True)
 
-#### DEEP10M
-data_dir = base_dir + "/deep1b"
-data_name = "deep10M"
-label = F"{tag}.deep10M"
+#### GIST1M
+data_dir = base_dir + "/gist1m"
+data_name = "gist"
+label = F"{tag}.gist1M"
 raw_file = F"output.{label}.raw.txt"
 
 subprocess.run(F':> {raw_file}', shell=True, check=True)
 L_min=L_lower
 L_max=L_upper
 command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
-          F"{L_min} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.q-10000.binary {num_t} {L_max} " \
+          F"{L_min} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.q-1000.binary {num_t} {L_max} " \
           F"| tee -a {raw_file}"
 subprocess.run(command, env=env_vars, shell=True, check=True)
-#
-# for L in range(L_lower, L_upper):
-#     for X in range(X_lower, L + 5):
-#         command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
-#                   F"{L} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.q-10000.binary {num_t} {L} {X} " \
-#                   F"| tee -a {raw_file}"
-#         subprocess.run(command, env=env_vars, shell=True, check=True)
 
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
@@ -91,3 +84,25 @@ selected_file = F"output.{label}.table.selected.txt"
 subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 12 13 15 1', shell=True, check=True)
 subprocess.run(F'python3 ../scripts/output_row_minimum.py {rows_file} {table_file} 2 0', shell=True, check=True)
 subprocess.run(F'python3 ../scripts/output_find_runtime_above_presicion.py {table_file} {selected_file} 0 2', shell=True, check=True)
+
+
+# #### DEEP10M
+# data_dir = base_dir + "/deep1b"
+# data_name = "deep10M"
+# label = F"{tag}.deep10M"
+# raw_file = F"output.{label}.raw.txt"
+#
+# subprocess.run(F':> {raw_file}', shell=True, check=True)
+# L_min=L_lower
+# L_max=L_upper
+# command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+#           F"{L_min} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.q-10000.binary {num_t} {L_max} " \
+#           F"| tee -a {raw_file}"
+# subprocess.run(command, env=env_vars, shell=True, check=True)
+#
+# rows_file = F"output.{label}.rows.txt"
+# table_file = F"output.{label}.table.txt"
+# selected_file = F"output.{label}.table.selected.txt"
+# subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 12 13 15 1', shell=True, check=True)
+# subprocess.run(F'python3 ../scripts/output_row_minimum.py {rows_file} {table_file} 2 0', shell=True, check=True)
+# subprocess.run(F'python3 ../scripts/output_find_runtime_above_presicion.py {table_file} {selected_file} 0 2', shell=True, check=True)

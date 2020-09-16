@@ -74,12 +74,20 @@ int main(int argc, char **argv)
         exit(-1);
     }
     setbuf(stdout, nullptr); // Added by Johnpzh
+//    {//test
+//        efanna2e::IndexNSG index(96, 100000000, efanna2e::FAST_L2, nullptr);
+//        printf("Loading %s ...\n", argv[3]);
+//        index.Load(argv[3]);
+//        exit(-1);
+//    }
     float *data_load = nullptr;
     unsigned points_num, dim;
+    printf("Loading %s ...\n", argv[1]);
     load_data(argv[1], data_load, points_num, dim);
 
     float *query_load = nullptr;
     unsigned query_num, query_dim;
+    printf("Loading %s ...\n", argv[2]);
     load_data(argv[2], query_load, query_num, query_dim);
     assert(dim == query_dim);
 
@@ -93,26 +101,36 @@ int main(int argc, char **argv)
 //        if (query_num > query_num_max) {
 //            query_num = query_num_max;
 //        }
-        printf("query_num: %u\n", query_num);
-        printf("K: %u\n", K);
+        printf("query_num: %u "
+               "K: %u\n",
+               query_num,
+               K);
     }
 
     // data_load = efanna2e::data_align(data_load, points_num, dim);//one must
     // align the data before build query_load = efanna2e::data_align(query_load,
     // query_num, query_dim);
     efanna2e::IndexNSG index(dim, points_num, efanna2e::FAST_L2, nullptr);
+    printf("Loading %s ...\n", argv[3]);
     index.Load(argv[3]);
-    index.OptimizeGraph(data_load);
+//    printf("Optimizing...\n");
+//    index.OptimizeGraph(data_load);
 
     efanna2e::Parameters paras;
     std::vector< std::vector< std::pair<unsigned, float> > > true_ress(query_num); // [].first: id, [].second: distance.
     auto s = std::chrono::high_resolution_clock::now();
 
     // Queries
+    printf("Computing...\n");
     for (unsigned i = 0; i < query_num; i++) {
-        index.get_true_NN(query_load + i * dim, K, true_ress[i]);
+        index.get_true_NN(
+                query_load + i * dim,
+                data_load,
+                K,
+                true_ress[i]);
     }
     // Save true_res to the file
+    printf("Saving...\n");
     save_result(argv[5], query_num, K, true_ress);
 
     auto e = std::chrono::high_resolution_clock::now();

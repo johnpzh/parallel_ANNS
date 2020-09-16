@@ -41,9 +41,10 @@ data_dir="${base_dir}/gist1m"
 data_name="gist"
 label="${tag}.${data_name}"
 :> output.${label}.raw.txt
-for PE in 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 \
-            0.991 0.992 0.993 0.994 0.995 0.996 0.997 0.998 0.999; do
-    ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg 85 0 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-1000.binary 1000 ${PE} | tee -a output.${tag}.raw.txt
+for PE in 0.999; do
+#for PE in 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 \
+#            0.991 0.992 0.993 0.994 0.995 0.996 0.997 0.998 0.999; do
+    ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg 2000 0 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-1000.binary 4000 ${PE} | tee -a output.${label}.raw.txt
 done
 
 python3 ../scripts/output_surrounding.py output.${label}.raw.txt output.${label}.row.txt;
@@ -56,7 +57,7 @@ label="${tag}.${data_name}"
 :> output.${label}.raw.txt
 for PE in 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 \
             0.991 0.992 0.993 0.994 0.995 0.996 0.997 0.998 0.999; do
-    ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg 85 0 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-10000.binary 1000 ${PE} | tee -a output.${tag}.raw.txt
+    ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg 85 0 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-10000.binary 2000 ${PE} | tee -a output.${label}.raw.txt
 done
 
 python3 ../scripts/output_surrounding.py output.${label}.raw.txt output.${label}.row.txt;

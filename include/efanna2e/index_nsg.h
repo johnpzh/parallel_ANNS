@@ -48,6 +48,7 @@ public:
     // Added by Johnpzh
     void get_true_NN(
             const float *query,
+            const float *data_base,
             unsigned K,
             std::vector<std::pair<unsigned, float> > &ngbrs);
 

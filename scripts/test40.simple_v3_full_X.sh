@@ -3,13 +3,16 @@
 ####! /usr/local/bin/zsh
 ####! /bin/bash
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <data_directory> <tag>"
+if [ $# -ne 5 ]; then
+    echo "Usage: $0 <data_directory> <tag> <num_t> <L_low> <L_up>"
     exit
 fi
 
-data_dir=$1
+base_dir=$1
 tag=$2
+num_t=$3
+L_lower=$4
+L_upper=$5
 
 #set -x
 ## OpenMP Affinity for ICC
@@ -20,29 +23,36 @@ export KMP_AFFINITY="granularity=core,compact,1,0"
 ## KNL and Pitzer are different
 
 cd ../cmake-build-release || exit
-
 bin="./profile_para_single_query_search_simple_v3"
 
-label="${tag}"
+#### GIST1M
+data_dir="${base_dir}/gist1m"
+data_name="gist"
+label="${tag}.gist"
 :> output.${label}.raw.txt
-num_t=2
-
-#########################
-
-num_t=2
-label="${tag}"
-:> output.${label}.raw.txt
-for ((L = 220; L >= 101; --L)); do
-#for ((L = 100; L >= 60; --L)); do
+for ((L = L_upper; L >= L_lower; --L)); do
         sub_iter=$((L + 5))
-        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
-        sub_iter=1
-        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
-#    done
+        ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg ${L} 100 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-1000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#        sub_iter=1
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
 done
 
 python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
 python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+
+#label="${tag}"
+#:> output.${label}.raw.txt
+#for ((L = 220; L >= 101; --L)); do
+##for ((L = 100; L >= 60; --L)); do
+#        sub_iter=$((L + 5))
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#        sub_iter=1
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+##    done
+#done
+#
+#python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
+#python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
 
 
 #label="${tag}.intvl40-120"

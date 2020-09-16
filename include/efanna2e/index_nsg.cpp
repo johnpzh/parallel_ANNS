@@ -44,18 +44,26 @@ void IndexNSG::Load(const char *filename)
     std::ifstream in(filename, std::ios::binary);
     in.read((char *) &width, sizeof(unsigned));
     in.read((char *) &ep_, sizeof(unsigned));
+//    {//test
+//        printf("width: %u ep_: %u\n", width, ep_);
+//    }
     // width=100;
-    unsigned cc = 0;
+//    unsigned cc = 0;
     while (!in.eof()) {
         unsigned k;
         in.read((char *) &k, sizeof(unsigned));
         if (in.eof()) break;
-        cc += k;
+//        cc += k;
         std::vector<unsigned> tmp(k);
         in.read((char *) tmp.data(), k * sizeof(unsigned));
         final_graph_.push_back(tmp);
+//        {//test
+//            if (k > 50) {
+//                printf("degree: %u\n", k);
+//            }
+//        }
     }
-    cc /= nd_;
+//    cc /= nd_;
     // std::cout<<cc<<std::endl;
 }
 
@@ -444,6 +452,14 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters)
         for (unsigned j = 0; j < pool_size; j++) {
             final_graph_[i][j] = pool[j].id;
         }
+        {//test
+            if (pool_size > range) {
+                printf("pool_size: %u "
+                       "range: %u\n",
+                       pool_size,
+                       range);
+            }
+        }
     }
 //    // Added by Johnpzh
 //    time_mrng += omp_get_wtime();
@@ -465,6 +481,10 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters)
     }
     avg /= 1.0 * nd_;
     printf("Degree Statistics: Max = %d, Min = %d, Avg = %d\n", max, min, avg);
+    printf("width: %u "
+           "ep_: %u\n",
+           width,
+           ep_);
 
     has_built = true;
 }
@@ -792,10 +812,10 @@ void IndexNSG::OptimizeGraph(float *data)
     opt_graph_ = (char *) malloc(node_size * nd_);
     DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
     for (unsigned i = 0; i < nd_; i++) {
-        char *cur_node_offset = opt_graph_ + i * node_size;
-        float cur_norm = dist_fast->norm(data_ + i * dimension_, dimension_);
+        char *cur_node_offset = opt_graph_ + static_cast<uint64_t>(i) * node_size;
+        float cur_norm = dist_fast->norm(data_ + static_cast<uint64_t>(i) * dimension_, dimension_);
         std::memcpy(cur_node_offset, &cur_norm, sizeof(float));
-        std::memcpy(cur_node_offset + sizeof(float), data_ + i * dimension_,
+        std::memcpy(cur_node_offset + sizeof(float), data_ + static_cast<uint64_t>(i) * dimension_,
                     data_len - sizeof(float));
 
         cur_node_offset += data_len;
@@ -897,6 +917,7 @@ void IndexNSG::tree_grow(const Parameters &parameter)
 // Get the true top-K nearest neighbors of the query.
 void IndexNSG::get_true_NN(
         const float *query,
+        const float *data_base,
         unsigned K,
         std::vector<std::pair<unsigned, float> > &ngbrs)
 //        unsigned *indices)
@@ -905,18 +926,20 @@ void IndexNSG::get_true_NN(
         fprintf(stderr, "Error: nd_ %lu is smaller than K + 1 %u\n", nd_, K + 1);
         exit(EXIT_FAILURE);
     }
+    data_ = data_base;
 //    unsigned L = parameters.Get<unsigned>("L_search"); // Actually Top-L
-    DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
+//    DistanceFastL2 *dist_fast = (DistanceFastL2 *) distance_;
     std::vector<Neighbor> retset(K + 1); // Return set
 //    std::vector<Neighbor> test_set(nd_); // For testing
 
     // Initail retset by the first L vertices
     for (unsigned v_id = 0; v_id < K; ++v_id) {
         // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
-        float *x = (float *) (opt_graph_ + node_size * v_id);
-        float norm_x = *x;
-        ++x;
-        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+//        float *x = (float *) (opt_graph_ + node_size * v_id);
+//        float norm_x = *x;
+//        ++x;
+//        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+        float dist = distance_->compare(data_ + dimension_ * v_id, query, dimension_);
         retset[v_id] = Neighbor(v_id, dist, true);
 //        test_set[v_id] = retset[v_id];
     }
@@ -927,22 +950,31 @@ void IndexNSG::get_true_NN(
     // Traverse all rest vertices (data)
     for (unsigned v_id = K; v_id < nd_; ++v_id) {
         // Get the distance from the vertex to the query (refer to IndexNSG::SearchWithOptGraph()).
-        float *x = (float *) (opt_graph_ + node_size * v_id);
-        float norm_x = *x;
-        ++x;
-        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+//        float *x = (float *) (opt_graph_ + node_size * v_id);
+//        float norm_x = *x;
+//        ++x;
+//        float dist = dist_fast->compare(x, query, norm_x, (unsigned) dimension_);
+        float dist = distance_->compare(data_ + dimension_ * v_id , query, dimension_);
+//        if (dist >= retset.rbegin()->distance) {
+//            continue;
+//        }
         Neighbor tmp_n(v_id, dist, true);
+//        if (retset[K - 1] < tmp_n) {
+//            continue;
+//        }
         InsertIntoPool(retset.data(), K, tmp_n);
 //        test_set[v_id] = tmp_n;
     }
 
-//    std::sort(test_set.begin(), test_set.end());
-//    for (unsigned i = 0; i < K; ++i) {
-//        if (test_set[i].id != retset[i].id
-//            && test_set[i].distance != test_set[i].distance) {
-//            printf("Wrong: test_set[%u]: [%u, %f] retset[%u]: [%u, %f]\n",
-//                    i, test_set[i].id, test_set[i].distance, i, retset[i].id, retset[i].distance);
-//            break;
+//    {
+//        std::sort(test_set.begin(), test_set.end());
+//        for (unsigned i = 0; i < K; ++i) {
+//            if (test_set[i].id != retset[i].id
+//                && test_set[i].distance != test_set[i].distance) {
+//                printf("Wrong: test_set[%u]: [%u, %f] retset[%u]: [%u, %f]\n",
+//                       i, test_set[i].id, test_set[i].distance, i, retset[i].id, retset[i].distance);
+//                break;
+//            }
 //        }
 //    }
     // Copy IDs to indices

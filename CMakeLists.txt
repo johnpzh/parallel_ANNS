@@ -573,3 +573,11 @@ target_link_libraries(profile_para_single_query_search_simple_v3_ranged PRIVATE 
 add_executable(save_true_nearest_neighbors tools/save_true_nearest_neighbors.cpp include/efanna2e/index_nsg.cpp)
 target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION} -xHost)
 target_link_libraries(save_true_nearest_neighbors PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
+
+add_executable(test_nsg_index tools/test_nsg_index.cpp include/efanna2e/index_nsg.cpp)
+target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
+target_link_libraries(test_nsg_index PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
+
+add_executable(test.true_NN tools/test.true_NN.cpp include/efanna2e/index_nsg.cpp)
+target_compile_options(test.true_NN PRIVATE ${CXX_OPTION} -xHost)
+target_link_libraries(test.true_NN PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
