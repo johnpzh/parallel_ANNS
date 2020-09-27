@@ -9,6 +9,7 @@
 #include <clocale>
 #include <fstream>
 #include <memory>
+#include <vector>
 //#include <omp.h>
 //#include "../core/Searching.202002141745.critical_omp_top_m.h"
 //#include "../core/Searching.202002101535.reorganization.h"
@@ -48,7 +49,8 @@ void generate(
     const uint64_t stride = num_vectors / total_count - 1; // Skip bytes after read one element
 
     // Sample the file
-    std::unique_ptr<float[]> data = std::make_unique<float[]>(dimension);
+//    std::unique_ptr<float[]> data = std::make_unique<float[]>(dimension);
+    std::vector<float> data(dimension);
     fin.seekg(0, std::ios_base::beg);
     for (uint32_t v_i = 0; v_i < total_count; ++v_i) {
         if (0 == v_i % 20000000) {
@@ -57,11 +59,13 @@ void generate(
 
         // Read the file
         fin.seekg(4, std::ios_base::cur);
-        fin.read(reinterpret_cast<char *>(data.get()), data_bytes);
+        fin.read(reinterpret_cast<char *>(data.data()), data_bytes);
+//        fin.read(reinterpret_cast<char *>(data.get()), data_bytes);
 
         // Write the file
         fout.write(reinterpret_cast<char *>(&dimension), 4);
-        fout.write(reinterpret_cast<char *>(data.get()), data_bytes);
+        fout.write(reinterpret_cast<char *>(data.data()), data_bytes);
+//        fout.write(reinterpret_cast<char *>(data.get()), data_bytes);
 
         // Skip
         fin.seekg(stride * element_bytes, std::ios_base::cur);
