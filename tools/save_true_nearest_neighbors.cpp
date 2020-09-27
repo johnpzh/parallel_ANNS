@@ -69,7 +69,8 @@ int main(int argc, char **argv)
 {
     if (argc != 6) {
         std::cout << argv[0]
-                  << " <data_file> <query_file> <nsg_path> <search_K> <result_path>"
+                  << " <data_file> <query_file> <search_K> <result_path> <num_t>"
+//                  << " <data_file> <query_file> <nsg_path> <search_K> <result_path>"
                   << std::endl;
         exit(-1);
     }
@@ -91,7 +92,7 @@ int main(int argc, char **argv)
     load_data(argv[2], query_load, query_num, query_dim);
     assert(dim == query_dim);
 
-    unsigned K = strtoull(argv[4], nullptr, 0);
+    unsigned K = strtoull(argv[3], nullptr, 0);
     {
         if (K < 100) {
             fprintf(stderr, "Error: K %u is smaller than 100.\n", K);
@@ -106,13 +107,15 @@ int main(int argc, char **argv)
                query_num,
                K);
     }
+    int num_threads = strtoull(argv[5], nullptr, 0);
+    omp_set_num_threads(num_threads);
 
     // data_load = efanna2e::data_align(data_load, points_num, dim);//one must
     // align the data before build query_load = efanna2e::data_align(query_load,
     // query_num, query_dim);
     efanna2e::IndexNSG index(dim, points_num, efanna2e::FAST_L2, nullptr);
-    printf("Loading %s ...\n", argv[3]);
-    index.Load(argv[3]);
+//    printf("Loading %s ...\n", argv[3]);
+//    index.Load(argv[3]);
 //    printf("Optimizing...\n");
 //    index.OptimizeGraph(data_load);
 
@@ -122,6 +125,7 @@ int main(int argc, char **argv)
 
     // Queries
     printf("Computing...\n");
+#pragma omp parallel for
     for (unsigned i = 0; i < query_num; i++) {
         index.get_true_NN(
                 query_load + i * dim,
@@ -131,7 +135,7 @@ int main(int argc, char **argv)
     }
     // Save true_res to the file
     printf("Saving...\n");
-    save_result(argv[5], query_num, K, true_ress);
+    save_result(argv[4], query_num, K, true_ress);
 
     auto e = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = e - s;

@@ -26,7 +26,8 @@ if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
     set(CXX_OPTION ${CXX_OPTION} -Wall -Wextra -pedantic -Werror)
 endif()
 #set(CXX_OPTION ${CXX_OPTION} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
-set(LIBPAPI /usr/local/lib/libpapi.a)
+#set(LIBPAPI /usr/local/lib/libpapi.a)
+set(CXX_OPTION ${CXX_OPTION} -march=native)
 
 ## Build Library
 #add_library(PANNS
@@ -42,8 +43,8 @@ set(LIBPAPI /usr/local/lib/libpapi.a)
 add_library(NSG
         include/efanna2e/index_nsg.cpp
         include/efanna2e/index.cpp)
-target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native -mavx)
-#target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native)
+#target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native -mavx)
+target_compile_options(NSG PRIVATE ${CXX_OPTION} -march=native)
 target_link_libraries(NSG PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 # Bin
@@ -72,20 +73,25 @@ target_link_libraries(app_para_searching PRIVATE ${Boost_LIBRARIES} OpenMP::Open
 #target_compile_options(app_top_m_batch_search PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(app_top_m_batch_search PRIVATE PANNS ${LIBPAPI})
 
-add_executable(test_nsg_optimized_search app/test_nsg_optimized_search.cpp)
+add_executable(test_nsg_optimized_search tools/test_nsg_optimized_search.cpp)
 #target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native -mavx)
 #target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -march=native)
-target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -xHost)
-#target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION})
+#target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test_nsg_optimized_search PRIVATE ${CXX_OPTION})
 target_link_libraries(test_nsg_optimized_search PRIVATE NSG)
 #target_link_libraries(test_nsg_optimized_search PRIVATE NSG ${LIBPAPI})
 
+add_executable(test_nsg_search tools/test_nsg_search.cpp)
+target_compile_options(test_nsg_search PRIVATE ${CXX_OPTION} -march=native)
+#target_compile_options(test_nsg_search PRIVATE ${CXX_OPTION} -xHost)
+target_link_libraries(test_nsg_search PRIVATE NSG)
 
-add_executable(test_nsg_optimized_search_para app/test_nsg_optimized_search_para.cpp)
+
+add_executable(test_nsg_optimized_search_para tools/test_nsg_optimized_search_para.cpp)
 #target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION} -march=native -mavx)
 #target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION} -march=native)
-target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION} -xHost)
-#target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION})
+#target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test_nsg_optimized_search_para PRIVATE ${CXX_OPTION})
 target_link_libraries(test_nsg_optimized_search_para PRIVATE NSG OpenMP::OpenMP_CXX)
 #target_link_libraries(test_nsg_optimized_search_para PRIVATE NSG ${LIBPAPI} OpenMP::OpenMP_CXX)
 
@@ -126,7 +132,7 @@ target_link_libraries(app_top_m_para_search PRIVATE ${Boost_LIBRARIES} OpenMP::O
 #target_compile_options(profile_para_single_query_top_m_search PRIVATE ${CXX_OPTION} -march=native)
 #target_link_libraries(profile_para_single_query_top_m_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(widget_get_deep200M app/widget_get_deep200M.cpp)
+add_executable(widget_get_deep200M tools/widget_get_deep200M.cpp)
 find_program(FOUND_GCC930 g++-9.3.0 /home/zpeng/lib/bin)
 find_file(FOUND_CPP6 libstdc++.so.6.0.28 /data/zpeng/local/gcc-9.3.0/lib64)
 if(FOUND_GCC930 AND FOUND_CPP6)
@@ -301,8 +307,8 @@ add_executable(profile_para_single_query_top_m_search_middle_m app/profile_para_
 #target_compile_options(profile_para_single_query_top_m_search_middle_m PRIVATE ${CXX_OPTION} -xHost -lpapi)
 #target_compile_options(profile_para_single_query_top_m_search_middle_m PRIVATE ${CXX_OPTION} -xHost)
 target_compile_options(profile_para_single_query_top_m_search_middle_m PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX -lpapi)
-#target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX -lpapi)
+target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 #add_executable(test_neighbors_distance_to_father app/test_neighbors_distance_to_father.cpp)
 #target_compile_options(test_neighbors_distance_to_father PRIVATE ${CXX_OPTION} -xHost)
@@ -571,13 +577,49 @@ target_compile_options(profile_para_single_query_search_simple_v3_ranged PRIVATE
 target_link_libraries(profile_para_single_query_search_simple_v3_ranged PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(save_true_nearest_neighbors tools/save_true_nearest_neighbors.cpp include/efanna2e/index_nsg.cpp)
-target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION})
+#target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION} -xHost)
 target_link_libraries(save_true_nearest_neighbors PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
 
 add_executable(test_nsg_index tools/test_nsg_index.cpp include/efanna2e/index_nsg.cpp)
-target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
+#target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION})
 target_link_libraries(test_nsg_index PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
 
 add_executable(test.true_NN tools/test.true_NN.cpp include/efanna2e/index_nsg.cpp)
-target_compile_options(test.true_NN PRIVATE ${CXX_OPTION} -xHost)
+#target_compile_options(test.true_NN PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test.true_NN PRIVATE ${CXX_OPTION})
 target_link_libraries(test.true_NN PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
+
+add_executable(profile_para_single_query_search_simple_v3_large_graph app/profile_para_single_query_search_simple_v3_large_graph.cpp core/Searching.202009171601.simple_v3.large_graph.cpp)
+target_compile_options(profile_para_single_query_search_simple_v3_large_graph PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_simple_v3_large_graph PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_find_L_seq_single_query_simple_search_large_graph app/profile_find_L_seq_single_query_simple_search_large_graph.cpp core/Searching.202009201459.simple_search_large_graph.cpp)
+target_compile_options(profile_find_L_seq_single_query_simple_search_large_graph PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_find_L_seq_single_query_simple_search_large_graph PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(profile_para_single_query_search_simple_v3_large_graph_ranged app/profile_para_single_query_search_simple_v3_large_graph_ranged.cpp core/Searching.202009171601.simple_v3.large_graph.cpp)
+target_compile_options(profile_para_single_query_search_simple_v3_large_graph_ranged PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_simple_v3_large_graph_ranged PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(check_true_nn tools/check_true_nn.cpp core/Searching.202009171601.simple_v3.large_graph.cpp)
+target_compile_options(check_true_nn PRIVATE ${CXX_OPTION})
+target_link_libraries(check_true_nn PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(bfs_test_nsg tools/bfs_test_nsg.cpp core/Searching.202009221831.bfs_test_nsg.cpp)
+target_compile_options(bfs_test_nsg PRIVATE ${CXX_OPTION})
+target_link_libraries(bfs_test_nsg PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+#add_executable(profile_para_single_query_search_simple_v3_large_graph_ranged_v2 app/profile_para_single_query_search_simple_v3_large_graph_ranged_v2.cpp core/Searching.202009231959.simple_v3.large_graph_v2.cpp)
+#target_compile_options(profile_para_single_query_search_simple_v3_large_graph_ranged_v2 PRIVATE ${CXX_OPTION})
+#target_link_libraries(profile_para_single_query_search_simple_v3_large_graph_ranged_v2 PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(widget_get_sift100M tools/widget_get_sift100M.cpp)
+target_compile_options(widget_get_sift100M PRIVATE ${CXX_OPTION})
+target_link_libraries(widget_get_sift100M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(test_nsg_index_for_bvecs tools/test_nsg_index_for_bvecs.cpp include/efanna2e/index_nsg.cpp)
+#target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test_nsg_index_for_bvecs PRIVATE ${CXX_OPTION})
+target_link_libraries(test_nsg_index_for_bvecs PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)

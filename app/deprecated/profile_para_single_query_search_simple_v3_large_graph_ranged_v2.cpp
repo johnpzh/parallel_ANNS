@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 09/13/2020.
+// Created by Zhen Peng on 09/23/2020.
 //
 
 #include <iostream>
@@ -29,18 +29,18 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202008310636.simple_v3.h"
+#include "../core/Searching.202009231959.simple_v3.large_graph_v2.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <true_NN_file> <num_threads> <L_max> <L_step> <X_low> <X_step>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <true_NN_file> <num_threads> <L_max> <L_step> <X_low> <X_step> <#queries> <init_count>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 13) {
+    if (argc != 15) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -48,37 +48,34 @@ int main(int argc, char **argv)
     setlocale(LC_NUMERIC, ""); // For comma number format
 
     PANNS::Searching engine;
+    printf("Loading %s...\n", argv[1]);
     engine.load_data_load(argv[1]);
+    printf("Loading %s...\n", argv[2]);
     engine.load_queries_load(argv[2]);
-    engine.load_nsg_graph(argv[3]);
+    printf("Loading %s...\n", argv[3]);
+    engine.load_common_nsg_graph(argv[3]);
 
 //    engine.build_opt_graph();
+//    {//test
+//        engine.num_queries_ = 1;
+//    }
 
     unsigned L_min = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
-//    unsigned M_max = strtoull(argv[7], nullptr, 0);
-//    if (L < K) {
-//        fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
-//        exit(EXIT_FAILURE);
-//    }
-//    if (K < M_max) {
-////        fprintf(stderr, "Error: search_K %u is smaller than value_M %u.\n", K, M_max);
-////        exit(EXIT_FAILURE);
-//        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
-//    }
 
     std::vector< std::vector<PANNS::idi> > true_nn_list;
+    printf("Loading %s...\n", argv[7]);
     engine.load_true_NN(
             argv[7],
             true_nn_list);
 
-    unsigned data_dimension = engine.dimension_;
-    unsigned points_num = engine.num_v_;
-    unsigned query_num = engine.num_queries_;
 
     int num_threads = strtoull(argv[8], nullptr, 0);
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
+//    {
+//        printf("num_threads: %u\n", num_threads);
+//    }
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
 
@@ -86,18 +83,34 @@ int main(int argc, char **argv)
     unsigned L_step = strtoull(argv[10], nullptr, 0);
     unsigned X_low = strtoull(argv[11], nullptr, 0);
     unsigned X_step = strtoull(argv[12], nullptr, 0);
-//    unsigned subsearch_iterations = strtoull(argv[10], nullptr, 0);
+    unsigned num_queries_limit = strtoull(argv[13], nullptr, 0);
+    if (num_queries_limit < engine.num_queries_) {
+        engine.num_queries_ = num_queries_limit;
+    }
+    unsigned init_count = strtoull(argv[14], nullptr, 0);
+    if (init_count > L_min) {
+        fprintf(stderr, "Error: init_count %u > L_min %u\n", init_count, L_min);
+        exit(EXIT_FAILURE);
+    }
+
+    unsigned data_dimension = engine.dimension_;
+    unsigned points_num = engine.num_v_;
+    unsigned query_num = engine.num_queries_;
 //    uint64_t thread_compt_quota = strtoull(argv[12], nullptr, 0);
 
 //    unsigned value_M = M_max;
 //    unsigned worker_M = value_M / num_threads;
-
+    printf("Searching...\n");
     for (unsigned L = L_min; L <= L_max; L += L_step) {
         unsigned local_queue_capacity = L;
-
-        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= L + L/10; subsearch_iterations += X_step) {
-
-            unsigned warmup_max = 2;
+        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= L + 4; subsearch_iterations += X_step) {
+//            {
+//                printf("L: %u "
+//                       "X: %u\n",
+//                       L,
+//                       subsearch_iterations);
+//            }
+            unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -112,14 +125,20 @@ int main(int argc, char **argv)
                     local_queues_starts[q_i] = q_i * local_queue_capacity;
                 }
                 auto s = std::chrono::high_resolution_clock::now();
-                engine.prepare_init_ids(init_ids, L);
+//                printf("Preparing...\n");
+                engine.prepare_init_ids(init_ids, init_count);
+//#pragma omp parallel for
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.para_search_with_simple_v3(
+//                    {//test
+//                        printf("query_id: %u\n", q_i);
+//                    }
+                    engine.para_search_with_simple_v3_large_graph_v2(
                             q_i,
                             K,
                             L,
                             set_L,
                             init_ids,
+                            init_count,
                             set_K_list[q_i],
                             local_queue_capacity,
                             local_queues_starts,
@@ -273,9 +292,8 @@ int main(int argc, char **argv)
 //            }
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
-
-        } // X Ranged
-    } // L ranged
+        } // X range
+    } // L range
 
     return 0;
 }

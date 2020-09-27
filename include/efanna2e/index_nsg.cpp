@@ -452,14 +452,6 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters)
         for (unsigned j = 0; j < pool_size; j++) {
             final_graph_[i][j] = pool[j].id;
         }
-        {//test
-            if (pool_size > range) {
-                printf("pool_size: %u "
-                       "range: %u\n",
-                       pool_size,
-                       range);
-            }
-        }
     }
 //    // Added by Johnpzh
 //    time_mrng += omp_get_wtime();

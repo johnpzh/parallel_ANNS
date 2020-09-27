@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/26/2020.
+// Created by Zhen Peng on 09/20/2020.
 //
 
 #include <iostream>
@@ -28,7 +28,7 @@
 //#include "../core/Searching.202008101718.interval_merge_v2.h"
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
-#include "../core/Searching.202008170756.scale_m.h"
+#include "../core/Searching.202009201459.simple_search_large_graph.h"
 
 void search_one_time(
         PANNS::Searching &engine,
@@ -56,7 +56,7 @@ void search_one_time(
     auto s = std::chrono::high_resolution_clock::now();
     engine.prepare_init_ids(init_ids, L);
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-        engine.seq_search_simple_search(
+        engine.seq_search_simple_search_large_graph(
                 q_i,
                 K,
                 L,
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
-    engine.load_nsg_graph(argv[3]);
+    engine.load_common_nsg_graph(argv[3]);
 
     unsigned L_lower = strtoull(argv[4], nullptr, 0);
 

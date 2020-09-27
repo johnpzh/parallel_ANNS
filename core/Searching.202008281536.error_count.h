@@ -34,7 +34,7 @@ public:
     idi num_v_ = 0;
     edgei num_e_ = 0;
     idi num_queries_ = 0;
-    int dimension_ = 0;
+    uint64_t dimension_ = 0;
 
     idi width_ = 0; // NSG largest degree
     idi ep_ = 0; // Start point

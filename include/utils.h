@@ -52,8 +52,8 @@ public:
 //        std::vector< std::vector<dataf> > &data,
             dataf *&data,
             idi &number,
-            int &dimension)
-//            uint64_t &dimension)
+//            int &dimension)
+            uint64_t &dimension)
     {
         std::ifstream fin(filename);
         if (!fin.is_open()) {
@@ -66,7 +66,7 @@ public:
         number = file_size / (4 + 4 * dimension);
 //    data.resize(static_cast<size_t>(number) * static_cast<size_t>(dimension));
 //    data.resize(number);
-        data = (dataf *) malloc(static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf));
+        data = (dataf *) malloc(static_cast<uint64_t>(number) * static_cast<uint64_t>(dimension) * sizeof(dataf));
 //    data = (dataf *) _mm_malloc(static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf), 64);
         if (!data) {
             fprintf(stderr, "Error: cannot malloc %lu bytes.\n", static_cast<size_t>(number) * static_cast<size_t>(dimension) * sizeof(dataf));
