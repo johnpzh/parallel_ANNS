@@ -206,17 +206,20 @@ int main(int argc, char** argv) {
 //    std::cout << "search_time: " << diff.count() << "\n";
     printf("L: %u "
            "num_queries: %u "
-           "search_time: %f "
+           "runtime(s.): %f "
+           "comput.: %lu "
            "P@100: %f "
            "P@1: %f "
            "dimension: %u ",
            L,
            query_num,
            diff.count(),
+           index.count_distance_computation_,
            recalls[100],
            recalls[1],
            dim);
     printf("\n");
+    index.count_distance_computation_ = 0;
 
     save_result(argv[6], res);
 

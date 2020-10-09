@@ -784,24 +784,29 @@ int main(int argc, char *argv[])
 
 //    test_openmp_performance(argc, argv);
 //    test_bitvector(argc, argv);
-//    test_omp_static(argc, argv);
+    test_omp_static(argc, argv);
 //    test_run_levels();
 //    test_thread();
 //    test_reduction();
 //    test_sections();
-    const uint64_t bound = strtoull(argv[1], nullptr, 0);
-    test_small_vector(bound);
-    test_large_vector(bound);
-    test_large_vector_with_tmp(bound);
-    test_large_vector_with_outside(bound);
-    test_small_array(bound);
-    test_large_array(bound);
-    test_large_array_with_tmp(bound);
-    test_large_array_with_outside(bound);
-    test_small_unique_ptr(bound);
-    test_large_unique_ptr(bound);
-    test_large_unique_ptr_with_tmp(bound);
-    test_large_unique_ptr_with_outside(bound);
+
+//    /* ---- test performance ---- */
+//    const uint64_t bound = strtoull(argv[1], nullptr, 0);
+//    test_small_vector(bound);
+//    test_large_vector(bound);
+//    test_large_vector_with_tmp(bound);
+//    test_large_vector_with_outside(bound);
+//    test_small_array(bound);
+//    test_large_array(bound);
+//    test_large_array_with_tmp(bound);
+//    test_large_array_with_outside(bound);
+//    test_small_unique_ptr(bound);
+//    test_large_unique_ptr(bound);
+//    test_large_unique_ptr_with_tmp(bound);
+//    test_large_unique_ptr_with_outside(bound);
+//    /* ---- End test performance ---- */
+
+
 
     return 0;
 }

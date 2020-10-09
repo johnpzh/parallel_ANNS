@@ -38,7 +38,7 @@ void check_true_nn_for_one_query(
     for (unsigned e_i = 0; e_i < K; ++e_i) {
         if (true_nn[e_i].first != candidates[e_i].id_) {
             printf("query_id: %u "
-                   "true_nn[%u]: (%u, %f)"
+                   "true_nn[%u]: (%u, %f) "
                    "cands[%u]: (%u, %f)\n",
                    query_id,
                    e_i, true_nn[e_i].first, true_nn[e_i].second,
@@ -110,6 +110,8 @@ int main(int argc, char **argv)
     setbuf(stdout, nullptr); // Remove stdout buffer.
     setlocale(LC_NUMERIC, ""); // For comma number format
 
+    auto s = std::chrono::high_resolution_clock::now();
+
     PANNS::Searching engine;
     printf("Loading %s ...\n", argv[1]);
     engine.load_data_load(argv[1]);
@@ -147,6 +149,10 @@ int main(int argc, char **argv)
                 true_nn_list[query_id]);
 //                candidates);
     }
+
+    auto e = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = e - s;
+    printf("Done, %f sec.\n", diff.count());
 
     return 0;
 }

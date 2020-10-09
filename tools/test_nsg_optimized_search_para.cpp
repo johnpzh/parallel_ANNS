@@ -140,7 +140,7 @@ int main(int argc, char **argv)
                        L,
                        diff.count(),
 //                       index.time_distance_computation,
-                       index.count_distance_computation,
+                       index.count_distance_computation_,
                        K,
                        points_num,
                        dim,
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
                        query_num / diff.count(),
                        diff.count() * 1000 / query_num);
 //                index.time_distance_computation = 0.0;
-                index.count_distance_computation = 0;
+                index.count_distance_computation_ = 0;
             }
             // Ended by Johnpzh
 

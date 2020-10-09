@@ -87,6 +87,6 @@ subprocess.run(command, env=env_vars, shell=True, check=True)
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 selected_file = F"output.{label}.table.selected.txt"
-subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 12 13 15 1', shell=True, check=True)
+subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 9 12 13 15 1', shell=True, check=True)
 subprocess.run(F'python3 ../scripts/output_row_minimum.py {rows_file} {table_file} 2 0', shell=True, check=True)
 subprocess.run(F'python3 ../scripts/output_find_runtime_above_presicion.py {table_file} {selected_file} 0 2', shell=True, check=True)

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.9)
 project(PANNS LANGUAGES CXX)
 
 # Verbose Makefile
@@ -548,9 +548,9 @@ add_executable(profile_para_single_query_top_m_search_m_width.v2 app/profile_par
 target_compile_options(profile_para_single_query_top_m_search_m_width.v2 PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_top_m_search_m_width.v2 PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_find_L_seq_single_query_simple_search app/profile_find_L_seq_single_query_simple_search.cpp core/Searching.202008170756.scale_m.cpp)
+add_executable(profile_find_L_seq_single_query_simple_search app/profile_find_L_seq_single_query_simple_search.cpp)
 target_compile_options(profile_find_L_seq_single_query_simple_search PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_find_L_seq_single_query_simple_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(profile_find_L_seq_single_query_simple_search PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
 
 add_executable(profile_para_single_query_async_search_error_count app/profile_para_single_query_async_search_error_count.cpp core/Searching.202008281536.error_count.cpp)
 target_compile_options(profile_para_single_query_async_search_error_count PRIVATE ${CXX_OPTION})
@@ -576,7 +576,7 @@ add_executable(profile_para_single_query_search_simple_v3_ranged app/profile_par
 target_compile_options(profile_para_single_query_search_simple_v3_ranged PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_search_simple_v3_ranged PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(save_true_nearest_neighbors tools/save_true_nearest_neighbors.cpp include/efanna2e/index_nsg.cpp)
+add_executable(save_true_nearest_neighbors tools/save_true_nearest_neighbors.cpp core/Searching.202009171601.simple_v3.large_graph.cpp)
 target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION})
 #target_compile_options(save_true_nearest_neighbors PRIVATE ${CXX_OPTION} -xHost)
 target_link_libraries(save_true_nearest_neighbors PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
@@ -595,9 +595,9 @@ add_executable(profile_para_single_query_search_simple_v3_large_graph app/profil
 target_compile_options(profile_para_single_query_search_simple_v3_large_graph PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_para_single_query_search_simple_v3_large_graph PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_find_L_seq_single_query_simple_search_large_graph app/profile_find_L_seq_single_query_simple_search_large_graph.cpp core/Searching.202009201459.simple_search_large_graph.cpp)
+add_executable(profile_find_L_seq_single_query_simple_search_large_graph app/profile_find_L_seq_single_query_simple_search_large_graph.cpp)
 target_compile_options(profile_find_L_seq_single_query_simple_search_large_graph PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_find_L_seq_single_query_simple_search_large_graph PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(profile_find_L_seq_single_query_simple_search_large_graph PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
 
 add_executable(profile_para_single_query_search_simple_v3_large_graph_ranged app/profile_para_single_query_search_simple_v3_large_graph_ranged.cpp core/Searching.202009171601.simple_v3.large_graph.cpp)
 target_compile_options(profile_para_single_query_search_simple_v3_large_graph_ranged PRIVATE ${CXX_OPTION})
@@ -623,3 +623,11 @@ add_executable(test_nsg_index_for_bvecs tools/test_nsg_index_for_bvecs.cpp inclu
 #target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
 target_compile_options(test_nsg_index_for_bvecs PRIVATE ${CXX_OPTION})
 target_link_libraries(test_nsg_index_for_bvecs PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
+
+add_executable(profile_para_single_query_search_simple_v3_large_graph_debug_for_deep100M app/profile_para_single_query_search_simple_v3_large_graph_debug_for_deep100M.cpp core/Searching.202009301055.simple_v3.large_graph.debug_for_deep100M.cpp)
+target_compile_options(profile_para_single_query_search_simple_v3_large_graph_debug_for_deep100M PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_simple_v3_large_graph_debug_for_deep100M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(convert_bvecs_to_fvecs tools/convert_bvecs_to_fvecs.cpp)
+target_compile_options(convert_bvecs_to_fvecs PRIVATE ${CXX_OPTION})
+target_link_libraries(convert_bvecs_to_fvecs PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

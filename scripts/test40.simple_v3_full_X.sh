@@ -25,10 +25,25 @@ export KMP_AFFINITY="granularity=core,compact,1,0"
 cd ../cmake-build-release || exit
 bin="./profile_para_single_query_search_simple_v3"
 
-##### DEEP10M
-#data_dir="${base_dir}/deep1b"
-#data_name="deep10M"
-#label="${tag}.deep10M"
+#### DEEP10M
+data_dir="${base_dir}/deep1b"
+data_name="deep10M"
+label="${tag}.deep10M"
+:> output.${label}.raw.txt
+for ((L = L_upper; L >= L_lower; --L)); do
+        sub_iter=$((L + 5))
+        ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg ${L} 100 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+#        sub_iter=1
+#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
+done
+
+python3 ../scripts/output_rows_to_table.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 9 12 13 15 1;
+python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
+
+##### SIFT1M
+#data_dir="${base_dir}/sift1m"
+#data_name="sift"
+#label="${tag}.sift"
 #:> output.${label}.raw.txt
 #for ((L = L_upper; L >= L_lower; --L)); do
 #        sub_iter=$((L + 5))
@@ -39,21 +54,6 @@ bin="./profile_para_single_query_search_simple_v3"
 #
 #python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
 #python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
-
-#### SIFT1M
-data_dir="${base_dir}/sift1m"
-data_name="sift"
-label="${tag}.sift"
-:> output.${label}.raw.txt
-for ((L = L_upper; L >= L_lower; --L)); do
-        sub_iter=$((L + 5))
-        ${bin} ${data_dir}/${data_name}_base.fvecs ${data_dir}/${data_name}_query.fvecs ${data_dir}/${data_name}.nsg ${L} 100 output.ivecs ${data_dir}/${data_name}.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
-#        sub_iter=1
-#        ${bin} ${data_dir}/sift1m/sift_base.fvecs ${data_dir}/sift1m/sift_query.fvecs ${data_dir}/sift1m/sift.nsg ${L} 100 output.ivecs ${data_dir}/sift1m/sift.true-100_NN.q-10000.binary ${num_t} ${L} ${sub_iter} | tee -a output.${label}.raw.txt
-done
-
-python3 ../scripts/output_format.py output.${label}.raw.txt output.${label}.row.txt 2 3 10 12 13 15 1;
-python3 ../scripts/output_row_minimum.py output.${label}.row.txt output.${label}.table.txt 2 0;
 
 ##### GIST1M
 #data_dir="${base_dir}/gist1m"
