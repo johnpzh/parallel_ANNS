@@ -676,109 +676,109 @@ void test_large_array_with_outside(const uint64_t bound)
            diff.count());
 }
 
-void test_small_unique_ptr(const uint64_t bound)
-{
-    auto s = std::chrono::high_resolution_clock::now();
-    uint64_t sum = 0;
-    {
-        const int capacity = 10;
-
-        for (uint64_t i = 0; i < bound; ++i) {
-//            uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * capacity);
-        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(capacity);
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                v[v_i] = i;
-            }
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                sum += v[v_i];
-            }
-//            free(v);
-        }
-    }
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-    printf("small_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
-           sum,
-           diff.count());
-}
-void test_large_unique_ptr(const uint64_t bound)
-{
-    auto s = std::chrono::high_resolution_clock::now();
-    uint64_t sum = 0;
-    {
-        const int capacity = 10;
-//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
-        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
-
-        for (uint64_t i = 0; i < bound; ++i) {
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                v[i * capacity + v_i] = i;
-            }
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                sum += v[i * capacity + v_i];
-            }
-        }
-//        free(v);
-    }
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-    printf("large_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
-           sum,
-           diff.count());
-}
-void test_large_unique_ptr_with_tmp(const uint64_t bound)
-{
-    auto s = std::chrono::high_resolution_clock::now();
-    uint64_t sum = 0;
-    {
-        const int capacity = 10;
-//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
-        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
-
-        for (uint64_t i = 0; i < bound; ++i) {
-            uint64_t start = i * capacity;
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                v[start + v_i] = i;
-            }
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                sum += v[start + v_i];
-            }
-        }
-//        free(v);
-    }
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-    printf("large_u_ptr_with_tmp: \tsum: %lu runtime(s.): %f\n",
-           sum,
-           diff.count());
-}
-
-void test_large_unique_ptr_with_outside(const uint64_t bound)
-{
-    auto s = std::chrono::high_resolution_clock::now();
-    uint64_t sum = 0;
-    {
-        const int capacity = 10;
-//        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
-        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
-        uint64_t start;
-        for (uint64_t i = 0; i < bound; ++i) {
-            start = i * capacity;
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                v[start + v_i] = i;
-            }
-            for (int v_i = 0; v_i < capacity; ++v_i) {
-                sum += v[start + v_i];
-            }
-        }
-//        free(v);
-    }
-    auto e = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = e - s;
-    printf("large_u_ptr_out_tmp: \tsum: %lu runtime(s.): %f\n",
-           sum,
-           diff.count());
-}
+//void test_small_unique_ptr(const uint64_t bound)
+//{
+//    auto s = std::chrono::high_resolution_clock::now();
+//    uint64_t sum = 0;
+//    {
+//        const int capacity = 10;
+//
+//        for (uint64_t i = 0; i < bound; ++i) {
+////            uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * capacity);
+//        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(capacity);
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                v[v_i] = i;
+//            }
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                sum += v[v_i];
+//            }
+////            free(v);
+//        }
+//    }
+//    auto e = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<double> diff = e - s;
+//    printf("small_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
+//           sum,
+//           diff.count());
+//}
+//void test_large_unique_ptr(const uint64_t bound)
+//{
+//    auto s = std::chrono::high_resolution_clock::now();
+//    uint64_t sum = 0;
+//    {
+//        const int capacity = 10;
+////        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+//        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+//
+//        for (uint64_t i = 0; i < bound; ++i) {
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                v[i * capacity + v_i] = i;
+//            }
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                sum += v[i * capacity + v_i];
+//            }
+//        }
+////        free(v);
+//    }
+//    auto e = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<double> diff = e - s;
+//    printf("large_u_ptr: \t\tsum: %lu runtime(s.): %f\n",
+//           sum,
+//           diff.count());
+//}
+//void test_large_unique_ptr_with_tmp(const uint64_t bound)
+//{
+//    auto s = std::chrono::high_resolution_clock::now();
+//    uint64_t sum = 0;
+//    {
+//        const int capacity = 10;
+////        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+//        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+//
+//        for (uint64_t i = 0; i < bound; ++i) {
+//            uint64_t start = i * capacity;
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                v[start + v_i] = i;
+//            }
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                sum += v[start + v_i];
+//            }
+//        }
+////        free(v);
+//    }
+//    auto e = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<double> diff = e - s;
+//    printf("large_u_ptr_with_tmp: \tsum: %lu runtime(s.): %f\n",
+//           sum,
+//           diff.count());
+//}
+//
+//void test_large_unique_ptr_with_outside(const uint64_t bound)
+//{
+//    auto s = std::chrono::high_resolution_clock::now();
+//    uint64_t sum = 0;
+//    {
+//        const int capacity = 10;
+////        uint64_t *v = (uint64_t *) malloc(sizeof(uint64_t) * bound * capacity);
+//        std::unique_ptr<uint64_t[]> v = std::make_unique<uint64_t[]>(bound * capacity);
+//        uint64_t start;
+//        for (uint64_t i = 0; i < bound; ++i) {
+//            start = i * capacity;
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                v[start + v_i] = i;
+//            }
+//            for (int v_i = 0; v_i < capacity; ++v_i) {
+//                sum += v[start + v_i];
+//            }
+//        }
+////        free(v);
+//    }
+//    auto e = std::chrono::high_resolution_clock::now();
+//    std::chrono::duration<double> diff = e - s;
+//    printf("large_u_ptr_out_tmp: \tsum: %lu runtime(s.): %f\n",
+//           sum,
+//           diff.count());
+//}
 int main(int argc, char *argv[])
 {
 
