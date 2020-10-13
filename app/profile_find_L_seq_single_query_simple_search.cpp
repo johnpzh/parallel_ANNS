@@ -270,6 +270,11 @@ int main(int argc, char **argv)
     double runtime;
     uint64_t compt;
 
+    double last_runtime;
+    uint64_t last_compt;
+    double last_recall;
+    unsigned last_L;
+
     while (L_lower <= L_upper) {
 //        L = (L_lower + L_upper) / 2;
         printf("L: %u "
@@ -297,28 +302,39 @@ int main(int argc, char **argv)
             L_lower = L + 1;
         } else {
             L_upper = L - 1;
+            last_runtime = runtime;
+            last_recall = recalls[100];
+            last_compt = compt;
+            last_L = L;
         }
         L = (L_lower + L_upper) / 2;
     }
 
     L_upper = strtoull(argv[8], nullptr, 0);
-    while (recalls[100] < P_dest && L < L_upper) {
-        ++L;
-
-        search_one_time(
-                index,
-                L,
-                K,
-                query_load,
-                points_num,
-                query_num,
-                dim,
-                true_nn_list,
-                set_K_list,
-                recalls,
-                runtime,
-                compt);
+    if (recalls[100] < P_dest && L < L_upper) {
+        runtime = last_runtime;
+        recalls[100] = last_recall;
+        compt = last_compt;
+        L = last_L;
     }
+//    L_upper = strtoull(argv[8], nullptr, 0);
+//    while (recalls[100] < P_dest && L < L_upper) {
+//        ++L;
+//
+//        search_one_time(
+//                index,
+//                L,
+//                K,
+//                query_load,
+//                points_num,
+//                query_num,
+//                dim,
+//                true_nn_list,
+//                set_K_list,
+//                recalls,
+//                runtime,
+//                compt);
+//    }
     save_result(argv[6], set_K_list);
     printf("---- FINAL ------\n");
     printf("P_dest: %f "
