@@ -33,7 +33,8 @@ raw_file = F"output.{label}.raw.txt"
 subprocess.run(F':> {raw_file}', shell=True, check=True)
 L_min=L_lower
 L_max=L_upper
-command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+command = F"numactl -m 0" \
+          F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_min} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
           F"{num_t} {L_max} {L_step} {X_low} {X_step}" \
           F"| tee -a {raw_file}"
