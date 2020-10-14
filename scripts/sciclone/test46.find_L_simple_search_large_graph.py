@@ -16,8 +16,8 @@ L_upper = int(sys.argv[4])
 P_level = float(sys.argv[5])
 
 env_vars = os.environ
-# env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_seq_single_query_simple_search_large_graph"
+# env_vars["KMP_AFFINITY"] = "verbose,granularity=fine,compact,1,0"
+bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search_large_graph"
 
 #### DEEP100M
 data_dir = base_dir + "/deep1b"
@@ -33,8 +33,7 @@ for P_level in [0.90, 0.91, 0.92, 0.93,
                 0.995, 0.996, 0.997, 0.998,
                 0.999]:
 # for P_level in [0.999]:
-    command = F"numactl -m 0 " \
-              F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+    command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
               F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary" \
               F" {L_upper} {P_level} " \
               F"| tee -a {raw_file}"

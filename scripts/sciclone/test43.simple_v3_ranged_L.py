@@ -20,8 +20,8 @@ X_low = int(sys.argv[7])
 X_step = int(sys.argv[8])
 
 env_vars = os.environ
-env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_para_single_query_search_simple_v3_ranged"
+# env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+bin="numactl -m 0 ./profile_para_single_query_search_simple_v3_ranged"
 
 
 # #### SIFT1M

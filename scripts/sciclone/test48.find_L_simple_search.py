@@ -16,8 +16,8 @@ L_upper = int(sys.argv[4])
 # P_level = float(sys.argv[5])
 
 env_vars = os.environ
-env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_seq_single_query_simple_search"
+# env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search"
 
 # #### SIFT1M
 # data_dir = base_dir + "/sift1m"

@@ -21,7 +21,7 @@ X_step = int(sys.argv[8])
 env_vars = os.environ
 # env_vars["KMP_AFFINITY"] = "verbose,granularity=fine,compact,1,0"
 # env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_para_single_query_search_simple_v3_large_graph_ranged"
+bin="numactl -m 0 ./profile_para_single_query_search_simple_v3_large_graph_ranged"
 
 
 #### DEEP100M
@@ -33,8 +33,7 @@ raw_file = F"output.{label}.raw.txt"
 subprocess.run(F':> {raw_file}', shell=True, check=True)
 L_min=L_lower
 L_max=L_upper
-command = F"numactl -m 0 " \
-          F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_min} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
           F"{num_t} {L_max} {L_step} {X_low} {X_step}" \
           F"| tee -a {raw_file}"
