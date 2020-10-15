@@ -276,7 +276,6 @@ int main(int argc, char **argv)
     unsigned last_L;
 
     while (L_lower <= L_upper) {
-//        L = (L_lower + L_upper) / 2;
         printf("L: %u "
                "L_lower: %u "
                "L_upper: %u\n",

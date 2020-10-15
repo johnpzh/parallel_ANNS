@@ -29,7 +29,7 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202008310636.simple_v3.h"
+#include "../core/Searching.202009171601.simple_v3.large_graph.h"
 
 void search_one_time(
         PANNS::Searching &engine,
@@ -65,7 +65,7 @@ void search_one_time(
 //#pragma omp parallel for
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 
-        engine.para_search_with_simple_v3(
+        engine.para_search_with_simple_v3_large_graph(
                 q_i,
                 K,
                 L,
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
-    engine.load_nsg_graph(argv[3]);
+    engine.load_common_nsg_graph(argv[3]);
 
     unsigned L_lower = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
