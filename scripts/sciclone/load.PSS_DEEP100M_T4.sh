@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l nodes=1:hima:nogpu:ppn=32
-#PBS -l walltime=24:00:00
+#PBS -l walltime=70:00:00
 #PBS -N deep100M_PSS_T4
 #PBS -j oe
 #PBS -m abe
@@ -11,9 +11,9 @@ bin="python3 ../scripts/sciclone/test47.simple_v3_large_graph_ranged_L.py"
 
 num_t=4
 ${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L90-100 ${num_t} 90 100 2 1 2
-${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L100-400 ${num_t} 100 400 16 2 16
-${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L400-800 ${num_t} 400 800 32 2 64
-${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L800-1600 ${num_t} 800 1600 128 2 256
+${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L100-400 ${num_t} 100 400 8 2 16
+${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L400-800 ${num_t} 400 800 16 2 32
+${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L800-1600 ${num_t} 800 1600 32 2 64
 
 #
 #
