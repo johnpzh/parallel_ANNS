@@ -10,7 +10,7 @@ cd /sciclone/home20/zpeng01/pppp/parallel_ANNS/cmake-build-release
 bin="python3 ../scripts/sciclone/test52.simple_v3_large_graph_ranged_L.no_affinity.py"
 
 num_t=8
-${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L90-100 ${num_t} 90 100 2 1 2
+${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L90-100_no_affinity ${num_t} 90 100 2 1 2
 #${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L100-400 ${num_t} 100 400 8 2 16
 #${bin} /sciclone/pscr/zpeng01 PSS_T${num_t}_L400-800 ${num_t} 400 800 16 2 32
 
