@@ -5,6 +5,7 @@
 #PBS -j oe
 #PBS -m abe
 #PBS -o output.sift1M_T8_no_affinity.txt
+#PBS -W x=\"NACCESSPOLICY:SINGLEJOB\"
 
 cd /sciclone/home20/zpeng01/pppp/parallel_ANNS/cmake-build-release
 bin="python3 ../scripts/sciclone/test52.simple_v3_large_graph_ranged_L.no_affinity.py"

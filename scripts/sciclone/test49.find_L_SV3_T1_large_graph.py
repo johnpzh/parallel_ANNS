@@ -17,7 +17,8 @@ P_level = float(sys.argv[5])
 
 env_vars = os.environ
 # env_vars["KMP_AFFINITY"] = "granularity=fine,compact,0,0"
-bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3_large_graph"
+# bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3_large_graph"
+bin="./profile_find_L_para_single_query_search_simple_v3_large_graph"
 
 # #### SIFT100M
 # data_dir = base_dir + "/sift1b"
