@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l nodes=1:hima:nogpu:ppn=32
-#PBS -l walltime=10:00:00
+#PBS -l walltime=01:00:00
 #PBS -N sift1M_T8_no_affinity
 #PBS -j oe
 #PBS -m abe
