@@ -32,7 +32,6 @@ for P_level in [0.90, 0.91, 0.92, 0.93,
                 0.991, 0.992, 0.993, 0.994,
                 0.995, 0.996, 0.997, 0.998,
                 0.999]:
-# for P_level in [0.999]:
     command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
               F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary" \
               F" {L_upper} {P_level} " \
