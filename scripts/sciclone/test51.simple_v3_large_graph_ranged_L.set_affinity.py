@@ -20,8 +20,8 @@ X_step = int(sys.argv[8])
 
 env_vars = os.environ
 # env_vars["KMP_AFFINITY"] = "verbose,granularity=fine,compact,1,0"
-env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-# env_vars["KMP_AFFINITY"] = "granularity=fine,compact,0,0"
+# env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+env_vars["KMP_AFFINITY"] = "granularity=fine,compact,0,0"
 bin="numactl -m 0 ./profile_para_single_query_search_simple_v3_large_graph_ranged"
 # bin="./profile_para_single_query_search_simple_v3_large_graph_ranged"
 

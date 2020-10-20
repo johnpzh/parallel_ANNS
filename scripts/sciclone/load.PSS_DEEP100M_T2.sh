@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l nodes=1:hima:nogpu:ppn=32
-#PBS -l walltime=70:00:00
+#PBS -l walltime=48:00:00
 #PBS -N deep100M_PSS_T2
 #PBS -j oe
 #PBS -m abe
