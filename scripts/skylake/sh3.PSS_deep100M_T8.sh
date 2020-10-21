@@ -16,8 +16,8 @@ set -x
 
 #set -x
 python3 ../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L90-100 8 90 100 2 1 2
-python3 ../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L100-400 8 100 400 16 2 16
-python3 ../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L400-800 8 400 800 64 2 64
+python3 ../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L100-400 8 100 400 32 2 64
+python3 ../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L400-800 8 400 800 64 2 128
 #../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L800-1600 8 800 1600 32 2 64
 #../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L1600-3200 8 1600 3200 64 2 128
 #../scripts/skylake/test47.simple_v3_large_graph_ranged_L.py /scratch/zpeng SV3_T8_L3200-5000 8 3200 5000 128 2 256
