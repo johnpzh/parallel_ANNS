@@ -225,7 +225,7 @@ int main(int argc, char **argv)
         local_queue_capacity = L;
     }
 
-    L_upper = strtoull(argv[8], nullptr, 0);
+    L_upper = strtoull(argv[10], nullptr, 0);
     if (recalls[100] < P_dest && L < L_upper) {
         runtime = last_runtime;
         recalls[100] = last_recall;
