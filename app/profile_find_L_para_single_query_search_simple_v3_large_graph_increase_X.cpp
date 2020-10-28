@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/31/2020.
+// Created by Zhen Peng on 10/23/2020.
 //
 
 #include <iostream>
@@ -29,7 +29,8 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202009171601.simple_v3.large_graph.h"
+//#include "../core/Searching.202009171601.simple_v3.large_graph.h"
+#include "../core/Searching.202010231647.simple_v3.large_graph.heuristic_X.h"
 
 void search_one_time(
         PANNS::Searching &engine,
@@ -40,7 +41,7 @@ void search_one_time(
         const unsigned data_dimension,
         const int num_threads,
         const unsigned local_queue_capacity,
-        const unsigned subsearch_iterations,
+        const unsigned X_start,
         const std::vector< std::vector<PANNS::idi> > &true_nn_list,
         std::vector<std::vector<unsigned> > &set_K_list_return,
         std::unordered_map<unsigned, double> &recalls,
@@ -65,7 +66,7 @@ void search_one_time(
 //#pragma omp parallel for
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 
-        engine.para_search_with_simple_v3_large_graph(
+        engine.para_search_with_simple_v3_large_graph_increase_X(
                 q_i,
                 K,
                 L,
@@ -76,7 +77,7 @@ void search_one_time(
                 local_queues_starts,
                 local_queues_sizes,
                 is_visited,
-                subsearch_iterations);
+                X_start);
     }
     auto e = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = e - s;
@@ -104,7 +105,7 @@ void search_one_time(
                 "G/s: %f "
                 "GFLOPS: %f "
                 "local_L: %u "
-                "sub_iters: %u",
+                "X_start: %u",
                 num_threads,
                 L,
                 diff.count(),
@@ -121,7 +122,7 @@ void search_one_time(
                 data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
                 diff.count(),
                 local_queue_capacity,
-                subsearch_iterations);
+                X_start);
         printf("\n");
     }
     runtime = diff.count();
@@ -133,13 +134,13 @@ void search_one_time(
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L_lower> <K> <result_file> <true_NN_file> <num_threads> <sub_iters> <L_upper> <P@100>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L_lower> <K> <result_file> <true_NN_file> <num_threads> <X_start> <L_upper> <P@100> [<P@100> ...]\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 12) {
+    if (argc < 12) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -151,7 +152,7 @@ int main(int argc, char **argv)
     engine.load_queries_load(argv[2]);
     engine.load_common_nsg_graph(argv[3]);
 
-    unsigned L_lower = strtoull(argv[4], nullptr, 0);
+    unsigned L_lower_origin = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
     std::vector< std::vector<PANNS::idi> > true_nn_list;
     engine.load_true_NN(
@@ -163,93 +164,105 @@ int main(int argc, char **argv)
     unsigned query_num = engine.num_queries_;
 
     int num_threads = strtoull(argv[8], nullptr, 0);
-    if (1 != num_threads) {
-        fprintf(stderr, "Error: num_threads is %d, which should be 1.\n", num_threads);
-        exit(EXIT_FAILURE);
-    }
+//    if (1 != num_threads) {
+//        fprintf(stderr, "Error: num_threads is %d, which should be 1.\n", num_threads);
+//        exit(EXIT_FAILURE);
+//    }
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
 
-    unsigned subsearch_iterations = strtoull(argv[9], nullptr, 0);
-    unsigned L_upper = strtoull(argv[10], nullptr, 0);
-    double P_dest = strtod(argv[11], nullptr);
+    unsigned X_start = strtoull(argv[9], nullptr, 0);
+    unsigned L_upper_origin = strtoull(argv[10], nullptr, 0);
 
-    std::vector< std::vector<unsigned> > set_K_list;
-    std::unordered_map<unsigned, double> recalls;
-    unsigned L = L_upper;
-    unsigned local_queue_capacity = L;
-    double runtime;
-    uint64_t compt;
+    unsigned num_P_target = argc - 11;
+    std::vector<double> P_targets(num_P_target);
+    for (int a_i = 11; a_i < argc; ++a_i) {
+        P_targets[a_i - 11] = strtod(argv[a_i], nullptr);
+    }
+//    double P_dest = strtod(argv[11], nullptr);
 
-    double last_runtime;
-    uint64_t last_compt;
-    double last_recall;
-    unsigned last_L;
+    for (; X_start <= L_upper_origin; X_start += L_upper_origin / 4) {
+        for (const double P_dest : P_targets) {
+            std::vector<std::vector<unsigned> > set_K_list;
+            std::unordered_map<unsigned, double> recalls;
+            unsigned L_upper = L_upper_origin;
+            unsigned L_lower = L_lower_origin;
+            unsigned L = L_upper;
+            unsigned local_queue_capacity = L;
+            double runtime;
+            uint64_t compt;
 
-    while (L_lower <= L_upper) {
-        printf("L: %u "
-               "L_lower: %u "
-               "L_upper: %u\n",
-               L,
-               L_lower,
-               L_upper);
+            double last_runtime;
+            uint64_t last_compt;
+            double last_recall;
+            unsigned last_L;
 
-        search_one_time(
-                engine,
-                L,
-                K,
-                points_num,
-                query_num,
-                data_dimension,
-                num_threads,
-                local_queue_capacity,
-                subsearch_iterations,
-                true_nn_list,
-                set_K_list,
-                recalls,
-                runtime,
-                compt);
+            while (L_lower <= L_upper) {
+                printf("L: %u "
+                       "L_lower: %u "
+                       "L_upper: %u\n",
+                       L,
+                       L_lower,
+                       L_upper);
 
-        if (recalls[100] < P_dest) {
-            L_lower = L + 1;
-        } else {
-            L_upper = L - 1;
-            last_runtime = runtime;
-            last_recall = recalls[100];
-            last_compt = compt;
-            last_L = L;
+                search_one_time(
+                        engine,
+                        L,
+                        K,
+                        points_num,
+                        query_num,
+                        data_dimension,
+                        num_threads,
+                        local_queue_capacity,
+                        X_start,
+                        true_nn_list,
+                        set_K_list,
+                        recalls,
+                        runtime,
+                        compt);
+
+                if (recalls[100] < P_dest) {
+                    L_lower = L + 1;
+                } else {
+                    L_upper = L - 1;
+                    last_runtime = runtime;
+                    last_recall = recalls[100];
+                    last_compt = compt;
+                    last_L = L;
+                }
+                L = (L_lower + L_upper) / 2;
+                local_queue_capacity = L;
+            }
+
+            L_upper = L_upper_origin;
+            if (recalls[100] < P_dest && L < L_upper) {
+                runtime = last_runtime;
+                recalls[100] = last_recall;
+                compt = last_compt;
+                L = last_L;
+            }
+
+            PANNS::DiskIO::save_result(argv[6], set_K_list);
+            printf("---- FINAL ----\n");
+            printf("P_dest: %f "
+                   "runtime(s.): %f "
+                   "compt.: %lu "
+                   "P@100: %f "
+                   "latency(ms.): %f "
+                   "L: %u "
+                   "X_start: %u ",
+                   P_dest,
+                   runtime,
+                   compt,
+                   recalls[100],
+                   runtime / query_num * 1000.0,
+                   L,
+                   X_start);
+            printf("\n");
+
         }
-        L = (L_lower + L_upper) / 2;
-        local_queue_capacity = L;
     }
-
-    L_upper = strtoull(argv[10], nullptr, 0);
-    if (recalls[100] < P_dest && L < L_upper) {
-        runtime = last_runtime;
-        recalls[100] = last_recall;
-        compt = last_compt;
-        L = last_L;
-    }
-
-    PANNS::DiskIO::save_result(argv[6], set_K_list);
-    printf("---- FINAL ----\n");
-    printf("P_dest: %f "
-           "runtime(s.): %f "
-           "compt.: %lu "
-           "P@100: %f "
-           "latency(ms.): %f "
-           "L: %u "
-           "X: %u ",
-           P_dest,
-           runtime,
-           compt,
-           recalls[100],
-           runtime / query_num * 1000.0,
-           L,
-           subsearch_iterations);
-    printf("\n");
-
     return 0;
 }

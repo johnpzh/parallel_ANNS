@@ -66,7 +66,7 @@ void search_one_time(
 //#pragma omp parallel for
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 
-        engine.para_search_with_simple_v3_large_graph_increase_X(
+        engine.para_search_with_simple_v3_large_graph_decrease_X(
                 q_i,
                 K,
                 L,
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
 
-    unsigned X_start = strtoull(argv[9], nullptr, 0);
+    int X_start = strtoull(argv[9], nullptr, 0);
     unsigned L_upper_origin = strtoull(argv[10], nullptr, 0);
 
     unsigned num_P_target = argc - 11;
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
     }
 //    double P_dest = strtod(argv[11], nullptr);
 
-    for (; X_start <= L_upper_origin; X_start += num_threads) {
+    for (; X_start > 0; X_start -= L_upper_origin / 4) {
         for (const double P_dest : P_targets) {
             std::vector<std::vector<unsigned> > set_K_list;
             std::unordered_map<unsigned, double> recalls;
