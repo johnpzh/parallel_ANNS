@@ -214,15 +214,19 @@ int main(int argc, char **argv)
 
         if (recalls[100] < P_dest) {
             L_lower = L + 1;
-        } else {
+        } else if (recalls[100] > P_dest) {
             L_upper = L - 1;
             last_runtime = runtime;
             last_recall = recalls[100];
             last_compt = compt;
             last_L = L;
+        } else {
+            break;
         }
-        L = (L_lower + L_upper) / 2;
-        local_queue_capacity = L;
+        if (L_lower <= L_upper) {
+            L = (L_lower + L_upper) / 2;
+            local_queue_capacity = L;
+        }
     }
 
     L_upper = strtoull(argv[10], nullptr, 0);

@@ -19,7 +19,7 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_para_single_query_search_simple_v3_increase_X"
+bin="./profile_find_L_para_single_query_search_simple_v3_double_X"
 
 #### GIST1M
 data_dir = base_dir + "/gist1m"

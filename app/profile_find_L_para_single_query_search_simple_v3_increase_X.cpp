@@ -132,6 +132,7 @@ void search_one_time(
     compt = engine.count_distance_computation_;
     engine.count_distance_computation_ = 0;
     iter_mean = engine.count_iterations_ * 1.0 / query_num;
+    engine.count_iterations_ = 0;
     set_K_list_return.swap(set_K_list);
 }
 
@@ -244,8 +245,10 @@ int main(int argc, char **argv)
                 } else {
                     break;
                 }
-                L = (L_lower + L_upper) / 2;
-                local_queue_capacity = L;
+                if (L_lower <= L_upper) {
+                    L = (L_lower + L_upper) / 2;
+                    local_queue_capacity = L;
+                }
             }
 
             L_upper = L_upper_origin;

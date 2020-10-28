@@ -249,6 +249,34 @@ public:
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
             const idi X_start);
+    void para_search_with_simple_v3_heuristic_X_double(
+//        const idi M,
+//        const idi worker_M,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            boost::dynamic_bitset<> &is_visited,
+            const idi X_start);
+    void para_search_with_simple_v3_heuristic_X_half(
+//        const idi M,
+//        const idi worker_M,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
+            const std::vector<idi> &local_queues_starts,
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            boost::dynamic_bitset<> &is_visited,
+            const idi X_start);
 
 }; // Class Searching
 
