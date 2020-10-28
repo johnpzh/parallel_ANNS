@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 10/21/2020.
+// Created by Zhen Peng on 10/23/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -214,7 +214,7 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls) const;
 
-    void para_search_with_simple_v3_large_graph_with_metric_mean(
+    void para_search_with_simple_v3_large_graph_increase_X(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -227,19 +227,22 @@ public:
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
-            const idi subsearch_iterations);
+            const idi X_start);
 
-    void print_metric_mean(
-            const idi iter,
-            const std::vector<Candidate> &set_L,
+    void para_search_with_simple_v3_large_graph_decrease_X(
+//        const idi M,
+//        const idi worker_M,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
             const std::vector<idi> &local_queues_starts,
-            const std::vector<idi> &local_queues_sizes); // Sizes of local queue
-
-    void print_metric_sd(
-            const idi iter,
-            const std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            const std::vector<idi> &local_queues_sizes); // Sizes of local queue
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            boost::dynamic_bitset<> &is_visited,
+            const idi X_start);
 
 }; // Class Searching
 

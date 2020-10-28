@@ -3,8 +3,8 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) != 6:
-    print(f"{sys.argv[0]} <data_dir> <tag> <L_low> <L_up> <P_target>")
+if len(sys.argv) < 6:
+    print(f"{sys.argv[0]} <data_dir> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
@@ -13,15 +13,52 @@ tag = sys.argv[2]
 # num_t = int(sys.argv[3])
 L_lower = int(sys.argv[3])
 L_upper = int(sys.argv[4])
-P_level = float(sys.argv[5])
+# P_level = float(sys.argv[5])
+targets = [sys.argv[i] for i in range(5, len(sys.argv))]
+P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_seq_single_query_simple_search_large_graph"
+bin="./profile_find_L_para_single_query_search_simple_v3_increase_X"
 
+#### SIFT1M
+data_dir = base_dir + "/sift1m"
+data_name = "sift"
+label = F"{tag}.{data_name}"
+raw_file = F"output.{label}.raw.txt"
+
+subprocess.run(F':> {raw_file}', shell=True, check=True)
+command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+          F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
+          F"8 0 {L_upper} {P_level} " \
+          F"| tee -a {raw_file}"
+subprocess.run(command, env=env_vars, shell=True, check=True)
+
+rows_file = F"output.{label}.rows.txt"
+table_file = F"output.{label}.table.txt"
+subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
 # #### SIFT100M
 # data_dir = base_dir + "/sift1b"
 # data_name = "sift100M"
+# label = F"{tag}.{data_name}"
+# raw_file = F"output.{label}.raw.txt"
+#
+# subprocess.run(F':> {raw_file}', shell=True, check=True)
+# command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
+#           F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
+#           F"8 0 {L_upper} {P_level} " \
+#           F"| tee -a {raw_file}"
+# subprocess.run(command, env=env_vars, shell=True, check=True)
+#
+# rows_file = F"output.{label}.rows.txt"
+# table_file = F"output.{label}.table.txt"
+# subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
+# subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
+
+# #### DEEP100M
+# data_dir = base_dir + "/deep1b"
+# data_name = "deep100M"
 # label = F"{tag}.{data_name}"
 # raw_file = F"output.{label}.raw.txt"
 #
@@ -34,7 +71,7 @@ bin="./profile_find_L_seq_single_query_simple_search_large_graph"
 #                 0.999]:
 #     command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
 #               F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
-#               F"{L_upper} {P_level} " \
+#               F"1 0 {L_upper} {P_level} " \
 #               F"| tee -a {raw_file}"
 #     subprocess.run(command, env=env_vars, shell=True, check=True)
 #
@@ -42,31 +79,6 @@ bin="./profile_find_L_seq_single_query_simple_search_large_graph"
 # table_file = F"output.{label}.table.txt"
 # subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
 # subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:7", shell=True, check=True)
-
-#### DEEP100M
-data_dir = base_dir + "/deep1b"
-data_name = "deep100M"
-label = F"{tag}.{data_name}"
-raw_file = F"output.{label}.raw.txt"
-
-subprocess.run(F':> {raw_file}', shell=True, check=True)
-# for P_level in [0.90, 0.91, 0.92, 0.93,
-#                 0.94, 0.95, 0.96, 0.97,
-#                 0.98, 0.99,
-#                 0.991, 0.992, 0.993, 0.994,
-#                 0.995, 0.996, 0.997, 0.998,
-#                 0.999]:
-for P_level in [0.999]:
-    command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
-              F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
-              F"{L_upper} {P_level} " \
-              F"| tee -a {raw_file}"
-    subprocess.run(command, env=env_vars, shell=True, check=True)
-
-rows_file = F"output.{label}.rows.txt"
-table_file = F"output.{label}.table.txt"
-subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:7", shell=True, check=True)
 
 # #### SIFT1M
 # data_dir = base_dir + "/sift1m"

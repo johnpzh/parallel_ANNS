@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 10/21/2020.
+// Created by Zhen Peng on 10/23/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -53,10 +53,7 @@ public:
 
 //    std::vector< std::vector<idi> > edge_list_;
 
-//    char *opt_nsg_graph_ = nullptr;
-    idi *common_nsg_deg_ngbrs_ = nullptr;
-    edgei *common_nsg_vertex_base_ = nullptr;
-
+    char *opt_nsg_graph_ = nullptr;
     uint64_t data_bytes_;
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
@@ -78,10 +75,13 @@ public:
     dataf compute_distance_with_norm(
             const dataf *v_data,
             const dataf *q_data,
+//            idi vertex_id,
+//            idi query_id,
+//            const std::vector<dataf> &d_data,
+//            const std::vector<dataf> &q_data,
+//        PANNS::idi d_start,
+//        PANNS::idi q_start,
             const dataf vertex_norm) const;
-    dataf compute_distance(
-            const dataf *v_data,
-            const dataf *q_data) const;
     static idi add_into_queue(
             std::vector<PANNS::Candidate> &queue,
             const idi queue_start,
@@ -155,6 +155,7 @@ public:
 public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
+    uint64_t count_iterations_ = 0;
     uint64_t count_distance_computation_ = 0;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;
@@ -193,15 +194,20 @@ public:
     ~Searching()
     {
         free(data_load_);
+        data_load_ = nullptr;
+//        free(queries_load_);
+//        _mm_free(data_load_);
         free(queries_load_);
-//        free(opt_nsg_graph_);
-        free(common_nsg_vertex_base_);
-        free(common_nsg_deg_ngbrs_);
+        queries_load_ = nullptr;
+//        free(norms_);
+//        free(nsg_graph_indices_);
+//        free(nsg_graph_out_edges_);
+        free(opt_nsg_graph_);
+        opt_nsg_graph_ = nullptr;
     }
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
-//    void load_nsg_graph(char *filename);
-    void load_common_nsg_graph(char *filename);
+    void load_nsg_graph(char *filename);
 //    void build_opt_graph();
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
@@ -214,7 +220,7 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls) const;
 
-    void para_search_with_simple_v3_large_graph_with_metric_mean(
+    void para_search_with_simple_v3_heuristic_X_increase(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -227,19 +233,22 @@ public:
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
-            const idi subsearch_iterations);
-
-    void print_metric_mean(
-            const idi iter,
-            const std::vector<Candidate> &set_L,
+            const idi X_start);
+//            const idi subsearch_iterations);
+    void para_search_with_simple_v3_heuristic_X_decrease(
+//        const idi M,
+//        const idi worker_M,
+            const idi query_id,
+            const idi K,
+            const idi L,
+            std::vector<Candidate> &set_L,
+            const std::vector<idi> &init_ids,
+            std::vector<idi> &set_K,
+            const idi local_queue_capacity, // Maximum size of local queue
             const std::vector<idi> &local_queues_starts,
-            const std::vector<idi> &local_queues_sizes); // Sizes of local queue
-
-    void print_metric_sd(
-            const idi iter,
-            const std::vector<Candidate> &set_L,
-            const std::vector<idi> &local_queues_starts,
-            const std::vector<idi> &local_queues_sizes); // Sizes of local queue
+            std::vector<idi> &local_queues_sizes, // Sizes of local queue
+            boost::dynamic_bitset<> &is_visited,
+            const idi X_start);
 
 }; // Class Searching
 
