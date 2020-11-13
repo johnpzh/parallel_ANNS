@@ -20,7 +20,7 @@ function get_X_low () {
 
 set -x
 
-data_dir="/scratch/zpeng/sift1m"
+data_dir="/scratch/zpeng"
 data=sift1m
 
 ###############
