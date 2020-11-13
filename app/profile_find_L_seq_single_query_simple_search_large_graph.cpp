@@ -226,13 +226,13 @@ void search_one_time(
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <true_NN_file> <L_upper> <P@100>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <true_NN_file> <L_upper> <P@100> [<P@100> ...]\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc < 10) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
     printf("Loading %s...\n", argv[3]);
     efanna2e::IndexNSG index(dim, points_num, efanna2e::L2, nullptr);
     index.Load(argv[3]);
-    unsigned L_lower = strtoull(argv[4], nullptr, 0);
+    unsigned L_lower_origin = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
     std::vector< std::vector<unsigned> > true_nn_list;
     printf("Loading %s...\n", argv[7]);
@@ -259,67 +259,76 @@ int main(int argc, char **argv)
             argv[7],
             query_num,
             true_nn_list);
-    unsigned L_upper = strtoull(argv[8], nullptr, 0);
-    double P_dest = strtod(argv[9], nullptr);
+    unsigned L_upper_origin = strtoull(argv[8], nullptr, 0);
+//    double P_dest = strtod(argv[9], nullptr);
+    const unsigned base_loc_P_dest = 9;
+    unsigned num_P_target = argc - base_loc_P_dest;
+    std::vector<double> P_targets(num_P_target);
+    for (int a_i = base_loc_P_dest; a_i < argc; ++a_i) {
+        P_targets[a_i - base_loc_P_dest] = strtod(argv[a_i], nullptr);
+    }
 
-    std::vector< std::vector<unsigned> > set_K_list;
-    std::unordered_map<unsigned, double> recalls;
-    unsigned L = L_upper;
-    double runtime;
-    uint64_t compt;
+    for (const double P_dest : P_targets) {
+        std::vector<std::vector<unsigned> > set_K_list;
+        std::unordered_map<unsigned, double> recalls;
+        unsigned L_upper = L_upper_origin;
+        unsigned L_lower = L_lower_origin;
+        unsigned L = L_upper;
+        double runtime;
+        uint64_t compt;
 
-    double last_runtime;
-    uint64_t last_compt;
-    double last_recall;
-    unsigned last_L;
+        double last_runtime;
+        uint64_t last_compt;
+        double last_recall;
+        unsigned last_L;
 
-    while (L_lower <= L_upper) {
+        while (L_lower <= L_upper) {
 //        L = (L_lower + L_upper) / 2;
-        printf("L: %u "
-               "L_lower: %u "
-               "L_upper: %u\n",
-               L,
-               L_lower,
-               L_upper);
+            printf("L: %u "
+                   "L_lower: %u "
+                   "L_upper: %u\n",
+                   L,
+                   L_lower,
+                   L_upper);
 
-        search_one_time(
-                index,
-                L,
-                K,
-                data_load,
-                query_load,
-                points_num,
-                query_num,
-                dim,
-                true_nn_list,
-                set_K_list,
-                recalls,
-                runtime,
-                compt);
+            search_one_time(
+                    index,
+                    L,
+                    K,
+                    data_load,
+                    query_load,
+                    points_num,
+                    query_num,
+                    dim,
+                    true_nn_list,
+                    set_K_list,
+                    recalls,
+                    runtime,
+                    compt);
 
-        if (recalls[100] < P_dest) {
-            L_lower = L + 1;
-        } else if (recalls[100] > P_dest) {
-            L_upper = L - 1;
-            last_runtime = runtime;
-            last_recall = recalls[100];
-            last_compt = compt;
-            last_L = L;
-        } else {
-            break;
+            if (recalls[100] < P_dest) {
+                L_lower = L + 1;
+            } else if (recalls[100] > P_dest) {
+                L_upper = L - 1;
+                last_runtime = runtime;
+                last_recall = recalls[100];
+                last_compt = compt;
+                last_L = L;
+            } else {
+                break;
+            }
+            if (L_lower <= L_upper) {
+                L = (L_lower + L_upper) / 2;
+            }
         }
-        if (L_lower <= L_upper) {
-            L = (L_lower + L_upper) / 2;
-        }
-    }
 
-    L_upper = strtoull(argv[8], nullptr, 0);
-    if (recalls[100] < P_dest && L < L_upper) {
-        runtime = last_runtime;
-        recalls[100] = last_recall;
-        compt = last_compt;
-        L = last_L;
-    }
+        L_upper = strtoull(argv[8], nullptr, 0);
+        if (recalls[100] < P_dest && L < L_upper) {
+            runtime = last_runtime;
+            recalls[100] = last_recall;
+            compt = last_compt;
+            L = last_L;
+        }
 //    L_upper = strtoull(argv[8], nullptr, 0);
 //    while (recalls[100] < P_dest && L < L_upper) {
 //        ++L;
@@ -339,20 +348,21 @@ int main(int argc, char **argv)
 //                runtime,
 //                compt);
 //    }
-    save_result(argv[6], set_K_list);
-    printf("---- FINAL ------\n");
-    printf("P_dest: %f "
-           "runtime(s.): %f "
-           "compt.: %lu "
-           "P@100: %f "
-           "latency(ms.): %f "
-           "L: %u ",
-           P_dest,
-           runtime,
-           compt,
-           recalls[100],
-           runtime / query_num * 1000.0,
-           L);
-    printf("\n");
+        save_result(argv[6], set_K_list);
+        printf("---- FINAL ------\n");
+        printf("P_dest: %f "
+               "runtime(s.): %f "
+               "compt.: %lu "
+               "P@100: %f "
+               "latency(ms.): %f "
+               "L: %u ",
+               P_dest,
+               runtime,
+               compt,
+               recalls[100],
+               runtime / query_num * 1000.0,
+               L);
+        printf("\n");
+    }
     return 0;
 }

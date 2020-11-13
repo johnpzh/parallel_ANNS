@@ -30,14 +30,14 @@ raw_file = F"output.{label}.raw.txt"
 subprocess.run(F':> {raw_file}', shell=True, check=True)
 command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
-          F"8 {L_upper/4} {L_upper} {P_level} " \
+          F"8 0 {L_upper} {P_level} " \
           F"| tee -a {raw_file}"
 subprocess.run(command, env=env_vars, shell=True, check=True)
 
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:7", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
 
 # #### DEEP100M
 # data_dir = base_dir + "/deep1b"

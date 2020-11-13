@@ -45,7 +45,8 @@ void search_one_time(
         std::vector<std::vector<unsigned> > &set_K_list_return,
         std::unordered_map<unsigned, double> &recalls,
         double &runtime,
-        uint64_t &compt)
+        uint64_t &compt,
+        double &merge_mean)
 {
     std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
     for (unsigned i = 0; i < query_num; i++) {
@@ -104,7 +105,8 @@ void search_one_time(
                 "G/s: %f "
                 "GFLOPS: %f "
                 "local_L: %u "
-                "sub_iters: %u",
+                "sub_iters: %u "
+                "avg_merge: %f",
                 num_threads,
                 L,
                 diff.count(),
@@ -121,25 +123,28 @@ void search_one_time(
                 data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
                 diff.count(),
                 local_queue_capacity,
-                subsearch_iterations);
+                subsearch_iterations,
+                engine.count_merge_ * 1.0 / query_num);
         printf("\n");
     }
     runtime = diff.count();
     compt = engine.count_distance_computation_;
     engine.count_distance_computation_ = 0;
+    merge_mean = engine.count_merge_ * 1.0 / query_num;
+    engine.count_merge_ = 0;
     set_K_list_return.swap(set_K_list);
 }
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L_lower> <K> <result_file> <true_NN_file> <num_threads> <sub_iters> <L_upper> <P@100>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L_lower> <K> <result_file> <true_NN_file> <num_threads> <sub_iters> <L_upper> <P@100> [<P@100> ...]\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 12) {
+    if (argc < 12) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -151,7 +156,7 @@ int main(int argc, char **argv)
     engine.load_queries_load(argv[2]);
     engine.load_nsg_graph(argv[3]);
 
-    unsigned L_lower = strtoull(argv[4], nullptr, 0);
+    unsigned L_lower_origin = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
     std::vector< std::vector<PANNS::idi> > true_nn_list;
     engine.load_true_NN(
@@ -173,87 +178,105 @@ int main(int argc, char **argv)
 //    omp_set_max_active_levels(2);
 
     unsigned subsearch_iterations = strtoull(argv[9], nullptr, 0);
-    unsigned L_upper = strtoull(argv[10], nullptr, 0);
-    double P_dest = strtod(argv[11], nullptr);
+    unsigned L_upper_origin = strtoull(argv[10], nullptr, 0);
+//    double P_dest = strtod(argv[11], nullptr);
+    const unsigned base_loc_P_dest = 11;
+    unsigned num_P_target = argc - base_loc_P_dest;
+    std::vector<double> P_targets(num_P_target);
+    for (int a_i = base_loc_P_dest; a_i < argc; ++a_i) {
+        P_targets[a_i - base_loc_P_dest] = strtod(argv[a_i], nullptr);
+    }
 
-    std::vector< std::vector<unsigned> > set_K_list;
-    std::unordered_map<unsigned, double> recalls;
-    unsigned L = L_upper;
-    unsigned local_queue_capacity = L;
-    double runtime;
-    uint64_t compt;
 
-    double last_runtime;
-    uint64_t last_compt;
-    double last_recall;
-    unsigned last_L;
+    for (const double P_dest : P_targets) {
+        std::vector<std::vector<unsigned> > set_K_list;
+        std::unordered_map<unsigned, double> recalls;
+        unsigned L_upper = L_upper_origin;
+        unsigned L_lower = L_lower_origin;
+        unsigned L = L_upper;
+        unsigned local_queue_capacity = L;
+        double runtime;
+        uint64_t compt;
+        double merge_mean;
 
-    while (L_lower <= L_upper) {
-        printf("L: %u "
-               "L_lower: %u "
-               "L_upper: %u\n",
+        double last_runtime;
+        uint64_t last_compt;
+        double last_recall;
+        unsigned last_L;
+        double last_merge_mean;
+
+        while (L_lower <= L_upper) {
+            printf("L: %u "
+                   "L_lower: %u "
+                   "L_upper: %u\n",
+                   L,
+                   L_lower,
+                   L_upper);
+
+            search_one_time(
+                    engine,
+                    L,
+                    K,
+                    points_num,
+                    query_num,
+                    data_dimension,
+                    num_threads,
+                    local_queue_capacity,
+                    subsearch_iterations,
+                    true_nn_list,
+                    set_K_list,
+                    recalls,
+                    runtime,
+                    compt,
+                    merge_mean);
+
+            if (recalls[100] < P_dest) {
+                L_lower = L + 1;
+            } else if (recalls[100] > P_dest) {
+                L_upper = L - 1;
+                last_runtime = runtime;
+                last_recall = recalls[100];
+                last_compt = compt;
+                last_L = L;
+                last_merge_mean = merge_mean;
+            } else {
+                break;
+            }
+            if (L_lower <= L_upper) {
+                L = (L_lower + L_upper) / 2;
+                local_queue_capacity = L;
+            }
+        }
+
+        L_upper = strtoull(argv[10], nullptr, 0);
+        if (recalls[100] < P_dest && L < L_upper) {
+            runtime = last_runtime;
+            recalls[100] = last_recall;
+            compt = last_compt;
+            L = last_L;
+            merge_mean = last_merge_mean;
+        }
+
+        PANNS::DiskIO::save_result(argv[6], set_K_list);
+        printf("---- FINAL ----\n");
+        printf("P_dest: %f "
+               "runtime(s.): %f "
+               "compt.: %lu "
+               "P@100: %f "
+               "latency(ms.): %f "
+               "L: %u "
+               "X: %u "
+               "avg_merge: %f ",
+               P_dest,
+               runtime,
+               compt,
+               recalls[100],
+               runtime / query_num * 1000.0,
                L,
-               L_lower,
-               L_upper);
+               subsearch_iterations,
+               merge_mean);
+        printf("\n");
 
-        search_one_time(
-                engine,
-                L,
-                K,
-                points_num,
-                query_num,
-                data_dimension,
-                num_threads,
-                local_queue_capacity,
-                subsearch_iterations,
-                true_nn_list,
-                set_K_list,
-                recalls,
-                runtime,
-                compt);
-
-        if (recalls[100] < P_dest) {
-            L_lower = L + 1;
-        } else if (recalls[100] > P_dest) {
-            L_upper = L - 1;
-            last_runtime = runtime;
-            last_recall = recalls[100];
-            last_compt = compt;
-            last_L = L;
-        } else {
-            break;
-        }
-        if (L_lower <= L_upper) {
-            L = (L_lower + L_upper) / 2;
-            local_queue_capacity = L;
-        }
     }
-
-    L_upper = strtoull(argv[10], nullptr, 0);
-    if (recalls[100] < P_dest && L < L_upper) {
-        runtime = last_runtime;
-        recalls[100] = last_recall;
-        compt = last_compt;
-        L = last_L;
-    }
-
-    PANNS::DiskIO::save_result(argv[6], set_K_list);
-    printf("---- FINAL ----\n");
-    printf("P_dest: %f "
-           "runtime(s.): %f "
-           "compt.: %lu "
-           "P@100: %f "
-           "latency(ms.): %f "
-           "L: %u "
-           "X: %u ",
-           P_dest,
-           runtime,
-           compt,
-           recalls[100],
-           runtime / query_num * 1000.0,
-           L,
-           subsearch_iterations);
-    printf("\n");
-
     return 0;
 }

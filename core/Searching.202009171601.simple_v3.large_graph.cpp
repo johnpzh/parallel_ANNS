@@ -1168,6 +1168,7 @@ void Searching::para_search_with_simple_v3_large_graph(
             tmp_count_computation = 0;
             // Merge
             {
+                ++count_merge_;
                 idi r = merge_all_queues_to_master(
                         set_L,
                         local_queues_starts,
@@ -1180,6 +1181,8 @@ void Searching::para_search_with_simple_v3_large_graph(
             }
         } // Search Iterations
     } // Parallel Phase
+
+//    count_iterations_ += iter;
 
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {

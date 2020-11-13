@@ -34,13 +34,13 @@
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L> <K> <result_file> <true_NN_file> <num_threads> <L_max> <L_step> <X_low> <X_step>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <L_lower> <K> <result_file> <true_NN_file> <num_threads> <L_max> <L_step> <X_low> <X_max> <X_step>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 13) {
+    if (argc != 14) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -70,7 +70,8 @@ int main(int argc, char **argv)
     unsigned L_max = strtoull(argv[9], nullptr, 0);
     unsigned L_step = strtoull(argv[10], nullptr, 0);
     unsigned X_low = strtoull(argv[11], nullptr, 0);
-    unsigned X_step = strtoull(argv[12], nullptr, 0);
+    unsigned X_max = strtoull(argv[12], nullptr, 0);
+    unsigned X_step = strtoull(argv[13], nullptr, 0);
 //    unsigned num_queries_limit = strtoull(argv[13], nullptr, 0);
 //    if (num_queries_limit < engine.num_queries_) {
 //        engine.num_queries_ = num_queries_limit;
@@ -85,7 +86,7 @@ int main(int argc, char **argv)
 //    unsigned worker_M = value_M / num_threads;
     for (unsigned L = L_min; L <= L_max; L += L_step) {
         unsigned local_queue_capacity = L;
-        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= L + 4; subsearch_iterations += X_step) {
+        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_max; subsearch_iterations += X_step) {
             unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
@@ -185,7 +186,9 @@ int main(int argc, char **argv)
                             "G/s: %f "
                             "GFLOPS: %f "
                             "local_L: %u "
-                            "sub_iters: %u",
+                            "sub_iters: %u "
+                            "avg_merge_: %f ",
+//                            "iter_mean: %f",
 //                        "thd_quota: %lu ",
 //                        "iters: %lu "
 //                        "avg_iter: %f "
@@ -217,7 +220,9 @@ int main(int argc, char **argv)
                             diff.count(),
                             local_queue_capacity,
 //                        M_middle,
-                            subsearch_iterations);
+                            subsearch_iterations,
+                            engine.count_merge_ * 1.0 / query_num);
+//                            engine.count_iterations_ * 1.0 / query_num);
 //                        engine.thread_compuation_quota_);
 //                        engine.count_iterations_,
 //                        engine.count_iterations_ * 1.0 / query_num,
@@ -234,6 +239,8 @@ int main(int argc, char **argv)
                     printf("\n");
                 }
                 engine.count_distance_computation_ = 0;
+                engine.count_merge_ = 0;
+//                engine.count_iterations_ = 0;
 //            engine.time_move_top_m_ = 0;
 //            engine.time_full_merge_ = 0;
 //        engine.count_full_merge_ = 0;

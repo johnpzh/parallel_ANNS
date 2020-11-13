@@ -156,6 +156,9 @@ public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
+//    uint64_t count_iterations_ = 0;
+    uint64_t count_checked_ = 0;
+    uint64_t count_merge_ = 0;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;
 //    idi min_iterations_ = UINT_MAX;
@@ -233,17 +236,6 @@ public:
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
             const idi subsearch_iterations);
-    void para_search_with_simple_v4(
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            const idi local_queue_capacity, // Maximum size of local queue
-            const std::vector<idi> &local_queues_starts,
-            std::vector<idi> &local_queues_sizes, // Sizes of local queue
-            boost::dynamic_bitset<> &is_visited);
 
 }; // Class Searching
 

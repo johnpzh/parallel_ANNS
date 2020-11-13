@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 10/23/2020.
+// Created by Zhen Peng on 10/26/2020.
 //
 
 #include <iostream>
@@ -30,7 +30,7 @@
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
 //#include "../core/Searching.202009171601.simple_v3.large_graph.h"
-#include "../core/Searching.202010231647.simple_v3.large_graph.heuristic_X.h"
+#include "../core/Searching.202010231417.simple_v3.heuristic_X.h"
 
 void search_one_time(
         PANNS::Searching &engine,
@@ -46,7 +46,8 @@ void search_one_time(
         std::vector<std::vector<unsigned> > &set_K_list_return,
         std::unordered_map<unsigned, double> &recalls,
         double &runtime,
-        uint64_t &compt)
+        uint64_t &compt,
+        double &iter_mean)
 {
     std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
     for (unsigned i = 0; i < query_num; i++) {
@@ -66,7 +67,7 @@ void search_one_time(
 //#pragma omp parallel for
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 
-        engine.para_search_with_simple_v3_large_graph_increase_X(
+        engine.para_search_with_simple_v3_heuristic_X_decrease(
                 q_i,
                 K,
                 L,
@@ -105,7 +106,8 @@ void search_one_time(
                 "G/s: %f "
                 "GFLOPS: %f "
                 "local_L: %u "
-                "X_start: %u",
+                "X_start: %u "
+                "iter_mean: %f",
                 num_threads,
                 L,
                 diff.count(),
@@ -122,12 +124,15 @@ void search_one_time(
                 data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
                 diff.count(),
                 local_queue_capacity,
-                X_start);
+                X_start,
+                engine.count_iterations_ * 1.0 / query_num);
         printf("\n");
     }
     runtime = diff.count();
     compt = engine.count_distance_computation_;
     engine.count_distance_computation_ = 0;
+    iter_mean = engine.count_iterations_ * 1.0 / query_num;
+    engine.count_iterations_ = 0;
     set_K_list_return.swap(set_K_list);
 }
 
@@ -150,7 +155,7 @@ int main(int argc, char **argv)
     PANNS::Searching engine;
     engine.load_data_load(argv[1]);
     engine.load_queries_load(argv[2]);
-    engine.load_common_nsg_graph(argv[3]);
+    engine.load_nsg_graph(argv[3]);
 
     unsigned L_lower_origin = strtoull(argv[4], nullptr, 0);
     unsigned K = strtoull(argv[5], nullptr, 0);
@@ -183,8 +188,9 @@ int main(int argc, char **argv)
     }
 //    double P_dest = strtod(argv[11], nullptr);
 
-    for (; X_start <= L_upper_origin; X_start += L_upper_origin / 4) {
-        for (const double P_dest : P_targets) {
+    for (const double P_dest : P_targets) {
+        for (unsigned diff  = 0; diff <= L_upper_origin; diff += 8) {
+            X_start = L_upper_origin - diff;
             std::vector<std::vector<unsigned> > set_K_list;
             std::unordered_map<unsigned, double> recalls;
             unsigned L_upper = L_upper_origin;
@@ -193,11 +199,13 @@ int main(int argc, char **argv)
             unsigned local_queue_capacity = L;
             double runtime;
             uint64_t compt;
+            double iter_mean;
 
             double last_runtime;
             uint64_t last_compt;
             double last_recall;
             unsigned last_L;
+            double last_iter_mean;
 
             while (L_lower <= L_upper) {
                 printf("L: %u "
@@ -221,19 +229,25 @@ int main(int argc, char **argv)
                         set_K_list,
                         recalls,
                         runtime,
-                        compt);
+                        compt,
+                        iter_mean);
 
                 if (recalls[100] < P_dest) {
                     L_lower = L + 1;
-                } else {
+                } else if (recalls[100] > P_dest) {
                     L_upper = L - 1;
                     last_runtime = runtime;
                     last_recall = recalls[100];
                     last_compt = compt;
                     last_L = L;
+                    last_iter_mean = iter_mean;
+                } else {
+                    break;
                 }
-                L = (L_lower + L_upper) / 2;
-                local_queue_capacity = L;
+                if (L_lower <= L_upper) {
+                    L = (L_lower + L_upper) / 2;
+                    local_queue_capacity = L;
+                }
             }
 
             L_upper = L_upper_origin;
@@ -242,6 +256,7 @@ int main(int argc, char **argv)
                 recalls[100] = last_recall;
                 compt = last_compt;
                 L = last_L;
+                iter_mean = last_iter_mean;
             }
 
             PANNS::DiskIO::save_result(argv[6], set_K_list);
@@ -252,14 +267,16 @@ int main(int argc, char **argv)
                    "P@100: %f "
                    "latency(ms.): %f "
                    "L: %u "
-                   "X_start: %u ",
+                   "X_start: %u "
+                   "iter_mean: %f ",
                    P_dest,
                    runtime,
                    compt,
                    recalls[100],
                    runtime / query_num * 1000.0,
                    L,
-                   X_start);
+                   X_start,
+                   iter_mean);
             printf("\n");
 
         }

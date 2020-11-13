@@ -156,6 +156,8 @@ public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
+//    uint64_t count_iterations_ = 0;
+    uint64_t count_merge_ = 0;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;
 //    idi min_iterations_ = UINT_MAX;

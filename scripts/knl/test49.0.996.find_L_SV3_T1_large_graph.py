@@ -36,7 +36,7 @@ for P_level in [0.996]:
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:7", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
 
 # #### DEEP100M
 # data_dir = base_dir + "/deep1b"

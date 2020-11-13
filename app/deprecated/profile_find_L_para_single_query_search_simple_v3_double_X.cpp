@@ -67,7 +67,7 @@ void search_one_time(
 //#pragma omp parallel for
     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
 
-        engine.para_search_with_simple_v3_heuristic_X_half(
+        engine.para_search_with_simple_v3_heuristic_X_double(
                 q_i,
                 K,
                 L,
@@ -189,8 +189,9 @@ int main(int argc, char **argv)
 //    double P_dest = strtod(argv[11], nullptr);
 
     for (const double P_dest : P_targets) {
-        for (unsigned diff  = 0; diff <= L_upper_origin; diff += 8) {
-            X_start = L_upper_origin - diff;
+        for (X_start = 1; X_start <= L_upper_origin; X_start += 8) {
+//        for (X_start = 1; X_start <= 100; X_start += 8) {
+
             std::vector<std::vector<unsigned> > set_K_list;
             std::unordered_map<unsigned, double> recalls;
             unsigned L_upper = L_upper_origin;
@@ -256,7 +257,6 @@ int main(int argc, char **argv)
                 recalls[100] = last_recall;
                 compt = last_compt;
                 L = last_L;
-                iter_mean = last_iter_mean;
                 iter_mean = last_iter_mean;
             }
 

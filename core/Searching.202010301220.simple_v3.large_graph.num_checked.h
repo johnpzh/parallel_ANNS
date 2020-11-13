@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 10/23/2020.
+// Created by Zhen Peng on 10/30/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -156,6 +156,11 @@ public:
     // For Profiling
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
+    uint64_t count_iterations_ = 0;
+    uint64_t count_merge_ = 0;
+    uint64_t count_checked_ = 0;
+    std::vector<uint64_t> count_x_checked_;
+    std::vector<uint64_t> count_x_merge_;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;
 //    idi min_iterations_ = UINT_MAX;
@@ -214,7 +219,7 @@ public:
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls) const;
 
-    void para_search_with_simple_v3_large_graph_increase_X(
+    void para_search_with_simple_v3_large_graph_num_checked(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -227,9 +232,8 @@ public:
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
-            const idi X_start);
-
-    void para_search_with_simple_v3_large_graph_decrease_X(
+            const idi subsearch_iterations);
+    void para_search_with_simple_v3_large_graph_num_checked_every_x(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -242,7 +246,12 @@ public:
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes, // Sizes of local queue
             boost::dynamic_bitset<> &is_visited,
-            const idi X_start);
+            const idi subsearch_iterations);
+    void x_num_checked(
+            const idi inner_step,
+            const std::vector<Candidate> &set_L,
+            const std::vector<idi> &local_queues_starts,
+            const std::vector<idi> &local_queues_sizes);
 
 }; // Class Searching
 

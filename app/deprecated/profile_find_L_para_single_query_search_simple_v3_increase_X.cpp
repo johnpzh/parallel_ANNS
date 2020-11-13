@@ -189,8 +189,8 @@ int main(int argc, char **argv)
 //    double P_dest = strtod(argv[11], nullptr);
 
     for (const double P_dest : P_targets) {
-        for (X_start = 1; X_start <= L_upper_origin; X_start += 8) {
-//        for (X_start = 1; X_start <= 100; X_start += 8) {
+//        for (X_start = 1; X_start <= L_upper_origin + 20; X_start += 16) {
+        for (X_start = 1; X_start <= L_upper_origin + 10; X_start += 8) {
 
             std::vector<std::vector<unsigned> > set_K_list;
             std::unordered_map<unsigned, double> recalls;
@@ -257,7 +257,6 @@ int main(int argc, char **argv)
                 recalls[100] = last_recall;
                 compt = last_compt;
                 L = last_L;
-                iter_mean = last_iter_mean;
                 iter_mean = last_iter_mean;
             }
 
