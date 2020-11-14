@@ -11,7 +11,7 @@ function get_L_low () {
 }
 
 function get_X_low () {
-    if (( ($1 / %2) < 1 )); then
+    if (( ($1 / $2) < 1 )); then
         echo 1
     else
         echo $(( $1 / $2))
