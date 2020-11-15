@@ -123,7 +123,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -134,7 +134,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -145,7 +145,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -156,7 +156,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -167,7 +167,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -178,7 +178,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -189,7 +189,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -200,7 +200,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -211,7 +211,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -222,7 +222,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -233,7 +233,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -244,7 +244,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -255,7 +255,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -266,7 +266,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -277,7 +277,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -288,7 +288,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -337,7 +337,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -348,7 +348,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -359,7 +359,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -370,7 +370,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -381,7 +381,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -392,7 +392,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -403,7 +403,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -414,7 +414,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -425,7 +425,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -436,7 +436,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -447,7 +447,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -458,7 +458,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -469,7 +469,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -480,7 +480,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -491,7 +491,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -502,7 +502,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -551,7 +551,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -562,7 +562,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -573,7 +573,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -584,7 +584,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -595,7 +595,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -606,7 +606,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -617,7 +617,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -628,7 +628,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -639,7 +639,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -650,7 +650,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -661,7 +661,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -672,7 +672,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -683,7 +683,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -694,7 +694,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -705,7 +705,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
@@ -716,7 +716,7 @@ L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
 L_up=$((L_low + 10))
 L_step=1
 X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-X_up=$((X_low + 5))
+X_up=$((X_low + 10))
 X_step=1
 tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}

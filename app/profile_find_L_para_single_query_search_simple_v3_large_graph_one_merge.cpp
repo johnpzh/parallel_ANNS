@@ -168,10 +168,10 @@ int main(int argc, char **argv)
     unsigned query_num = engine.num_queries_;
 
     int num_threads = strtoull(argv[8], nullptr, 0);
-    if (1 != num_threads) {
-        fprintf(stderr, "Error: num_threads is %d, which should be 1.\n", num_threads);
-        exit(EXIT_FAILURE);
-    }
+//    if (1 != num_threads) {
+//        fprintf(stderr, "Error: num_threads is %d, which should be 1.\n", num_threads);
+//        exit(EXIT_FAILURE);
+//    }
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
 //    omp_set_nested(1);

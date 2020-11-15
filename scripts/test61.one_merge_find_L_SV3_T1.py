@@ -3,19 +3,19 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) < 7:
-    print(f"{sys.argv[0]} <data_dir> <data> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
+if len(sys.argv) < 8:
+    print(f"{sys.argv[0]} <data_dir> <data> <tag> <num_t> <L_low> <L_up> <P_target> [<P_target> ...]")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
 base_dir = sys.argv[1]
 data = sys.argv[2]
 tag = sys.argv[3]
-# num_t = int(sys.argv[3])
-L_lower = int(sys.argv[4])
-L_upper = int(sys.argv[5])
+num_t = int(sys.argv[4])
+L_lower = int(sys.argv[5])
+L_upper = int(sys.argv[6])
 # P_level = float(sys.argv[6])
-base_loc_P_target = 6
+base_loc_P_target = 7
 targets = [sys.argv[i] for i in range(base_loc_P_target, len(sys.argv))]
 P_level = " ".join(targets)
 
@@ -42,7 +42,7 @@ raw_file = F"output.{label}.raw.txt"
 subprocess.run(F':> {raw_file}', shell=True, check=True)
 command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
-          F"1 0 {L_upper} {P_level} " \
+          F"{num_t} 0 {L_upper} {P_level} " \
           F"| tee -a {raw_file}"
 subprocess.run(command, env=env_vars, shell=True, check=True)
 
