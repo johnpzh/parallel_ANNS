@@ -46,7 +46,7 @@ void search_one_time(
         std::unordered_map<unsigned, double> &recalls,
         double &runtime,
         uint64_t &compt,
-        double &merge_mean)
+        double &hops_mean)
 {
     std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
     for (unsigned i = 0; i < query_num; i++) {
@@ -106,7 +106,7 @@ void search_one_time(
                 "GFLOPS: %f "
                 "local_L: %u "
                 "sub_iters: %u "
-                "avg_merge: %f",
+                "avg_hops: %f",
                 num_threads,
                 L,
                 diff.count(),
@@ -124,14 +124,14 @@ void search_one_time(
                 diff.count(),
                 local_queue_capacity,
                 subsearch_iterations,
-                engine.count_merge_ * 1.0 / query_num);
+                engine.count_hops_ * 1.0 / query_num);
         printf("\n");
     }
     runtime = diff.count();
     compt = engine.count_distance_computation_;
     engine.count_distance_computation_ = 0;
-    merge_mean = engine.count_merge_ * 1.0 / query_num;
-    engine.count_merge_ = 0;
+    hops_mean = engine.count_hops_ * 1.0 / query_num;
+    engine.count_hops_ = 0;
     set_K_list_return.swap(set_K_list);
 }
 
@@ -197,13 +197,13 @@ int main(int argc, char **argv)
         unsigned local_queue_capacity = L;
         double runtime;
         uint64_t compt;
-        double merge_mean;
+        double hops_mean;
 
         double last_runtime;
         uint64_t last_compt;
         double last_recall;
         unsigned last_L;
-        double last_merge_mean;
+        double last_hops_mean;
 
         while (L_lower <= L_upper) {
             printf("L: %u "
@@ -228,7 +228,7 @@ int main(int argc, char **argv)
                     recalls,
                     runtime,
                     compt,
-                    merge_mean);
+                    hops_mean);
 
             if (recalls[100] < P_dest) {
                 L_lower = L + 1;
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
                 last_recall = recalls[100];
                 last_compt = compt;
                 last_L = L;
-                last_merge_mean = merge_mean;
+                last_hops_mean = hops_mean;
             } else {
                 break;
             }
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
             recalls[100] = last_recall;
             compt = last_compt;
             L = last_L;
-            merge_mean = last_merge_mean;
+            hops_mean = last_hops_mean;
         }
 
         PANNS::DiskIO::save_result(argv[6], set_K_list);
@@ -266,7 +266,7 @@ int main(int argc, char **argv)
                "latency(ms.): %f "
                "L: %u "
                "X: %u "
-               "avg_merge: %f ",
+               "avg_hops: %f ",
                P_dest,
                runtime,
                compt,
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
                runtime / query_num * 1000.0,
                L,
                subsearch_iterations,
-               merge_mean);
+               hops_mean);
         printf("\n");
 
     }

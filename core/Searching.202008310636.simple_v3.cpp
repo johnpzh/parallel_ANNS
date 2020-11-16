@@ -926,6 +926,7 @@ void Searching::para_search_with_simple_v3(
 //                        is_quota_done);
                 count_distance_computation_ += tmp_count_computation;
                 tmp_count_computation = 0;
+                ++count_hops_;
             } else {
                 r = L;
             }
