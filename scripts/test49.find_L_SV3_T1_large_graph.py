@@ -20,7 +20,7 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_para_single_query_search_simple_v3_large_graph"
+bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3_large_graph"
 
 if data == "sift100m":
     data_dir = base_dir + "/sift1b"

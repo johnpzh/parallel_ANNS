@@ -21,7 +21,7 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="./profile_find_L_para_single_query_search_simple_v3"
+bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
