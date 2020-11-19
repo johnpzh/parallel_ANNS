@@ -22,7 +22,7 @@ X_step = int(sys.argv[10])
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
 # bin="./profile_para_single_query_search_simple_v3_ranged_num_checked"
-bin="./profile_para_single_query_search_simple_v3_ranged"
+bin="numactl -m 0 ./profile_para_single_query_search_simple_v3_ranged"
 # bin="./A"
 # bin="./B"
 
