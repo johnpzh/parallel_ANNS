@@ -41,7 +41,7 @@ with open(sys.argv[1]) as fin, \
             for si in selected_indices:
                 if 2 * si < len(columns):
                     output.append(columns[2 * si])
-            fout.write('\t'.join(output) + '\n')
+            # fout.write('\t'.join(output) + '\n')
 
         # Print column values
         output = []
