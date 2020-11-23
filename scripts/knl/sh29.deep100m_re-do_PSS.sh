@@ -108,7 +108,7 @@ data=deep100m
 bin="python3 ../scripts/test47.simple_v3_large_graph_ranged_L.py"
 #
 ####################
-##### DEEP10M 2T
+##### DEEP100M 2T
 ####################
 #num_t=2
 ###
@@ -322,7 +322,7 @@ bin="python3 ../scripts/test47.simple_v3_large_graph_ranged_L.py"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 
 ###################
-#### DEEP10M 4T
+#### DEEP100M 4T
 ###################
 num_t=4
 ##
@@ -536,7 +536,7 @@ tag="PSS_T${num_t}_P${P_target}"
 eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 
 ####################
-##### DEEP10M 8T
+##### DEEP100M 8T
 ####################
 num_t=8
 ##
