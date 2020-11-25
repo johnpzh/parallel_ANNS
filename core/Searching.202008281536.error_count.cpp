@@ -1009,7 +1009,7 @@ void Searching::para_search_with_error_count_v1(
                 threads_computations_.end(),
                 threads_computations_[0] / num_threads_);
 
-        std::atomic_uint count_errors = 0;
+        std::atomic_uint count_errors = {0};
 //        idi k_master = 0; // Index of first unchecked candidate.
         idi para_iter = 0;
         uint64_t tmp_count_computation = 0;
