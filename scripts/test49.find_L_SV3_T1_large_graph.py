@@ -32,7 +32,7 @@ else:
     print(F"Error: data {data} is unknown.")
     exit()
 
-label = F"{tag}.{data_name}"
+label = F"{data}.{tag}"
 raw_file = F"output.{label}.raw.txt"
 
 subprocess.run(F':> {raw_file}', shell=True, check=True)

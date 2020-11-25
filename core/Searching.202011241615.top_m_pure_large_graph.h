@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 08/17/2020.
+// Created by Zhen Peng on 11/24/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -53,7 +53,10 @@ public:
 
 //    std::vector< std::vector<idi> > edge_list_;
 
-    char *opt_nsg_graph_ = nullptr;
+//    char *opt_nsg_graph_ = nullptr;
+    idi *common_nsg_deg_ngbrs_ = nullptr;
+    edgei *common_nsg_vertex_base_ = nullptr;
+
     uint64_t data_bytes_;
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
@@ -75,13 +78,10 @@ public:
     dataf compute_distance_with_norm(
             const dataf *v_data,
             const dataf *q_data,
-//            idi vertex_id,
-//            idi query_id,
-//            const std::vector<dataf> &d_data,
-//            const std::vector<dataf> &q_data,
-//        PANNS::idi d_start,
-//        PANNS::idi q_start,
             const dataf vertex_norm) const;
+    dataf compute_distance(
+            const dataf *v_data,
+            const dataf *q_data) const;
     static idi add_into_queue(
             std::vector<PANNS::Candidate> &queue,
             const idi queue_start,
@@ -213,14 +213,14 @@ public:
             idi &set_L_size,
             const std::vector<idi> &init_ids,
             boost::dynamic_bitset<> &is_visited);
-    void initialize_set_L_seq(
-            const dataf *query_data,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const idi set_L_start,
-            idi &set_L_size,
-            const std::vector<idi> &init_ids,
-            boost::dynamic_bitset<> &is_visited);
+//    void initialize_set_L_seq(
+//            const dataf *query_data,
+//            const idi L,
+//            std::vector<Candidate> &set_L,
+//            const idi set_L_start,
+//            idi &set_L_size,
+//            const std::vector<idi> &init_ids,
+//            boost::dynamic_bitset<> &is_visited);
 
 public:
     // For Profiling
@@ -265,20 +265,15 @@ public:
     ~Searching()
     {
         free(data_load_);
-        data_load_ = nullptr;
-//        free(queries_load_);
-//        _mm_free(data_load_);
         free(queries_load_);
-        queries_load_ = nullptr;
-//        free(norms_);
-//        free(nsg_graph_indices_);
-//        free(nsg_graph_out_edges_);
-        free(opt_nsg_graph_);
-        opt_nsg_graph_ = nullptr;
+//        free(opt_nsg_graph_);
+        free(common_nsg_vertex_base_);
+        free(common_nsg_deg_ngbrs_);
     }
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
-    void load_nsg_graph(char *filename);
+//    void load_nsg_graph(char *filename);
+    void load_common_nsg_graph(char *filename);
 //    void build_opt_graph();
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
@@ -292,56 +287,56 @@ public:
             std::unordered_map<unsigned, double> &recalls,
             const idi K) const;
 
-    void seq_search_with_top_m_scale_m(
-            const idi M_max,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_with_top_m_pure(
-            const idi M,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_simple_search(
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_simple_search_early_termination(
-            const idi query_id,
-            const idi K,
-            const idi L,
-            const idi L_termn,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
+//    void seq_search_with_top_m_scale_m(
+//            const idi M_max,
+//            const idi query_id,
+//            const idi K,
+//            const idi L,
+//            std::vector<Candidate> &set_L,
+//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &set_K,
 //            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void seq_search_with_top_m_middle(
-            const idi M,
-            const idi seq_iter,
-            const idi query_id,
-            const idi K,
-            const idi L,
-            std::vector<Candidate> &set_L,
-            const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
-            std::vector<idi> &top_m_candidates,
-            boost::dynamic_bitset<> &is_visited);
-    void para_search_with_top_m_pure(
+//            boost::dynamic_bitset<> &is_visited);
+//    void seq_search_with_top_m_pure(
+//            const idi M,
+//            const idi query_id,
+//            const idi K,
+//            const idi L,
+//            std::vector<Candidate> &set_L,
+//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &set_K,
+//            std::vector<idi> &top_m_candidates,
+//            boost::dynamic_bitset<> &is_visited);
+//    void seq_search_simple_search(
+//            const idi query_id,
+//            const idi K,
+//            const idi L,
+//            std::vector<Candidate> &set_L,
+//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &set_K,
+//            boost::dynamic_bitset<> &is_visited);
+//    void seq_search_simple_search_early_termination(
+//            const idi query_id,
+//            const idi K,
+//            const idi L,
+//            const idi L_termn,
+//            std::vector<Candidate> &set_L,
+//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &set_K,
+////            std::vector<idi> &top_m_candidates,
+//            boost::dynamic_bitset<> &is_visited);
+//    void seq_search_with_top_m_middle(
+//            const idi M,
+//            const idi seq_iter,
+//            const idi query_id,
+//            const idi K,
+//            const idi L,
+//            std::vector<Candidate> &set_L,
+//            const std::vector<idi> &init_ids,
+//            std::vector<idi> &set_K,
+//            std::vector<idi> &top_m_candidates,
+//            boost::dynamic_bitset<> &is_visited);
+    void para_search_with_top_m_pure_large_graph(
             const idi M,
             const idi query_id,
             const idi K,

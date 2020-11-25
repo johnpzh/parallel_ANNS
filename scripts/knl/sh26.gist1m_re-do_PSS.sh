@@ -28,61 +28,82 @@ data=gist1m
 ###############
 bin="python3 ../scripts/test48.find_L_simple_search.py"
 
-P_target=0.900
-tag="SGS_find_L_P${P_target}"
-L_low=100
-L_up=200
-P_ts="0.9 0.91 0.92 0.93 0.94"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#P_target=0.900
+#tag="SGS_find_L_P${P_target}"
+#L_low=110
+#L_up=200
+#P_ts="0.9 0.91 0.92 0.93 0.94"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.950
+#tag="SGS_find_L_P${P_target}"
+#L_low=210
+#L_up=260
+#P_ts="0.95 0.96"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.970
+#tag="SGS_find_L_P${P_target}"
+#L_low=300
+#L_up=400
+#P_ts="0.97 0.98"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.990
+#tag="SGS_find_L_P${P_target}"
+#L_low=600
+#L_up=700
+#P_ts="0.99 0.991 0.992"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.993
+#tag="SGS_find_L_P${P_target}"
+#L_low=710
+#L_up=740
+#P_ts="0.993"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
-P_target=0.950
-tag="SGS_find_L_P${P_target}"
-L_low=200
-L_up=300
-P_ts="0.95 0.96 0.97"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.980
-tag="SGS_find_L_P${P_target}"
-L_low=300
-L_up=400
-P_ts="0.97 0.98"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.990
-tag="SGS_find_L_P${P_target}"
-L_low=400
-L_up=700
-P_ts="0.99 0.991 0.992"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.993
-tag="SGS_find_L_P${P_target}"
-L_low=700
-L_up=900
-P_ts="0.993 0.994 0.995"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.996
-tag="SGS_find_L_P${P_target}"
-L_low=1000
-L_up=1200
-P_ts="0.996 0.997"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.998
-tag="SGS_find_L_P${P_target}"
-L_low=1000
-L_up=2000
-P_ts="0.998"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.999
-tag="SGS_find_L_P${P_target}"
-L_low=2000
-L_up=3000
-P_ts="0.999"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#P_target=0.994
+#tag="SGS_find_L_P${P_target}"
+#L_low=790
+#L_up=810
+#P_ts="0.994"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.995
+#tag="SGS_find_L_P${P_target}"
+#L_low=890
+#L_up=910
+#P_ts="0.995"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.996
+#tag="SGS_find_L_P${P_target}"
+#L_low=1000
+#L_up=1040
+#P_ts="0.996"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.997
+#tag="SGS_find_L_P${P_target}"
+#L_low=1150
+#L_up=1200
+#P_ts="0.997"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.998
+#tag="SGS_find_L_P${P_target}"
+#L_low=1500
+#L_up=1600
+#P_ts="0.998"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.999
+#tag="SGS_find_L_P${P_target}"
+#L_low=2200
+#L_up=2300
+#P_ts="0.999"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
 ###################
 ##### PSS 1T
@@ -102,19 +123,19 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #tag="PSS_T${num_t}_P${P_target}"
 #L_low=200
 #L_up=300
-#P_ts="0.95 0.96 0.97"
+#P_ts="0.95 0.96"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #
-#P_target=0.980
+#P_target=0.970
 #tag="PSS_T${num_t}_P${P_target}"
-#L_low=300
+#L_low=290
 #L_up=400
 #P_ts="0.97 0.98"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #
 #P_target=0.990
 #tag="PSS_T${num_t}_P${P_target}"
-#L_low=400
+#L_low=580
 #L_up=700
 #P_ts="0.99 0.991 0.992"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
@@ -122,32 +143,46 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #P_target=0.993
 #tag="PSS_T${num_t}_P${P_target}"
 #L_low=700
+#L_up=800
+#P_ts="0.993 0.994"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.995
+#tag="PSS_T${num_t}_P${P_target}"
+#L_low=870
 #L_up=900
-#P_ts="0.993 0.994 0.995"
+#P_ts="0.995"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #
 #P_target=0.996
 #tag="PSS_T${num_t}_P${P_target}"
 #L_low=1000
+#L_up=1050
+#P_ts="0.996"
+#eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
+#
+#P_target=0.997
+#tag="PSS_T${num_t}_P${P_target}"
+#L_low=1150
 #L_up=1200
-#P_ts="0.996 0.997"
+#P_ts="0.997"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #
 #P_target=0.998
 #tag="PSS_T${num_t}_P${P_target}"
-#L_low=1000
-#L_up=2000
+#L_low=1400
+#L_up=1500
 #P_ts="0.998"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #
 #P_target=0.999
 #tag="PSS_T${num_t}_P${P_target}"
-#L_low=2000
-#L_up=3000
+#L_low=2200
+#L_up=2300
 #P_ts="0.999"
 #eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-
+#
+#
 #####################################
 ##### PSS
 #####################################
@@ -155,647 +190,868 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 ##bin="python3 ../scripts/test47.simple_v3_large_graph_ranged_L.py"
 #
 ####################
-##### SIFT1M 2T
+##### GIST1M 2T
 ####################
 #num_t=2
 ###
 #P_target=0.900
-#L_Seq=90
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=129
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.910
-#L_Seq=91
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=140
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.920
-#L_Seq=92
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=152
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.930
-#L_Seq=93
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=169
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.940
-#L_Seq=95
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=189
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.950
-#L_Seq=96
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=214
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.960
-#L_Seq=98
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=248
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.970
-#L_Seq=105
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=300
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.980
-#L_Seq=128
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=390
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.990
-#L_Seq=173
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=599
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.991
-#L_Seq=181
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=635
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.992
-#L_Seq=190
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=671
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.993
-#L_Seq=201
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=720
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.994
-#L_Seq=214
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=798
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.995
-#L_Seq=231
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=883
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.996
-#L_Seq=253
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=1008
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.997
-#L_Seq=282
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1174
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.998
-#L_Seq=330
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1499
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.999
-#L_Seq=428
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=2225
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 ####################
-##### SIFT1M 4T
+##### GIST1M 4T
 ####################
 #num_t=4
 ###
 #P_target=0.900
-#L_Seq=90
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=129
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.910
-#L_Seq=91
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=140
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.920
-#L_Seq=92
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=152
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.930
-#L_Seq=93
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=169
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.940
-#L_Seq=95
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=189
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.950
-#L_Seq=96
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=214
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.960
-#L_Seq=98
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=248
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.970
-#L_Seq=105
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=300
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.980
-#L_Seq=128
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=390
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.990
-#L_Seq=173
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=599
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.991
-#L_Seq=181
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=635
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.992
-#L_Seq=190
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=671
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.993
-#L_Seq=201
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=720
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.994
-#L_Seq=214
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=798
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.995
-#L_Seq=231
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=883
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.996
-#L_Seq=253
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=1008
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.997
-#L_Seq=282
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1174
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.998
-#L_Seq=330
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1499
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.999
-#L_Seq=428
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=2225
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #####################
-###### SIFT1M 8T
+###### GIST1M 8T
 #####################
 #num_t=8
 ###
 #P_target=0.900
-#L_Seq=90
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=129
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.910
-#L_Seq=91
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=140
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.920
-#L_Seq=92
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=152
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.930
-#L_Seq=93
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
+#L_Seq=169
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 2 ))
+#L_up=$((L_low + 4))
 #L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 2 ))
+#X_up=$((X_low + 4))
 #X_step=1
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.940
-#L_Seq=95
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=189
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.950
-#L_Seq=96
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=214
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.960
-#L_Seq=98
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=248
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.970
-#L_Seq=105
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=300
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 4 ))
+#L_up=$((L_low + 8))
+#L_step=2
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 4 ))
+#X_up=$((X_low + 8))
+#X_step=2
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.980
-#L_Seq=128
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=390
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.990
-#L_Seq=173
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=599
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 8 ))
+#L_up=$((L_low + 16))
+#L_step=4
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 8 ))
+#X_up=$((X_low + 16))
+#X_step=4
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.991
-#L_Seq=181
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=635
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.992
-#L_Seq=190
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=671
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.993
-#L_Seq=201
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=720
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.994
-#L_Seq=214
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=798
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.995
-#L_Seq=231
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=883
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.996
-#L_Seq=253
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 5 ))
-#L_up=$((L_low + 10))
-#L_step=1
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 5 ))
-#X_up=$((X_low + 10))
-#X_step=1
+#L_Seq=1008
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.997
-#L_Seq=282
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1174
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.998
-#L_Seq=330
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=1499
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #P_target=0.999
-#L_Seq=428
-#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 12 ))
-#L_up=$((L_low + 24))
-#L_step=2
-#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 10 ))
-#X_up=$((X_low + 20))
-#X_step=2
+#L_Seq=2225
+#L_low=$(( $(get_L_low ${L_Seq} ${num_t}) - 16 ))
+#L_up=$((L_low + 32))
+#L_step=8
+#X_low=$(( $(get_X_low ${L_Seq} ${num_t}) - 16 ))
+#X_up=$((X_low + 32))
+#X_step=8
 #tag="PSS_T${num_t}_P${P_target}"
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 
+####################
+##### GIST1M 16T
+####################
+for num_t in 16 32 64; do
+##
+    P_target=0.900
+    L_Seq=129
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 2))
+    L_step=1
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 2))
+    X_step=1
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.910
+    L_Seq=140
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 2))
+    L_step=1
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 2))
+    X_step=1
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.920
+    L_Seq=152
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 2))
+    L_step=1
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 2))
+    X_step=1
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.930
+    L_Seq=169
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 2))
+    L_step=1
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 2))
+    X_step=1
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.940
+    L_Seq=189
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 4))
+    L_step=2
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 4))
+    X_step=2
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.950
+    L_Seq=214
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 4))
+    L_step=2
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 4))
+    X_step=2
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.960
+    L_Seq=248
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 4))
+    L_step=2
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 4))
+    X_step=2
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.970
+    L_Seq=300
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 4))
+    L_step=2
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 4))
+    X_step=2
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.980
+    L_Seq=390
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 8))
+    L_step=4
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 8))
+    X_step=4
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.990
+    L_Seq=599
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 8))
+    L_step=4
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 8))
+    X_step=4
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.991
+    L_Seq=635
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.992
+    L_Seq=671
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.993
+    L_Seq=720
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.994
+    L_Seq=798
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.995
+    L_Seq=883
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.996
+    L_Seq=1008
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.997
+    L_Seq=1174
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.998
+    L_Seq=1499
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    P_target=0.999
+    L_Seq=2225
+    L_low=$(( $(get_L_low ${L_Seq} ${num_t}) ))
+    L_up=$((L_low + 16))
+    L_step=8
+    X_low=$(( $(get_X_low ${L_Seq} ${num_t}) ))
+    X_up=$((X_low + 16))
+    X_step=8
+    tag="PSS_T${num_t}_P${P_target}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
+
+    ######
+    output_files="output.${data}.PSS_T${num_t}_P0.9"
+    table_file="output.${data}.PSS_T${num_t}_collected.table.txt"
+    selected_file="output.${data}.PSS_T${num_t}_collected.selected.txt"
+    cat ${output_files}*.table.txt > ${table_file}
+    python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2
+done
 
 set +x
 

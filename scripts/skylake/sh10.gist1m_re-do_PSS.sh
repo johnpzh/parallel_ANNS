@@ -191,7 +191,7 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 ##bin="python3 ../scripts/test47.simple_v3_large_graph_ranged_L.py"
 #
 ####################
-##### SIFT1M 2T
+##### GIST1M 2T
 ####################
 #num_t=2
 ###
@@ -405,7 +405,7 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 ####################
-##### SIFT1M 4T
+##### GIST1M 4T
 ####################
 #num_t=4
 ###
@@ -619,7 +619,7 @@ eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 #eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} ${X_low} ${X_up} ${X_step}
 #
 #####################
-###### SIFT1M 8T
+###### GIST1M 8T
 #####################
 #num_t=8
 ###
