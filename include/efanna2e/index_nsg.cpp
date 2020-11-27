@@ -479,6 +479,8 @@ void IndexNSG::Search(const float *query, const float *x, size_t K,
 
                 if (r < nk) nk = r;
             }
+
+            ++count_iters_;
         }
         if (nk <= k)
             k = nk;
@@ -570,6 +572,8 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
                 // if(L+1 < retset.size()) ++L;
                 if (r < nk) nk = r;
             }
+
+            ++count_iters_;
         }
         if (nk <= k)
             k = nk;

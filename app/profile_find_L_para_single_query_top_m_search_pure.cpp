@@ -249,8 +249,8 @@ int main(int argc, char **argv)
             }
         }
 
-        L_upper = strtoull(argv[10], nullptr, 0);
-        if (recalls[100] < P_dest && L < L_upper) {
+//        L_upper = strtoull(argv[10], nullptr, 0);
+        if (recalls[100] < P_dest && L < L_upper_origin) {
             runtime = last_runtime;
             recalls[100] = last_recall;
             compt = last_compt;

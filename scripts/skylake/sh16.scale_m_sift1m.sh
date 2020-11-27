@@ -20,15 +20,15 @@
 
 set -x
 
-data_dir="/scratch/zpeng/data"
+data_dir="/scratch/zpeng"
 data=sift1m
 
 ####################################
 #### PSS
 ####################################
 bin="python3 ../scripts/test63.find_L_top_m_scale_m.py"
-app="profile_find_L_para_single_query_top_m_search_pure"
-app_label="Top_M"
+app="profile_find_L_para_single_query_scale_m_search_pure"
+app_label="Scale_M"
 M=64
 
 ###################

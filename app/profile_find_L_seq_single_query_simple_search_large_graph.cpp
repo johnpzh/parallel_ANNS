@@ -161,7 +161,8 @@ void search_one_time(
         std::vector<std::vector<unsigned> > &set_K_list,
         std::unordered_map<unsigned, double> &recalls,
         double &runtime,
-        uint64_t &compt)
+        uint64_t &compt,
+        double &avg_iters)
 {
     /* ----------------------
      * ------- Kernel ------- */
@@ -198,7 +199,8 @@ void search_one_time(
                 "P@100: %f "
                 "P@1: %f "
                 "G/s: %f "
-                "GFLOPS: %f ",
+                "GFLOPS: %f "
+                "avg_iters: %f ",
                 L,
                 diff.count(),
                 index.count_distance_computation_,
@@ -211,12 +213,15 @@ void search_one_time(
                 recalls[100],
                 recalls[1],
                 dim * 4.0 * index.count_distance_computation_ / (1U << 30U) / diff.count(),
-                dim * (1.0 + 1.0 + 1.0) * index.count_distance_computation_ / (1U << 30U) /diff.count());
+                dim * (1.0 + 1.0 + 1.0) * index.count_distance_computation_ / (1U << 30U) /diff.count(),
+                index.count_iters_ * 1.0 / query_num);
         printf("\n");
     }
     runtime = diff.count();
     compt = index.count_distance_computation_;
     index.count_distance_computation_ = 0;
+    avg_iters = index.count_iters_ * 1.0 / query_num;
+    index.count_iters_ = 0;
     set_K_list.swap(res);
 //    PANNS::DiskIO::save_result(argv[6], set_K_list);
     /* ------- End of Kernel -------
@@ -276,11 +281,13 @@ int main(int argc, char **argv)
         unsigned L = L_upper;
         double runtime;
         uint64_t compt;
+        double avg_iters;
 
         double last_runtime;
         uint64_t last_compt;
         double last_recall;
         unsigned last_L;
+        double last_avg_iters;
 
         while (L_lower <= L_upper) {
 //        L = (L_lower + L_upper) / 2;
@@ -304,7 +311,8 @@ int main(int argc, char **argv)
                     set_K_list,
                     recalls,
                     runtime,
-                    compt);
+                    compt,
+                    avg_iters);
 
             if (recalls[100] < P_dest) {
                 L_lower = L + 1;
@@ -314,6 +322,7 @@ int main(int argc, char **argv)
                 last_recall = recalls[100];
                 last_compt = compt;
                 last_L = L;
+                last_avg_iters = avg_iters;
             } else {
                 break;
             }
@@ -322,12 +331,13 @@ int main(int argc, char **argv)
             }
         }
 
-        L_upper = strtoull(argv[8], nullptr, 0);
-        if (recalls[100] < P_dest && L < L_upper) {
+//        L_upper = strtoull(argv[8], nullptr, 0);
+        if (recalls[100] < P_dest && L < L_upper_origin) {
             runtime = last_runtime;
             recalls[100] = last_recall;
             compt = last_compt;
             L = last_L;
+            avg_iters = last_avg_iters;
         }
 //    L_upper = strtoull(argv[8], nullptr, 0);
 //    while (recalls[100] < P_dest && L < L_upper) {
@@ -355,13 +365,15 @@ int main(int argc, char **argv)
                "compt.: %lu "
                "P@100: %f "
                "latency(ms.): %f "
-               "L: %u ",
+               "L: %u "
+               "avg_iters: %f ",
                P_dest,
                runtime,
                compt,
                recalls[100],
                runtime / query_num * 1000.0,
-               L);
+               L,
+               avg_iters);
         printf("\n");
     }
     return 0;

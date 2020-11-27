@@ -38,12 +38,6 @@ label = F"{data}.{tag}"
 raw_file = F"output.{label}.raw.txt"
 
 subprocess.run(F':> {raw_file}', shell=True, check=True)
-# for P_level in [0.90, 0.91, 0.92, 0.93,
-#                 0.94, 0.95, 0.96, 0.97,
-#                 0.98,0.99,
-#                 0.991, 0.992, 0.993, 0.994,
-#                 0.995, 0.996, 0.997, 0.998,
-#                 0.999]:
 command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
           F"{L_upper} {P_level} " \
@@ -53,7 +47,7 @@ subprocess.run(command, env=env_vars, shell=True, check=True)
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:7", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
 
 # #### DEEP100M
 # data_dir = base_dir + "/deep1b"

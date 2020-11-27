@@ -20,7 +20,7 @@
 
 set -x
 
-data_dir="/scratch/zpeng/data"
+data_dir="/scratch/zpeng"
 data=sift1m
 
 ####################################

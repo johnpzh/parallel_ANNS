@@ -42,6 +42,8 @@ public:
             unsigned *indices);
     void OptimizeGraph(float* data);
 
+    uint64_t count_iters_ = 0;
+
 protected:
     typedef std::vector<std::vector<unsigned > > CompactGraph;
     typedef std::vector<SimpleNeighbors > LockGraph;
