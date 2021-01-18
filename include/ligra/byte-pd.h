@@ -187,7 +187,7 @@ template <class T>
 /*
   Compresses the first edge, writing target-source and a sign bit.
 */
-long compressFirstEdge(uchar *start, long offset, uintE source, uintE target) {
+inline long compressFirstEdge(uchar *start, long offset, uintE source, uintE target) {
   uchar* saveStart = start;
   long saveOffset = offset;
 
@@ -226,7 +226,7 @@ long compressFirstEdge(uchar *start, long offset, uintE source, uintE target) {
   Should provide the difference between this edge and the previous edge
 */
 
-long compressEdge(uchar *start, long curOffset, uintE e) {
+inline long compressEdge(uchar *start, long curOffset, uintE e) {
   uchar curByte = e & 0x7f;
   int bytesUsed = 0;
   while ((curByte > 0) || (e > 0)) {
@@ -254,7 +254,7 @@ long compressEdge(uchar *start, long curOffset, uintE e) {
   Returns:
     The new offset into the edge array
 */
-long sequentialCompressEdgeSet(uchar *edgeArray, long currentOffset, uintT degree,
+inline long sequentialCompressEdgeSet(uchar *edgeArray, long currentOffset, uintT degree,
 			       uintE vertexNum, uintE *savedEdges) {
   if (degree > 0) {
     long startOffset = currentOffset;
@@ -282,7 +282,7 @@ long sequentialCompressEdgeSet(uchar *edgeArray, long currentOffset, uintT degre
 /*
   Compresses the edge set in parallel.
 */
-uintE *parallelCompressEdges(uintE *edges, uintT *offsets, long n, long m, uintE* Degrees) {
+inline uintE *parallelCompressEdges(uintE *edges, uintT *offsets, long n, long m, uintE* Degrees) {
   cout << "parallel compressing, (n,m) = (" << n << "," << m << ")" << endl;
   uintE **edgePts = newA(uintE*, n);
   long *charsUsedArr = newA(long, n);
@@ -338,7 +338,7 @@ typedef pair<uintE,intE> intEPair;
   Returns:
     The new offset into the edge array
 */
-long sequentialCompressWeightedEdgeSet
+inline long sequentialCompressWeightedEdgeSet
 (uchar *edgeArray, long currentOffset, uintT degree,
  uintE vertexNum, intEPair *savedEdges) {
   if (degree > 0) {
@@ -374,7 +374,7 @@ long sequentialCompressWeightedEdgeSet
 /*
   Compresses the weighted edge set in parallel.
 */
-uchar *parallelCompressWeightedEdges(intEPair *edges, uintT *offsets, long n, long m, uintE* Degrees) {
+inline uchar *parallelCompressWeightedEdges(intEPair *edges, uintT *offsets, long n, long m, uintE* Degrees) {
   cout << "parallel compressing, (n,m) = (" << n << "," << m << ")" << endl;
   uintE **edgePts = newA(uintE*, n);
   long *charsUsedArr = newA(long, n);
