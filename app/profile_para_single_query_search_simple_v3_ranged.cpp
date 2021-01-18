@@ -109,7 +109,8 @@ int main(int argc, char **argv)
                     engine.get_recall_for_all_queries(
                             true_nn_list,
                             set_K_list,
-                            recalls);
+                            recalls,
+                            L);
                 }
                 {// Basic output
                     printf(

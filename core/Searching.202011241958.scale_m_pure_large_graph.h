@@ -292,7 +292,8 @@ public:
     void get_recall_for_all_queries(
             const std::vector< std::vector<idi> > &true_nn_list,
             const std::vector<std::vector<unsigned>> &set_K_list,
-            std::unordered_map<unsigned, double> &recalls) const;
+            std::unordered_map<unsigned, double> &recalls,
+            const idi L) const;
 
 //    void para_search_with_top_m_merge_queues_middle_m(
 //            const idi value_M_middle,

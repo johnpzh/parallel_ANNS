@@ -3,23 +3,25 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) < 7:
-    print(f"{sys.argv[0]} <data_dir> <data> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
+if len(sys.argv) < 8:
+    print(f"{sys.argv[0]} <app> <data_dir> <data> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
-base_dir = sys.argv[1]
-data = sys.argv[2]
-tag = sys.argv[3]
-L_lower = int(sys.argv[4])
-L_upper = int(sys.argv[5])
-base_loc_P_target = 6
+app = sys.argv[1]
+base_dir = sys.argv[2]
+data = sys.argv[3]
+tag = sys.argv[4]
+L_lower = int(sys.argv[5])
+L_upper = int(sys.argv[6])
+base_loc_P_target = 7
 targets = [sys.argv[i] for i in range(base_loc_P_target, len(sys.argv))]
 P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search"
+bin=F"numactl -m 0 ./{app}"
+# bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
@@ -30,6 +32,12 @@ elif data == "gist1m":
 elif data == "deep10m":
     data_dir = base_dir + "/deep1b"
     data_name = "deep10M"
+elif data == "sift100m":
+    data_dir = base_dir + "/sift1b"
+    data_name = "sift100M"
+elif data == "deep100m":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep100M"
 else:
     print(F"Error: data {data} is unknown.")
     exit()

@@ -89,7 +89,7 @@ for num_t in 8; do
 
     P_target=0.970
     L_Seq=142
-    offset=10
+    offset=32
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -97,7 +97,7 @@ for num_t in 8; do
 
     P_target=0.980
     L_Seq=183
-    offset=16
+    offset=64
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -105,7 +105,7 @@ for num_t in 8; do
 
     P_target=0.990
     L_Seq=270
-    offset=16
+    offset=128
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -113,7 +113,7 @@ for num_t in 8; do
 
     P_target=0.991
     L_Seq=284
-    offset=16
+    offset=128
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -121,7 +121,7 @@ for num_t in 8; do
 
     P_target=0.992
     L_Seq=304
-    offset=16
+    offset=128
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -129,7 +129,7 @@ for num_t in 8; do
 
     P_target=0.993
     L_Seq=327
-    offset=16
+    offset=128
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -137,7 +137,7 @@ for num_t in 8; do
 
     P_target=0.994
     L_Seq=355
-    offset=16
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -145,7 +145,7 @@ for num_t in 8; do
 
     P_target=0.995
     L_Seq=392
-    offset=16
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -153,7 +153,7 @@ for num_t in 8; do
 
     P_target=0.996
     L_Seq=441
-    offset=32
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -161,7 +161,7 @@ for num_t in 8; do
 
     P_target=0.997
     L_Seq=509
-    offset=32
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -169,7 +169,7 @@ for num_t in 8; do
 
     P_target=0.998
     L_Seq=630
-    offset=32
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"
@@ -177,7 +177,7 @@ for num_t in 8; do
 
     P_target=0.999
     L_Seq=890
-    offset=64
+    offset=256
     L_low=$(( L_Seq - offset ))
     L_up=$(( L_Seq ))
     tag="${app_label}_T${num_t}_P${P_target}"

@@ -39,48 +39,34 @@ P_target=0.930
 tag="SGS_find_L_P${P_target}"
 L_low=100
 L_up=500
-P_ts="0.93 0.94 0.95 0.96 0.97 0.99 0.991 0.992 0.993 0.994 0.995"
+P_ts="0.93 0.94 0.95 0.96 0.97 0.98 0.99 0.991 0.992 0.993 0.994 0.995"
 eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
 P_target=0.996
 tag="SGS_find_L_P${P_target}"
-L_low=500
-L_up=1100
-P_ts="0.996 0.997 0.998 0.999"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.992
-tag="SGS_find_L_P${P_target}"
-L_low=300
-L_up=400
-P_ts="0.992 0.993 0.994 0.995"
-eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
-
-P_target=0.996
-tag="SGS_find_L_P${P_target}"
-L_low=400
-L_up=500
+L_low=525
+L_up=545
 P_ts="0.996"
 eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
 P_target=0.997
 tag="SGS_find_L_P${P_target}"
-L_low=500
-L_up=600
+L_low=610
+L_up=630
 P_ts="0.997"
 eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
 P_target=0.998
 tag="SGS_find_L_P${P_target}"
-L_low=600
-L_up=700
+L_low=745
+L_up=765
 P_ts="0.998"
 eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 
 P_target=0.999
 tag="SGS_find_L_P${P_target}"
-L_low=950
-L_up=1000
+L_low=1030
+L_up=1050
 P_ts="0.999"
 eval ${bin} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 

@@ -85,7 +85,8 @@ void search_one_time(
         engine.get_recall_for_all_queries(
                 true_nn_list,
                 set_K_list,
-                recalls);
+                recalls,
+                L);
     }
     {// Basic output
         printf(

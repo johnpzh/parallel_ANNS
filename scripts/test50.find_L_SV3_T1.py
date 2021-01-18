@@ -3,25 +3,25 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) < 7:
-    print(f"{sys.argv[0]} <data_dir> <data> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
+if len(sys.argv) < 8:
+    print(f"{sys.argv[0]} <app> <data_dir> <data> <tag> <L_low> <L_up> <P_target> [<P_target> ...]")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
-base_dir = sys.argv[1]
-data = sys.argv[2]
-tag = sys.argv[3]
-# num_t = int(sys.argv[3])
-L_lower = int(sys.argv[4])
-L_upper = int(sys.argv[5])
-# P_level = float(sys.argv[6])
-base_loc_P_target = 6
+app = sys.argv[1]
+base_dir = sys.argv[2]
+data = sys.argv[3]
+tag = sys.argv[4]
+L_lower = int(sys.argv[5])
+L_upper = int(sys.argv[6])
+base_loc_P_target = 7
 targets = [sys.argv[i] for i in range(base_loc_P_target, len(sys.argv))]
 P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3"
+# bin="numactl -m 0 ./profile_find_L_para_single_query_search_simple_v3"
+bin=F"numactl -m 0 ./{app}"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
@@ -32,6 +32,12 @@ elif data == "gist1m":
 elif data == "deep10m":
     data_dir = base_dir + "/deep1b"
     data_name = "deep10M"
+elif data == "sift100m":
+    data_dir = base_dir + "/sift1b"
+    data_name = "sift100M"
+elif data == "deep100m":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep100M"
 else:
     print(F"Error: data {data} is unknown.")
     exit()
@@ -40,12 +46,6 @@ label = F"{data}.{tag}"
 raw_file = F"output.{label}.raw.txt"
 
 subprocess.run(F':> {raw_file}', shell=True, check=True)
-# for P_level in [0.90, 0.91, 0.92, 0.93,
-#                 0.94, 0.95, 0.96, 0.97,
-#                 0.98, 0.99,
-#                 0.991, 0.992, 0.993, 0.994,
-#                 0.995, 0.996, 0.997, 0.998,
-#                 0.999]:
 command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query.fvecs {data_dir}/{data_name}.nsg " \
           F"{L_lower} 100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary " \
           F"1 0 {L_upper} {P_level} " \

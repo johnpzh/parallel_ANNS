@@ -126,7 +126,8 @@ int main(int argc, char **argv)
             engine.get_recall_for_all_queries(
                     true_nn_list,
                     set_K_list,
-                    recalls);
+                    recalls,
+                    L);
 //                printf("P@1: %f "
 //                       "P@5: %f "
 //                       "P@10: %f "

@@ -8,8 +8,11 @@ def is_number(s):
     except ValueError:
         return False
 
-if len(sys.argv) != 5:
-    print(f'{sys.argv[0]} <input_file> <output_file> <runtime_pos> <precision_pos>')
+# if len(sys.argv) != 5:
+#     print(f'{sys.argv[0]} <input_file> <output_file> <runtime_pos> <precision_pos>')
+#     exit()
+if len(sys.argv) < 6:
+    print(f'{sys.argv[0]} <input_file> <output_file> <runtime_pos> <precision_pos> <precision_target> [<precision_target> ...]')
     exit()
 with open(sys.argv[1]) as fin, \
         open(sys.argv[2], 'w') as fout:
@@ -26,12 +29,14 @@ with open(sys.argv[1]) as fin, \
             continue
         table.append(cols)
 
-    bottoms = [0.90, 0.91, 0.92, 0.93,
-               0.94, 0.95, 0.96, 0.97,
-               0.98, 0.99,
-               0.991, 0.992, 0.993, 0.994,
-               0.995, 0.996, 0.997, 0.998,
-               0.999]
+    # bottoms = [0.90, 0.91, 0.92, 0.93,
+    #            0.94, 0.95, 0.96, 0.97,
+    #            0.98, 0.99,
+    #            0.991, 0.992, 0.993, 0.994,
+    #            0.995, 0.996, 0.997, 0.998,
+    #            0.999]
+    base_loc_bottoms = 5
+    bottoms = [float(sys.argv[i]) for i in range(base_loc_bottoms, len(sys.argv))]
     for precs_bottom in bottoms:
         min_rt = sys.float_info.max
         min_id = -1

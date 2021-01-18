@@ -189,12 +189,9 @@ void Searching::load_true_NN(
 void Searching::get_recall_for_all_queries(
         const std::vector< std::vector<idi> > &true_nn_list,
         const std::vector<std::vector<unsigned>> &set_K_list,
-        std::unordered_map<unsigned, double> &recalls) const
+        std::unordered_map<unsigned, double> &recalls,
+        const idi L) const
 {
-//    if (t_K < 100) {
-//        fprintf(stderr, "Error: t_K %u is smaller than 100.\n", t_K);
-//        exit(EXIT_FAILURE);
-//    }
     if (true_nn_list[0].size() < 100) {
         fprintf(stderr, "Error: Number of true nearest neighbors of a query is smaller than 100.\n");
         exit(EXIT_FAILURE);
@@ -205,11 +202,13 @@ void Searching::get_recall_for_all_queries(
     recalls[20] = 0.0;
     recalls[50] = 0.0;
     recalls[100] = 0.0;
+
+    idi set_K_size = L < 100 ? L : 100;
     for (unsigned q_i = 0; q_i < num_queries_; ++q_i) {
 //        size_t offset = q_i * t_K;
         for (unsigned top_i = 0; top_i < 100; ++top_i) {
             unsigned true_id = true_nn_list[q_i][top_i];
-            for (unsigned n_i = 0; n_i < 100; ++n_i) {
+            for (unsigned n_i = 0; n_i < set_K_size; ++n_i) {
                 if (set_K_list[q_i][n_i] == true_id) {
                     if (n_i < 1) recalls[1] += 1;
                     if (n_i < 5) recalls[5] += 1;

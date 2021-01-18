@@ -285,7 +285,7 @@ public:
             const std::vector< std::vector<idi> > &true_nn_list,
             const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls,
-            const idi K) const;
+            const idi L) const;
 
 //    void seq_search_with_top_m_scale_m(
 //            const idi M_max,

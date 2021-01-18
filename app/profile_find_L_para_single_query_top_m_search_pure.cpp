@@ -86,7 +86,7 @@ void search_one_time(
                 true_nn_list,
                 set_K_list,
                 recalls,
-                K);
+                L);
     }
     {// Basic output
         printf(

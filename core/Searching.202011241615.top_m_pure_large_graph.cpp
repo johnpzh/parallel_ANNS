@@ -283,7 +283,7 @@ void Searching::get_recall_for_all_queries(
         const std::vector< std::vector<idi> > &true_nn_list,
         const std::vector<std::vector<unsigned>> &set_K_list,
         std::unordered_map<unsigned, double> &recalls,
-        const idi K) const
+        const idi L) const
 {
     if (true_nn_list[0].size() < 100) {
         fprintf(stderr, "Error: Number of true nearest neighbors of a query is smaller than 100.\n");
@@ -296,11 +296,8 @@ void Searching::get_recall_for_all_queries(
     recalls[50] = 0.0;
     recalls[100] = 0.0;
 
-    idi set_K_size = K < 100 ? K : 100;
+    idi set_K_size = L < 100 ? L : 100;
     for (unsigned q_i = 0; q_i < num_queries_; ++q_i) {
-
-//        double test_last_recall = recalls[100]; //test
-
         for (unsigned top_i = 0; top_i < 100; ++top_i) {
             unsigned true_id = true_nn_list[q_i][top_i];
             for (unsigned n_i = 0; n_i < set_K_size; ++n_i) {
@@ -314,12 +311,6 @@ void Searching::get_recall_for_all_queries(
                 }
             }
         }
-//        {//test
-//            printf("q_i: %u "
-//                   "corrects: %u\n",
-//                   q_i,
-//                   (idi) (recalls[100] - test_last_recall));
-//        }
     }
     recalls[1] /= 1.0 * num_queries_;
     recalls[5] /= 5.0 * num_queries_;
