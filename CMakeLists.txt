@@ -296,13 +296,13 @@ add_executable(profile_find_L_para_single_query_top_m_search_pure_large_graph_ba
 target_compile_options(profile_find_L_para_single_query_top_m_search_pure_large_graph_backtracking PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_find_L_para_single_query_top_m_search_pure_large_graph_backtracking PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_para_single_query_search_simple_v3_ranged_scale_M app/profile_para_single_query_search_simple_v3_ranged_scale_M.cpp core/Searching.202012141643.simple_v3.scale_M.cpp)
-target_compile_options(profile_para_single_query_search_simple_v3_ranged_scale_M PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_para_single_query_search_simple_v3_ranged_scale_M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+add_executable(profile_para_single_query_search_PSS_v4_ranged app/profile_para_single_query_search_PSS_v4_ranged.cpp core/Searching.202012141643.simple_v3.scale_M.cpp)
+target_compile_options(profile_para_single_query_search_PSS_v4_ranged PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_PSS_v4_ranged PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_para_single_query_search_simple_v3_large_graph_ranged_scale_M app/profile_para_single_query_search_simple_v3_large_graph_ranged_scale_M.cpp core/Searching.202012141857.simple_v3.large_graph.scale_M.cpp)
-target_compile_options(profile_para_single_query_search_simple_v3_large_graph_ranged_scale_M PRIVATE ${CXX_OPTION})
-target_link_libraries(profile_para_single_query_search_simple_v3_large_graph_ranged_scale_M PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+add_executable(profile_para_single_query_search_PSS_v4_large_graph_ranged app/profile_para_single_query_search_PSS_v4_large_graph_ranged.cpp core/Searching.202012141857.simple_v3.large_graph.scale_M.cpp)
+target_compile_options(profile_para_single_query_search_PSS_v4_large_graph_ranged PRIVATE ${CXX_OPTION})
+target_link_libraries(profile_para_single_query_search_PSS_v4_large_graph_ranged PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(
         profile_find_L_para_single_query_top_m_search_Ligra
@@ -352,3 +352,87 @@ add_executable(
         core/Searching.202101081821.scale_m_pure_large_graph.profiling.cpp)
 target_compile_options(profile_find_L_para_single_query_scale_m_search_pure_large_graph_profiling PRIVATE ${CXX_OPTION})
 target_link_libraries(profile_find_L_para_single_query_scale_m_search_pure_large_graph_profiling PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_NSG_omp
+        app/profile_find_L_para_single_query_NSG_omp.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202101172012.omp.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_NSG_omp
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_NSG_omp
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_NSG_omp_large_graph
+        app/profile_find_L_para_single_query_NSG_omp_large_graph.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202101172012.omp.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_NSG_omp_large_graph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_NSG_omp_large_graph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_NSG_omp_profile
+        app/profile_find_L_para_single_query_NSG_omp_profile.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202101181119.omp_profile.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_NSG_omp_profile
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_NSG_omp_profile
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_NSG_omp_large_graph_profile
+        app/profile_find_L_para_single_query_NSG_omp_large_graph_profile.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202101181119.omp_profile.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_NSG_omp_large_graph_profile
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_NSG_omp_large_graph_profile
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        hnsw_index
+        app/hnsw_index.cpp)
+target_link_libraries(
+        hnsw_index
+        PRIVATE OpenMP::OpenMP_CXX)
+
+add_executable(
+        hnsw_search
+        app/hnsw_search.cpp)
+target_link_libraries(
+        hnsw_search
+        PRIVATE OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_search_PSS_v4_profile
+        app/profile_find_L_para_single_query_search_PSS_v4_profile.cpp
+        core/Searching.202101081549.PSS_v4.profiling.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_search_PSS_v4_profile
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_search_PSS_v4_profile
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_find_L_para_single_query_search_PSS_v4_large_graph_profile
+        app/profile_find_L_para_single_query_search_PSS_v4_large_graph_profile.cpp
+        core/Searching.202101081641.PSS_v4.large_graph.profiling.cpp)
+target_compile_options(
+        profile_find_L_para_single_query_search_PSS_v4_large_graph_profile
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_find_L_para_single_query_search_PSS_v4_large_graph_profile
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        widget_transpose
+        tools/widget_transpose.cpp)

@@ -150,8 +150,12 @@ int main(int argc, char **argv)
                             "avg_merge_: %f "
                             "t_expand(s.): %f "
                             "t_merge(s.): %f "
+                            "t_seq(s.): %f "
+                            "t_pick(s.): %f "
                             "t_p_expand(%%): %f "
-                            "t_p_merge(%%): %f",
+                            "t_p_merge(%%): %f "
+                            "t_p_seq(%%): %f "
+                            "t_p_pick(%%): %f",
                             num_threads,
                             L,
                             diff.count(),
@@ -173,14 +177,20 @@ int main(int argc, char **argv)
                             engine.count_merge_ * 1.0 / query_num,
                             engine.time_expand_,
                             engine.time_merge_,
+                            engine.time_seq_,
+                            engine.time_pick_,
                             engine.time_expand_ / diff.count() * 100.0,
-                            engine.time_merge_ / diff.count() * 100.0);
+                            engine.time_merge_ / diff.count() * 100.0,
+                            engine.time_seq_ / diff.count() * 100.0,
+                            engine.time_pick_ / diff.count() * 100.0);
                     printf("\n");
                 }
                 engine.count_distance_computation_ = 0;
                 engine.count_merge_ = 0;
                 engine.time_expand_ = 0.0;
                 engine.time_merge_ = 0.0;
+                engine.time_seq_ = 0.0;
+                engine.time_pick_ = 0.0;
                 PANNS::DiskIO::save_result(argv[6], set_K_list);
             }
         } // X range

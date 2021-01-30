@@ -150,7 +150,7 @@ app="profile_para_single_query_search_simple_v3_large_graph_ranged_scale_M"
 #### SIFT100M 2T
 ###################
 #for num_t in 1 2 4 8; do
-for num_t in 16 32 64; do
+for num_t in 32 64; do
 ##
     P_target=0.900
     L_Seq=95
@@ -371,6 +371,8 @@ for num_t in 16 32 64; do
     0.950 0.960 0.970 0.980 0.990 \
     0.991 0.992 0.993 0.994 0.995 \
     0.996 0.997 0.998 0.999
+#    python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2 \
+#    0.900 0.990 0.995 0.997 0.999
 
 done
 

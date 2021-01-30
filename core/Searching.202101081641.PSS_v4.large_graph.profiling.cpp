@@ -1329,6 +1329,7 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
 //        std::vector<idi> &top_m_candidates)
 {
 //    time_initialization_ -= WallTimer::get_time_mark();
+    time_seq_ -= WallTimer::get_time_mark();
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
@@ -1349,53 +1350,56 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
     const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
     idi iter = 0; // for debug
 
+    time_seq_ += WallTimer::get_time_mark();
+
 //    printf("Searching...\n");
     // Sequential Version
-    if (num_threads_ == 1) {
-        idi k = 0; // Index of first unchecked candidate.
-        idi r;
-        idi cand_id;
-//        bool is_quota_done = false;
-        uint64_t tmp_count_computation = 0;
-        while (k < L) {
-            ++iter;
-            auto &cand = set_L[master_queue_start + k];
-            if (!cand.is_checked_) {
-                cand.is_checked_ = true;
-                cand_id = cand.id_;
-                r = expand_one_candidate(
-                        0,
-                        cand_id,
-                        query_data,
-                        last_dist,
-                        set_L,
-                        master_queue_start,
-                        master_queue_size,
-                        L,
-                        is_visited,
-                        tmp_count_computation);
-//                        is_quota_done);
-                count_distance_computation_ += tmp_count_computation;
-                tmp_count_computation = 0;
-                ++count_hops_;
-            } else {
-                r = L;
-            }
-            if (r <= k) {
-                k = r;
-            } else {
-                ++k;
-            }
-        }
-    } else { // Parallel Version
+//    if (num_threads_ == 1) {
+//        idi k = 0; // Index of first unchecked candidate.
+//        idi r;
+//        idi cand_id;
+////        bool is_quota_done = false;
+//        uint64_t tmp_count_computation = 0;
+//        while (k < L) {
+//            ++iter;
+//            auto &cand = set_L[master_queue_start + k];
+//            if (!cand.is_checked_) {
+//                cand.is_checked_ = true;
+//                cand_id = cand.id_;
+//                r = expand_one_candidate(
+//                        0,
+//                        cand_id,
+//                        query_data,
+//                        last_dist,
+//                        set_L,
+//                        master_queue_start,
+//                        master_queue_size,
+//                        L,
+//                        is_visited,
+//                        tmp_count_computation);
+////                        is_quota_done);
+//                count_distance_computation_ += tmp_count_computation;
+//                tmp_count_computation = 0;
+//                ++count_hops_;
+//            } else {
+//                r = L;
+//            }
+//            if (r <= k) {
+//                k = r;
+//            } else {
+//                ++k;
+//            }
+//        }
+//    } else
+    { // Parallel Version
 //        // Divide computation cost from thread 0 to others
+        time_seq_ -= WallTimer::get_time_mark();
         idi k_master = 0; // Index of first unchecked candidate.
         idi para_iter = 0;
         uint64_t tmp_count_computation = 0;
 //        uint8_t count_workers_done = 0;
 
         // Sequential Start
-        time_expand_ -= WallTimer::get_time_mark();
         bool no_need_to_continue = false;
         {
             idi r;
@@ -1425,7 +1429,7 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
 //                        is_quota_done);
                     count_distance_computation_ += tmp_count_computation;
                     tmp_count_computation = 0;
-                    ++count_hops_;
+//                    ++count_hops_;
                 } else {
                     r = L;
                 }
@@ -1436,10 +1440,11 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
                 }
             }
         }
-        time_expand_ += WallTimer::get_time_mark();
+        time_seq_ += WallTimer::get_time_mark();
 
         // Parallel Phase
         while (!no_need_to_continue) {
+            time_pick_ -= WallTimer::get_time_mark();
             ++iter;
             ++para_iter;
 //            {//test
@@ -1453,8 +1458,10 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
                     local_queues_sizes,
                     local_queue_capacity,
                     k_master)) {
+                time_pick_ += WallTimer::get_time_mark();
                 break;
             }
+            time_pick_ += WallTimer::get_time_mark();
 
 //            count_workers_done = 0;
             // Expand
@@ -1526,7 +1533,7 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
     } // Parallel Phase
 
 //    count_iterations_ += iter;
-
+    time_seq_ -= WallTimer::get_time_mark();
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i + master_queue_start].id_;
@@ -1550,6 +1557,7 @@ void Searching::para_search_PSS_v4_large_graph_profiling(
 //            exit(1);
 //        }
 //    }
+    time_seq_ += WallTimer::get_time_mark();
 }
 
 
