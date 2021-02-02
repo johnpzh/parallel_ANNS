@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 01/08/2020.
+// Created by Zhen Peng on 01/30/2020.
 //
 
 #include <iostream>
@@ -29,18 +29,18 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202101081549.PSS_v4.profiling.h"
+#include "../core/Searching.202101301609.PSS_v5.profiling.h"
 
 void usage(char *argv[])
 {
     fprintf(stderr,
-            "Usage: %s <data_file> <query_file> <nsg_path> <L_low> <K> <result_file> <true_NN_file> <num_threads> <L_up> <L_step> <X_low> <X_up> <X_step>\n",
+            "Usage: %s <data_file> <query_file> <nsg_path> <K> <result_file> <true_NN_file> <num_threads> <L_master> <L_local_low> <L_local_up> <L_local_step> <X_low> <X_up> <X_step>\n",
             argv[0]);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 14) {
+    if (argc != 15) {
         usage(argv);
         exit(EXIT_FAILURE);
     }
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 
 //    engine.build_opt_graph();
 
-    unsigned L_min = strtoull(argv[4], nullptr, 0);
-    unsigned K = strtoull(argv[5], nullptr, 0);
+//    unsigned L_min = strtoull(argv[4], nullptr, 0);
+    const unsigned K = strtoull(argv[4], nullptr, 0);
 //    unsigned M_max = strtoull(argv[7], nullptr, 0);
 //    if (L < K) {
 //        fprintf(stderr, "Error: search_L %u is smaller than search_K %u\n.", L, K);
@@ -66,59 +66,61 @@ int main(int argc, char **argv)
 ////        exit(EXIT_FAILURE);
 //        fprintf(stderr, "Warning: search_K %u is smaller than value_M %u.\n", K, M_max);
 //    }
-
+    const char *path_results = argv[5];
     std::vector< std::vector<PANNS::idi> > true_nn_list;
     engine.load_true_NN(
-            argv[7],
+            argv[6],
             true_nn_list);
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
 
-    int num_threads = strtoull(argv[8], nullptr, 0);
+    int num_threads = strtoull(argv[7], nullptr, 0);
     engine.num_threads_ = num_threads;
     omp_set_num_threads(num_threads);
 //    omp_set_nested(1);
 //    omp_set_max_active_levels(2);
+    const unsigned L_master = strtoull(argv[8], nullptr, 0);
+    const unsigned L_local_low = strtoull(argv[9], nullptr, 0);
+    const unsigned L_local_up = strtoull(argv[10], nullptr, 0);
+    const unsigned L_local_step = strtoull(argv[11], nullptr, 0);
+    const unsigned X_low = strtoull(argv[12], nullptr, 0);
+    const unsigned X_up = strtoull(argv[13], nullptr, 0);
+    const unsigned X_step = strtoull(argv[14], nullptr, 0);
 
-    unsigned L_max = strtoull(argv[9], nullptr, 0);
-    unsigned L_step = strtoull(argv[10], nullptr, 0);
-    unsigned X_low = strtoull(argv[11], nullptr, 0);
-    unsigned X_max = strtoull(argv[12], nullptr, 0);
-    unsigned X_step = strtoull(argv[13], nullptr, 0);
+    for (unsigned L_local = L_local_low; L_local <= L_local_up; L_local += L_local_step) {
+//        unsigned local_queue_capacity = L_local;
 
-    for (unsigned L = L_min; L <= L_max; L += L_step) {
-        unsigned local_queue_capacity = L;
-
-        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_max; subsearch_iterations += X_step) {
+        for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_up; subsearch_iterations += X_step) {
 
             unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
-                std::vector<PANNS::idi> init_ids(L);
+                std::vector<PANNS::idi> init_ids(L_master);
 //                std::vector<uint8_t> is_visited(points_num, 0);
                 boost::dynamic_bitset<> is_visited(points_num);
-                std::vector<PANNS::Candidate> set_L((num_threads - 1) * local_queue_capacity + L);
+                std::vector<PANNS::Candidate> set_L((num_threads - 1) * L_local + L_master);
                 std::vector<PANNS::idi> local_queues_sizes(num_threads, 0);
                 std::vector<PANNS::idi> local_queues_starts(num_threads);
                 for (int q_i = 0; q_i < num_threads; ++q_i) {
-                    local_queues_starts[q_i] = q_i * local_queue_capacity;
+                    local_queues_starts[q_i] = q_i * L_local;
                 }
 //                std::vector<PANNS::idi> top_m_candidates(num_threads);
                 auto s = std::chrono::high_resolution_clock::now();
-                engine.prepare_init_ids(init_ids, L);
+//                engine.prepare_init_ids(init_ids, L_local);
+                engine.prepare_init_ids(init_ids, L_master);
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.para_search_PSS_v4_profiling(
+                    engine.para_search_PSS_v5_profiling(
                             q_i,
                             K,
-                            L,
+                            L_master,
                             set_L,
                             init_ids,
                             set_K_list[q_i],
-                            local_queue_capacity,
+                            L_local,
                             local_queues_starts,
                             local_queues_sizes,
                             is_visited,
@@ -132,7 +134,7 @@ int main(int argc, char **argv)
                             true_nn_list,
                             set_K_list,
                             recalls,
-                            L);
+                            L_master);
                 }
                 {// Basic output
                     printf(
@@ -156,13 +158,13 @@ int main(int argc, char **argv)
                             "t_expand(s.): %f "
                             "t_merge(s.): %f "
                             "t_seq(s.): %f "
-                            "t_pick(s.): %f "
+//                            "t_pick(s.): %f "
                             "t_p_expand(%%): %f "
                             "t_p_merge(%%): %f "
-                            "t_p_seq(%%): %f "
-                            "t_p_pick(%%): %f",
+                            "t_p_seq(%%): %f ",
+//                            "t_p_pick(%%): %f",
                             num_threads,
-                            L,
+                            L_master,
                             diff.count(),
                             engine.count_distance_computation_,
                             K,
@@ -176,17 +178,17 @@ int main(int argc, char **argv)
                             data_dimension * 4.0 * engine.count_distance_computation_ / (1U << 30U) / diff.count(),
                             data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /
                             diff.count(),
-                            local_queue_capacity,
+                            L_local,
                             subsearch_iterations,
                             engine.count_merge_ * 1.0 / query_num,
                             engine.time_expand_,
                             engine.time_merge_,
                             engine.time_seq_,
-                            engine.time_pick_,
+//                            engine.time_pick_,
                             engine.time_expand_ / diff.count() * 100.0,
                             engine.time_merge_ / diff.count() * 100.0,
-                            engine.time_seq_ / diff.count() * 100.0,
-                            engine.time_pick_ / diff.count() * 100.0);
+                            engine.time_seq_ / diff.count() * 100.0);
+//                            engine.time_pick_ / diff.count() * 100.0);
                     printf("\n");
                 }
                 engine.count_distance_computation_ = 0;
@@ -196,8 +198,8 @@ int main(int argc, char **argv)
                 engine.time_expand_ = 0.0;
                 engine.time_merge_ = 0.0;
                 engine.time_seq_ = 0.0;
-                engine.time_pick_ = 0.0;
-                PANNS::DiskIO::save_result(argv[6], set_K_list);
+//                engine.time_pick_ = 0.0;
+                PANNS::DiskIO::save_result(path_results, set_K_list);
             }
         } // X Ranged
     } // L ranged
