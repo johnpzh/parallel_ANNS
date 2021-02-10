@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 01/31/2021.
+// Created by Zhen Peng on 02/03/2020.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -53,7 +53,10 @@ public:
 
 //    std::vector< std::vector<idi> > edge_list_;
 
-    char *opt_nsg_graph_ = nullptr;
+//    char *opt_nsg_graph_ = nullptr;
+    idi *common_nsg_deg_ngbrs_ = nullptr;
+    edgei *common_nsg_vertex_base_ = nullptr;
+
     uint64_t data_bytes_;
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
@@ -65,6 +68,7 @@ public:
 //    int num_threads_inter_query_ = 1;
 //    uint64_t thread_compuation_quota_ = 0;
 //    std::vector<uint64_t> threads_computations_;
+    idi index_thresh_ = 99;
 
     dataf compute_norm(
             const dataf *data) const;
@@ -75,13 +79,10 @@ public:
     dataf compute_distance_with_norm(
             const dataf *v_data,
             const dataf *q_data,
-//            idi vertex_id,
-//            idi query_id,
-//            const std::vector<dataf> &d_data,
-//            const std::vector<dataf> &q_data,
-//        PANNS::idi d_start,
-//        PANNS::idi q_start,
             const dataf vertex_norm) const;
+    dataf compute_distance(
+            const dataf *v_data,
+            const dataf *q_data) const;
     static idi add_into_queue(
             std::vector<PANNS::Candidate> &queue,
             const idi queue_start,
@@ -122,13 +123,14 @@ public:
             std::vector<Candidate> &set_L,
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes,
-//            const idi local_queue_capacity,
-            const idi L_master) const;
+            const idi local_queue_capacity,
+            const idi L) const;
     idi expand_one_candidate(
-            const idi q_i,
+            const int worker_id,
             const idi cand_id,
             const dataf *query_data,
             const distf &dist_bound,
+            distf &dist_thresh,
             std::vector<Candidate> &set_L,
             const idi local_queue_start,
             idi &local_queue_size,
@@ -167,9 +169,8 @@ public:
 //    L3CacheMissRate cache_miss_kernel;
     uint64_t count_distance_computation_ = 0;
 //    uint64_t count_iterations_ = 0;
-//    uint64_t count_hops_ = 0;
-    uint64_t count_checked_ = 0;
     uint64_t count_merge_ = 0;
+//    uint64_t count_hops_ = 0;
     double time_expand_ = 0.0;
     double time_merge_ = 0.0;
     double time_seq_ = 0.0;
@@ -211,20 +212,15 @@ public:
     ~Searching()
     {
         free(data_load_);
-        data_load_ = nullptr;
-//        free(queries_load_);
-//        _mm_free(data_load_);
         free(queries_load_);
-        queries_load_ = nullptr;
-//        free(norms_);
-//        free(nsg_graph_indices_);
-//        free(nsg_graph_out_edges_);
-        free(opt_nsg_graph_);
-        opt_nsg_graph_ = nullptr;
+//        free(opt_nsg_graph_);
+        free(common_nsg_vertex_base_);
+        free(common_nsg_deg_ngbrs_);
     }
     void load_data_load(char *filename);
     void load_queries_load(char *filename);
-    void load_nsg_graph(char *filename);
+//    void load_nsg_graph(char *filename);
+    void load_common_nsg_graph(char *filename);
 //    void build_opt_graph();
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
@@ -238,7 +234,7 @@ public:
             std::unordered_map<unsigned, double> &recalls,
             const idi L) const;
 
-//    void para_search_with_simple_v3_with_scale_M(
+//    void para_search_with_simple_v3_large_graph_scale_M(
 ////        const idi M,
 ////        const idi worker_M,
 //            const idi query_id,
@@ -253,7 +249,7 @@ public:
 //            boost::dynamic_bitset<> &is_visited,
 //            const idi subsearch_iterations,
 //            std::vector<idi> &top_m_candidates);
-    void para_search_PSS_v6_profiling(
+    void para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,

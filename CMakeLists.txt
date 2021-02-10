@@ -471,12 +471,34 @@ target_link_libraries(
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(
-        profile_find_L_para_single_query_search_PSS_v5_global_queue_profile
-        app/profile_find_L_para_single_query_search_PSS_v5_global_queue_profile.cpp
+        profile_para_single_query_search_PSS_v6_ranged_profiling
+        app/profile_para_single_query_search_PSS_v6_ranged_profiling.cpp
         core/Searching.202101311717.PSS_v5.global_queue.profiling.cpp)
 target_compile_options(
-        profile_find_L_para_single_query_search_PSS_v5_global_queue_profile
+        profile_para_single_query_search_PSS_v6_ranged_profiling
         PRIVATE ${CXX_OPTION})
 target_link_libraries(
-        profile_find_L_para_single_query_search_PSS_v5_global_queue_profile
+        profile_para_single_query_search_PSS_v6_ranged_profiling
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling
+        app/profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling.cpp
+        core/Searching.202102022027.PSS_v5.dist_thresh.profiling.cpp)
+target_compile_options(
+        profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        profile_para_single_query_search_PSS_v5_large_graph_dist_thresh_ranged_profiling
+        app/profile_para_single_query_search_PSS_v5_large_graph_dist_thresh_ranged_profiling.cpp
+        core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.cpp)
+target_compile_options(
+        profile_para_single_query_search_PSS_v5_large_graph_dist_thresh_ranged_profiling
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        profile_para_single_query_search_PSS_v5_large_graph_dist_thresh_ranged_profiling
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

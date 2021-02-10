@@ -1,8 +1,8 @@
 //
-// Created by Zhen Peng on 01/31/2021.
+// Created by Zhen Peng on 02/03/2020.
 //
 
-#include "Searching.202101311717.PSS_v5.global_queue.profiling.h"
+#include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
 
 namespace PANNS {
 
@@ -48,12 +48,93 @@ void Searching::load_queries_load(char *filename)
     }
 }
 
-/**
- * Input the NSG graph from the file.
- * Reference: https://github.com/ZJULearning/nsg/blob/master/src/index_nsg.cpp
- * @param filename
+///**
+// * Input the NSG graph from the file, save as opt_graph_
+// * Reference: https://github.com/ZJULearning/nsg/blob/master/src/index_nsg.cpp
+// * @param filename
+// */
+//void Searching::load_nsg_graph(char *filename)
+//{
+//    std::ifstream fin(filename);
+//    if (!fin.is_open()) {
+//        std::cerr << "Error: cannot read file " << filename << " ." << std::endl;
+//        exit(EXIT_FAILURE);
+//    }
+//    fin.read(reinterpret_cast<char *>(&width_), sizeof(unsigned));
+//    fin.read(reinterpret_cast<char *>(&ep_), sizeof(unsigned));
+//
+//    data_bytes_ = (1 + dimension_) * sizeof(dataf);
+//    neighbor_bytes_ = (1 + width_) * sizeof(idi);
+//    vertex_bytes_ = data_bytes_ + neighbor_bytes_;
+//    opt_nsg_graph_ = (char *) malloc(num_v_ * vertex_bytes_);
+//    if (!opt_nsg_graph_) {
+//        std::cerr << "Error: no enough memory for opt_nsg_graph_." << std::endl;
+//        exit(EXIT_FAILURE);
+//    }
+//
+//    idi v_id = 0;
+//    num_e_ = 0;
+//    char *base_location = opt_nsg_graph_;
+//    while (true) {
+//        idi degree;
+//        fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
+//        if (fin.eof()) {
+//            break;
+//        }
+//        num_e_ += degree;
+////        std::vector<idi> tmp_ngbrs(degree);
+////        fin.read(reinterpret_cast<char *>(tmp_ngbrs.data()), degree * sizeof(unsigned));
+//
+//        // Norm and data
+//        distf norm = compute_norm(data_load_ + v_id * dimension_);
+////        distf norm = compute_norm(v_id);
+//        std::memcpy(base_location, &norm, sizeof(distf)); // Norm
+//        memcpy(base_location + sizeof(distf), data_load_ + v_id * dimension_, dimension_ * sizeof(dataf)); // Data
+//        base_location += data_bytes_;
+//
+//        // Neighbors
+//        memcpy(base_location, &degree, sizeof(idi)); // Number of neighbors
+//        fin.read(base_location + sizeof(idi), degree * sizeof(unsigned)); // Neighbors
+////        memcpy(location + sizeof(idi), tmp_ngbrs.data(), degree * sizeof(unsigned));
+//        base_location += neighbor_bytes_;
+//        ++v_id;
+//    }
+//    if (v_id != num_v_) {
+//        std::cerr << "Error: NSG data has " << v_id
+//                  << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
+//        exit(EXIT_FAILURE);
+//    }
+//    free(data_load_);
+//    data_load_ = nullptr;
+////    ////////////////////////
+////    idi v_id = 0;
+////    num_e_ = 0;
+////    while (true) {
+////        idi degree;
+////        fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
+////        if (fin.eof()) {
+////            break;
+////        }
+////        num_e_ += degree;
+////
+////        std::vector<idi> ngbrs(degree);
+////        fin.read(reinterpret_cast<char *>(ngbrs.data()), degree * sizeof(unsigned));
+//////        nsg_graph_.push_back(ngbrs);
+//////        tmp_edge_list.push_back(ngbrs);
+////        edge_list_.push_back(ngbrs);
+////        ++v_id;
+////    }
+////    if (v_id != num_v_) {
+////        std::cerr << "Error: NSG data has " << v_id
+////                  << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
+////        exit(EXIT_FAILURE);
+////    }
+//}
+
+/*
+ * Read NSG graph, save as index and neighbors.
  */
-void Searching::load_nsg_graph(char *filename)
+void Searching::load_common_nsg_graph(char *filename)
 {
     std::ifstream fin(filename);
     if (!fin.is_open()) {
@@ -63,72 +144,83 @@ void Searching::load_nsg_graph(char *filename)
     fin.read(reinterpret_cast<char *>(&width_), sizeof(unsigned));
     fin.read(reinterpret_cast<char *>(&ep_), sizeof(unsigned));
 
-    data_bytes_ = (1 + dimension_) * sizeof(dataf);
-    neighbor_bytes_ = (1 + width_) * sizeof(idi);
-    vertex_bytes_ = data_bytes_ + neighbor_bytes_;
-    opt_nsg_graph_ = (char *) malloc(num_v_ * vertex_bytes_);
-    if (!opt_nsg_graph_) {
-        std::cerr << "Error: no enough memory for opt_nsg_graph_." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    idi v_id = 0;
-    num_e_ = 0;
-    char *base_location = opt_nsg_graph_;
-    while (true) {
-        idi degree;
-        fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
-        if (fin.eof()) {
-            break;
+    std::vector< std::vector<idi> > edge_list(num_v_);
+    // Read edge_list
+    {
+        common_nsg_vertex_base_ = (edgei *) malloc(num_v_ * sizeof(edgei));
+        if (!common_nsg_vertex_base_) {
+            fprintf(stderr, "Error: load_common_nsg_graph(): common_nsg_vertex_base_ malloc failed.\n");
+            exit(EXIT_FAILURE);
         }
-        num_e_ += degree;
-//        std::vector<idi> tmp_ngbrs(degree);
-//        fin.read(reinterpret_cast<char *>(tmp_ngbrs.data()), degree * sizeof(unsigned));
+        edgei base_offset = 0;
+        idi v_id = 0;
+        num_e_ = 0;
+        while (true) {
+            idi degree;
+            fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
+            if (fin.eof()) {
+                break;
+            }
+            common_nsg_vertex_base_[v_id] = base_offset;
 
-        // Norm and data
-        distf norm = compute_norm(data_load_ + v_id * dimension_);
-//        distf norm = compute_norm(v_id);
-        std::memcpy(base_location, &norm, sizeof(distf)); // Norm
-        memcpy(base_location + sizeof(distf), data_load_ + v_id * dimension_, dimension_ * sizeof(dataf)); // Data
-        base_location += data_bytes_;
+            num_e_ += degree;
+            base_offset += 1 + degree;
 
-        // Neighbors
-        memcpy(base_location, &degree, sizeof(idi)); // Number of neighbors
-        fin.read(base_location + sizeof(idi), degree * sizeof(unsigned)); // Neighbors
-//        memcpy(location + sizeof(idi), tmp_ngbrs.data(), degree * sizeof(unsigned));
-        base_location += neighbor_bytes_;
-        ++v_id;
+            edge_list[v_id].resize(degree);
+            fin.read(reinterpret_cast<char *>(edge_list[v_id].data()), sizeof(unsigned) * degree);
+            ++v_id;
+        }
+        if (v_id != num_v_) {
+            std::cerr << "Error: for out degrees, NSG data has " << v_id
+                      << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
-    if (v_id != num_v_) {
-        std::cerr << "Error: NSG data has " << v_id
-                  << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    free(data_load_);
-    data_load_ = nullptr;
-//    ////////////////////////
-//    idi v_id = 0;
-//    num_e_ = 0;
-//    while (true) {
-//        idi degree;
-//        fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
-//        if (fin.eof()) {
-//            break;
+
+    // Copy neighbors
+    {
+        common_nsg_deg_ngbrs_ = (idi *) malloc((num_v_ + num_e_) * sizeof(idi));
+        if (!common_nsg_deg_ngbrs_) {
+            fprintf(stderr, "Error: load_common_nsg_graph(): common_nsg_deg_ngbrs_ malloc failed.\n");
+            exit(EXIT_FAILURE);
+        }
+        idi *nsg_base = common_nsg_deg_ngbrs_;
+        for (idi v_id = 0; v_id < num_v_; ++v_id) {
+            idi degree = edge_list[v_id].size();
+            *nsg_base++ = degree;
+            memcpy(nsg_base, edge_list[v_id].data(), sizeof(unsigned) * degree);
+            nsg_base += degree;
+        }
+//        fin.clear(std::ios_base::goodbit);
+//        fin.seekg(2 * sizeof(unsigned), std::ios_base::beg);
+//        idi v_id = 0;
+//        while (fin.good()) {
+//            idi degree;
+//            fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
+////            idi tmp_degree;
+////            fin.read(reinterpret_cast<char *>(&tmp_degree), sizeof(unsigned));
+////            fin.seekg(sizeof(unsigned), std::ios_base::cur); // skip the degree
+//            if (!fin.good()) {
+//                break;
+//            }
+////            idi degree = out_degrees[v_id++];
+////            if (tmp_degree != degree) {
+////                printf("tmp_degree: %u "
+////                       "degree: %u\n",
+////                       tmp_degree,
+////                       degree);
+////            }
+//            ++v_id;
+//            *nsg_base++ = degree;
+//            fin.read(reinterpret_cast<char *>(nsg_base), degree * sizeof(unsigned));
+//            nsg_base += degree;
 //        }
-//        num_e_ += degree;
-//
-//        std::vector<idi> ngbrs(degree);
-//        fin.read(reinterpret_cast<char *>(ngbrs.data()), degree * sizeof(unsigned));
-////        nsg_graph_.push_back(ngbrs);
-////        tmp_edge_list.push_back(ngbrs);
-//        edge_list_.push_back(ngbrs);
-//        ++v_id;
-//    }
-//    if (v_id != num_v_) {
-//        std::cerr << "Error: NSG data has " << v_id
-//                  << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
-//        exit(EXIT_FAILURE);
-//    }
+//        if (v_id != num_v_) {
+//            std::cerr << "Error: for neighbors, NSG data has " << v_id
+//                      << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
+//            exit(EXIT_FAILURE);
+//        }
+    }
 }
 
 
@@ -247,7 +339,8 @@ void Searching::prepare_init_ids(
 //    }
 //    std::unordered_set<idi> visited_ids;
     boost::dynamic_bitset<> is_selected(num_v_);
-    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[ep_];
+//    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
     idi out_degree = *out_edges++;
     idi init_ids_end = 0;
 //    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
@@ -290,6 +383,10 @@ void Searching::prepare_init_ids(
 }
 
 // TODO: re-code in AVX-512
+/*
+ * Norm = a^2;
+ * Ref: https://github.com/ZJULearning/nsg/blob/master/include/efanna2e/distance.h
+ */
 dataf Searching::compute_norm(
         const dataf *data) const
 //        idi vertex_id)
@@ -333,6 +430,11 @@ dataf Searching::compute_norm(
     return result;
 }
 
+/*
+ * Return = v_norm - 2*v*q
+ * q^2 is omitted. v_norm has been computed by compute_norm().
+ * Ref: https://github.com/ZJULearning/nsg/blob/master/include/efanna2e/distance.h
+ */
 dataf Searching::compute_distance_with_norm(
         const dataf *v_data,
         const dataf *q_data,
@@ -385,6 +487,47 @@ dataf Searching::compute_distance_with_norm(
     result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
 
     result = -2 * result + vertex_norm;
+
+    return result;
+}
+
+/*
+ * Return = (v - q)^2
+ * Ref: https://github.com/ZJULearning/nsg/blob/master/include/efanna2e/distance.h
+ */
+dataf Searching::compute_distance(
+        const dataf *v_data,
+        const dataf *q_data) const
+{
+    float result = 0;
+#define AVX_L2SQR(addr1, addr2, dest, tmp1, tmp2) \
+      tmp1 = _mm256_loadu_ps(addr1);\
+      tmp2 = _mm256_loadu_ps(addr2);\
+      tmp1 = _mm256_sub_ps(tmp1, tmp2); \
+      tmp1 = _mm256_mul_ps(tmp1, tmp1); \
+      dest = _mm256_add_ps(dest, tmp1);
+
+    __m256 sum;
+    __m256 l0, l1;
+    __m256 r0, r1;
+    unsigned D = (dimension_ + 7) & ~7U;
+    unsigned DR = D % 16;
+    unsigned DD = D - DR;
+    const float *l = v_data;
+    const float *r = q_data;
+    const float *e_l = l + DD;
+    const float *e_r = r + DD;
+    float unpack[8] __attribute__ ((aligned (32))) = {0, 0, 0, 0, 0, 0, 0, 0};
+
+    sum = _mm256_load_ps(unpack);
+    if(DR) { AVX_L2SQR(e_l, e_r, sum, l0, r0); }
+
+    for (unsigned i = 0; i < DD; i += 16, l += 16, r += 16) {
+        AVX_L2SQR(l, r, sum, l0, r0);
+        AVX_L2SQR(l + 8, r + 8, sum, l1, r1);
+    }
+    _mm256_store_ps(unpack, sum);
+    result = unpack[0] + unpack[1] + unpack[2] + unpack[3] + unpack[4] + unpack[5] + unpack[6] + unpack[7];
 
     return result;
 }
@@ -642,13 +785,13 @@ idi Searching::merge_all_queues_to_master(
         std::vector<Candidate> &set_L,
         const std::vector<idi> &local_queues_starts,
         std::vector<idi> &local_queues_sizes,
-//        const idi local_queue_capacity,
-        const idi L_master) const
+        const idi local_queue_capacity,
+        const idi L) const
 {
-    idi nk = L_master;
-    const idi master_start = local_queues_starts[num_threads_];
-//    idi &master_size = local_queues_sizes[num_threads_];
-    const idi w_i_bound = num_threads_;
+    idi nk = L;
+    const idi master_start = local_queues_starts[num_threads_ - 1];
+    idi &master_size = local_queues_sizes[num_threads_ - 1];
+    const idi w_i_bound = num_threads_ - 1;
     for (idi w_i = 0; w_i < w_i_bound; ++w_i) {
         const idi w_start = local_queues_starts[w_i];
         idi &w_size = local_queues_sizes[w_i];
@@ -658,7 +801,7 @@ idi Searching::merge_all_queues_to_master(
         idi r = merge_two_queues_into_1st_queue_seq_fixed(
                 set_L,
                 master_start,
-                L_master,
+                L,
                 set_L,
                 w_start,
                 w_size);
@@ -670,7 +813,7 @@ idi Searching::merge_all_queues_to_master(
 
     return nk;
 }
-//// Bakeup
+//// Backup
 //idi Searching::merge_all_queues_to_master(
 //        std::vector<Candidate> &set_L,
 //        const std::vector<idi> &local_queues_starts,
@@ -752,9 +895,9 @@ idi Searching::pick_top_m_to_workers(
         const idi local_queue_capacity,
         const idi k_uc) const
 {
-    const idi global_queue_start = local_queues_starts[num_threads_];
-    idi c_i_start = k_uc + global_queue_start;
-    idi c_i_bound = global_queue_start + local_queues_sizes[num_threads_];
+    const idi last_queue_start = local_queues_starts[num_threads_ - 1];
+    idi c_i_start = k_uc + last_queue_start;
+    idi c_i_bound = last_queue_start + local_queues_sizes[num_threads_ - 1];
     idi top_m_count = 0;
     int dest_queue = 0;
     for (idi c_i = c_i_start; c_i < c_i_bound; ++c_i) {
@@ -762,7 +905,7 @@ idi Searching::pick_top_m_to_workers(
             continue;
         }
         ++top_m_count;
-        if (num_threads_ != dest_queue) {
+        if (num_threads_ - 1 != dest_queue) {
             set_L[local_queues_starts[dest_queue] + local_queues_sizes[dest_queue]++] = set_L[c_i];
             set_L[c_i].is_checked_ = true;
             if (local_queues_sizes[dest_queue] == local_queue_capacity) {
@@ -807,16 +950,16 @@ void Searching::pick_top_m_unchecked(
     top_m_candidates_size = tmc_size;
 }
 
-
 /*
  * Function: expand a candidate, visiting its neighbors.
  * Return the lowest adding location.
  */
 idi Searching::expand_one_candidate(
-        const idi q_i,
+        const int worker_id,
         const idi cand_id,
         const dataf *query_data,
         const distf &dist_bound,
+        distf &dist_thresh,
         std::vector<Candidate> &set_L,
         const idi local_queue_start,
         idi &local_queue_size,
@@ -827,7 +970,8 @@ idi Searching::expand_one_candidate(
 {
     uint64_t tmp_count_computation = 0;
 //    _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
-    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
+    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[cand_id];
+//    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
     idi out_degree = *out_edges++;
 //    if (threads_computations_[q_i] + out_degree >= thread_compuation_quota_) {
 //        is_quota_done = true;
@@ -849,13 +993,16 @@ idi Searching::expand_one_candidate(
             is_visited[nb_id] = true;
         }
 
-        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-        dataf norm = *nb_data++;
+//        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+//        dataf norm = *nb_data++;
+//        ++tmp_count_computation;
+//        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+        dataf *nb_data = data_load_ + nb_id * dimension_;
         ++tmp_count_computation;
-        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+        distf dist = compute_distance(nb_data, query_data);
 
-        if (dist > dist_bound) {
-//        if (dist > set_L[L - 1 + master_queue_start].distance_) {
+//        if (dist > dist_bound) {
+        if (dist > dist_bound || dist > dist_thresh) {
             continue;
         }
         Candidate cand(nb_id, dist, false);
@@ -904,10 +1051,13 @@ void Searching::initialize_set_L_para(
 #pragma omp parallel for reduction(+ : tmp_count_computation)
     for (unsigned i = 0; i < L; i++) {
         unsigned v_id = init_ids[i];
-        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
-        dataf norm = *v_data++;
+//        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
+//        dataf norm = *v_data++;
+//        ++tmp_count_computation;
+//        distf dist = compute_distance_with_norm(v_data, query_data, norm);
+        auto *v_data = data_load_ + v_id * dimension_;
         ++tmp_count_computation;
-        distf dist = compute_distance_with_norm(v_data, query_data, norm);
+        distf dist = compute_distance(v_data, query_data);
         set_L[set_L_start + i] = Candidate(v_id, dist, false); // False means not checked.
     }
     count_distance_computation_ += tmp_count_computation;
@@ -919,10 +1069,13 @@ void Searching::initialize_set_L_para(
     set_L_size = L;
 }
 
+
 ///*
-// * 10/29/2020-15:33
+// * 8/31/2020-06:45
+// * Simple Search by workders.
+// * No thread limits, no M, M is just L.
 // */
-//void Searching::para_search_with_simple_v3_with_scale_M(
+//void Searching::para_search_with_simple_v3_large_graph_scale_M(
 ////        const idi M,
 ////        const idi worker_M,
 //        const idi query_id,
@@ -944,6 +1097,7 @@ void Searching::initialize_set_L_para(
 //    const dataf *query_data = queries_load_ + query_id * dimension_;
 //
 //    // Initialization Phase
+////    printf("Initializing...\n");
 //    initialize_set_L_para(
 //            query_data,
 //            L,
@@ -958,6 +1112,7 @@ void Searching::initialize_set_L_para(
 //    const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
 //    idi iter = 0; // for debug
 //
+////    printf("Searching...\n");
 //    // Sequential Version
 //    if (num_threads_ == 1) {
 //        idi k = 0; // Index of first unchecked candidate.
@@ -997,6 +1152,11 @@ void Searching::initialize_set_L_para(
 //        }
 //    } else { // Parallel Version
 ////        // Divide computation cost from thread 0 to others
+////        std::fill(
+////                threads_computations_.begin(),
+////                threads_computations_.end(),
+////                threads_computations_[0] / num_threads_);
+//
 //        idi k_master = 0; // Index of first unchecked candidate.
 //        idi para_iter = 0;
 //        uint64_t tmp_count_computation = 0;
@@ -1143,23 +1303,9 @@ void Searching::initialize_set_L_para(
 //            } // Workers
 //            count_distance_computation_ += tmp_count_computation;
 //            tmp_count_computation = 0;
-//            {// number of checked
-////                for (int w_i = 0; w_i < num_threads_; ++w_i) {
-//////                    uint64_t num_checked_w = 0;
-////                    const idi local_queue_start = local_queues_starts[w_i];
-////                    const idi local_queue_size = local_queues_sizes[w_i];
-////                    idi e_i_start = local_queue_start;
-////                    idi e_i_bound = e_i_start + local_queue_size;
-////                    for (idi e_i = e_i_start; e_i < e_i_bound; ++e_i) {
-////                        if (set_L[e_i].is_checked_) {
-////                            ++count_checked_;
-////                        }
-////                    }
-////                }
-//                ++count_merge_;
-//            }
 //            // Merge
 //            {
+//                ++count_merge_;
 //                idi r = merge_all_queues_to_master(
 //                        set_L,
 //                        local_queues_starts,
@@ -1200,10 +1346,13 @@ void Searching::initialize_set_L_para(
 ////    }
 //}
 
-void Searching::para_search_PSS_v6_profiling(
+
+void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
+//        const idi M,
+//        const idi worker_M,
         const idi query_id,
         const idi K,
-        const idi L_master,
+        const idi L,
         std::vector<Candidate> &set_L,
         const std::vector<idi> &init_ids,
         std::vector<idi> &set_K,
@@ -1212,26 +1361,28 @@ void Searching::para_search_PSS_v6_profiling(
         std::vector<idi> &local_queues_sizes, // Sizes of local queue
         boost::dynamic_bitset<> &is_visited,
         const idi subsearch_iterations)
+//        std::vector<idi> &top_m_candidates)
 {
 //    time_initialization_ -= WallTimer::get_time_mark();
     time_seq_ -= WallTimer::get_time_mark();
-    const idi global_queue_start = local_queues_starts[num_threads_];
-    idi &global_queue_size = local_queues_sizes[num_threads_];
+    const idi master_queue_start = local_queues_starts[num_threads_ - 1];
+    idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
 
     // Initialization Phase
     initialize_set_L_para(
             query_data,
-            L_master,
+            L,
+//            local_queue_capacity,
             set_L,
-            global_queue_start,
-            global_queue_size,
+            master_queue_start,
+            master_queue_size,
             init_ids,
             is_visited);
 //    time_initialization_ += WallTimer::get_time_mark();
 
 //    idi top_m_candidates_end = 0;
-//    const distf &last_dist = set_L[global_queue_start + global_queue_size - 1].distance_;
+    const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
     idi iter = 0; // for debug
 
     time_seq_ += WallTimer::get_time_mark();
@@ -1285,33 +1436,35 @@ void Searching::para_search_PSS_v6_profiling(
         uint64_t tmp_count_computation = 0;
 //        uint8_t count_workers_done = 0;
 
-
         // Sequential Start
         bool no_need_to_continue = false;
         {
-            distf &last_dist = set_L[global_queue_start + global_queue_size - 1].distance_;
+//            distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
             idi r;
 //            idi seq_iter_bound = num_threads_;
             const idi seq_iter_bound = 1;
             while (iter < seq_iter_bound) {
                 ++iter;
-                if (k_master == L_master) {
+                if (k_master == L) {
                     no_need_to_continue = true;
                     break;
                 }
-                auto &cand = set_L[global_queue_start + k_master];
+                distf dist_thresh = last_dist;
+                auto &cand = set_L[master_queue_start + k_master];
                 if (!cand.is_checked_) {
                     cand.is_checked_ = true;
                     idi cand_id = cand.id_;
                     r = expand_one_candidate(
-                            0,
+//                            0,
+                            num_threads_ - 1,
                             cand_id,
                             query_data,
                             last_dist,
+                            dist_thresh,
                             set_L,
-                            global_queue_start,
-                            global_queue_size,
-                            L_master,
+                            master_queue_start,
+                            master_queue_size,
+                            L,
                             is_visited,
                             tmp_count_computation);
 //                        is_quota_done);
@@ -1319,7 +1472,7 @@ void Searching::para_search_PSS_v6_profiling(
                     tmp_count_computation = 0;
 //                    ++count_hops_;
                 } else {
-                    r = L_master;
+                    r = L;
                 }
                 if (r <= k_master) {
                     k_master = r;
@@ -1328,12 +1481,17 @@ void Searching::para_search_PSS_v6_profiling(
                 }
             }
         }
-        idi index_th = K * 2 / 3;
-//        idi index_th = K;
-//        idi index_th = K * 5 / 3 / num_threads_;
-        if (index_th >= local_queue_capacity) {
-            index_th = local_queue_capacity - 1;
-        }
+//        idi index_th = L - 1;
+//        idi index_th = K / 3;
+//        idi index_th = K * 2 / 3;
+//        idi index_th= K;
+//        idi index_th= K * 5 / 3 / num_threads_;
+//        if (index_th >= local_queue_capacity) {
+//            index_th = local_queue_capacity - 1;
+//        }
+//        if (index_th >= L) {
+//            index_th = L - 1;
+//        }
         time_seq_ += WallTimer::get_time_mark();
 
         // Parallel Phase
@@ -1355,7 +1513,8 @@ void Searching::para_search_PSS_v6_profiling(
                 time_seq_ += WallTimer::get_time_mark();
                 break;
             }
-            distf last_dist = set_L[global_queue_start + global_queue_size - 1].distance_;
+            distf dist_thresh = last_dist;
+//            distf dist_thresh = set_L[master_queue_start + master_queue_size - 1].distance_;
             time_seq_ += WallTimer::get_time_mark();
 
 //            count_workers_done = 0;
@@ -1367,45 +1526,52 @@ void Searching::para_search_PSS_v6_profiling(
                 int w_i = omp_get_thread_num();
                 const idi local_queue_start = local_queues_starts[w_i];
                 idi &local_queue_size = local_queues_sizes[w_i];
-                const idi queue_capacity = local_queue_capacity;
-                idi k_uc = 0;
-//                const idi queue_capacity = num_threads_ - 1 != w_i ? local_queue_capacity : L;
-//                idi k_uc = num_threads_ - 1 != w_i ? 0 : k_master;
-//                idi cand_id;
-//                idi r;
+                const idi queue_capacity = num_threads_ - 1 != w_i ? local_queue_capacity : L;
+                idi k_uc = num_threads_ - 1 != w_i ? 0 : k_master;
+                idi cand_id;
+                idi r;
                 idi worker_iter = 0;
                 while (worker_iter < subsearch_iterations && k_uc < local_queue_size) {
                     auto &cand = set_L[local_queue_start + k_uc];
                     if (!cand.is_checked_) {
                         cand.is_checked_ = true;
                         ++worker_iter;
-                        idi cand_id = cand.id_;
-                        idi r = expand_one_candidate(
+                        cand_id = cand.id_;
+                        r = expand_one_candidate(
                                 w_i,
                                 cand_id,
                                 query_data,
                                 last_dist,
+                                dist_thresh,
                                 set_L,
                                 local_queue_start,
                                 local_queue_size,
                                 queue_capacity,
                                 is_visited,
                                 tmp_count_computation);
-//                                is_quota_done);
                         if (r <= k_uc) {
                             k_uc = r;
                         } else {
                             ++k_uc;
                         }
-                        if (local_queue_size > index_th && set_L[local_queue_start + index_th].distance_ < last_dist) {
-                            last_dist = set_L[local_queue_start + index_th].distance_;
+                        if (
+//                        if (w_i != num_threads_ - 1 &&
+                                local_queue_size > index_thresh_
+                                && set_L[local_queue_start + index_thresh_].distance_ < dist_thresh) {
+                            dist_thresh = set_L[local_queue_start + index_thresh_].distance_;
                         }
+//                        if (r >= index_thresh_) {
+//                            break;
+//                        }
                     } else {
                         ++k_uc;
                     }
                 } // Expand Top-1
-//                if (num_threads_ - 1 == w_i) {
-//                    k_master = k_uc;
+                if (num_threads_ - 1 == w_i) {
+                    k_master = k_uc;
+                }
+//                if (k_uc == local_queue_size || is_quota_done) {
+//                    ++count_workers_done;
 //                }
             } // Workers
             count_distance_computation_ += tmp_count_computation;
@@ -1419,8 +1585,8 @@ void Searching::para_search_PSS_v6_profiling(
                         set_L,
                         local_queues_starts,
                         local_queues_sizes,
-//                        local_queue_capacity,
-                        L_master);
+                        local_queue_capacity,
+                        L);
                 if (r <= k_master) {
                     k_master = r;
                 }
@@ -1433,7 +1599,7 @@ void Searching::para_search_PSS_v6_profiling(
     time_seq_ -= WallTimer::get_time_mark();
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
-        set_K[k_i] = set_L[k_i + global_queue_start].id_;
+        set_K[k_i] = set_L[k_i + master_queue_start].id_;
     }
 
     {// Reset
@@ -1459,5 +1625,6 @@ void Searching::para_search_PSS_v6_profiling(
 //    }
     time_seq_ += WallTimer::get_time_mark();
 }
+
 
 }// namespace PANNS

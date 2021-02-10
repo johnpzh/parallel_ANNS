@@ -29,7 +29,7 @@
 //#include "../core/Searching.202008141252.interval_merge_v4.h"
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
-#include "../core/Searching.202101301609.PSS_v5.profiling.h"
+#include "../core/Searching.202101311717.PSS_v5.global_queue.profiling.h"
 
 void usage(int argc, char *argv[])
 {
@@ -97,8 +97,6 @@ int main(int argc, char **argv)
 
     for (unsigned L_master = L_master_low; L_master <= L_master_up; L_master += L_master_step) {
         for (unsigned L_local = L_local_low; L_local <= L_local_up; L_local += L_local_step) {
-//        unsigned local_queue_capacity = L_local;
-
             for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_up; subsearch_iterations += X_step) {
 
                 unsigned warmup_max = 1;
@@ -109,10 +107,10 @@ int main(int argc, char **argv)
                     std::vector<PANNS::idi> init_ids(L_master);
 //                std::vector<uint8_t> is_visited(points_num, 0);
                     boost::dynamic_bitset<> is_visited(points_num);
-                    std::vector<PANNS::Candidate> set_L((num_threads - 1) * L_local + L_master);
-                    std::vector<PANNS::idi> local_queues_sizes(num_threads, 0);
-                    std::vector<PANNS::idi> local_queues_starts(num_threads);
-                    for (int q_i = 0; q_i < num_threads; ++q_i) {
+                    std::vector<PANNS::Candidate> set_L(num_threads * L_local + L_master);
+                    std::vector<PANNS::idi> local_queues_sizes(num_threads + 1, 0);
+                    std::vector<PANNS::idi> local_queues_starts(num_threads + 1);
+                    for (int q_i = 0; q_i < num_threads + 1; ++q_i) {
                         local_queues_starts[q_i] = q_i * L_local;
                     }
 //                std::vector<PANNS::idi> top_m_candidates(num_threads);
@@ -120,7 +118,7 @@ int main(int argc, char **argv)
 //                engine.prepare_init_ids(init_ids, L_local);
                     engine.prepare_init_ids(init_ids, L_master);
                     for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                        engine.para_search_PSS_v5_profiling(
+                        engine.para_search_PSS_v6_profiling(
                                 q_i,
                                 K,
                                 L_master,

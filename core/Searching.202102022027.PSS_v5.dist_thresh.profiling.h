@@ -1,5 +1,5 @@
 //
-// Created by Zhen Peng on 01/31/2021.
+// Created by Zhen Peng on 02/02/2021.
 //
 
 #ifndef BATCH_SEARCHING_SEARCHING_H
@@ -65,6 +65,7 @@ public:
 //    int num_threads_inter_query_ = 1;
 //    uint64_t thread_compuation_quota_ = 0;
 //    std::vector<uint64_t> threads_computations_;
+    idi index_thresh_ = 99;
 
     dataf compute_norm(
             const dataf *data) const;
@@ -122,13 +123,14 @@ public:
             std::vector<Candidate> &set_L,
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes,
-//            const idi local_queue_capacity,
-            const idi L_master) const;
+            const idi local_queue_capacity,
+            const idi L) const;
     idi expand_one_candidate(
-            const idi q_i,
+            const int worker_id,
             const idi cand_id,
             const dataf *query_data,
             const distf &dist_bound,
+            distf &dist_thresh,
             std::vector<Candidate> &set_L,
             const idi local_queue_start,
             idi &local_queue_size,
@@ -168,7 +170,7 @@ public:
     uint64_t count_distance_computation_ = 0;
 //    uint64_t count_iterations_ = 0;
 //    uint64_t count_hops_ = 0;
-    uint64_t count_checked_ = 0;
+//    uint64_t count_checked_ = 0;
     uint64_t count_merge_ = 0;
     double time_expand_ = 0.0;
     double time_merge_ = 0.0;
@@ -253,7 +255,7 @@ public:
 //            boost::dynamic_bitset<> &is_visited,
 //            const idi subsearch_iterations,
 //            std::vector<idi> &top_m_candidates);
-    void para_search_PSS_v6_profiling(
+    void para_search_PSS_v5_dist_thresh_profiling(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,

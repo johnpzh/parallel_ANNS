@@ -3,11 +3,12 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) != 15:
+if len(sys.argv) != 18:
     print(F"{sys.argv[0]} <app> <data_dir> <data> "
           F"<tag> <num_t> <L_master_low> <L_master_up> "
           F"<L_master_step> <L_local_low> <L_local_up> <L_local_step> "
-          F"<X_low> <X_up> <X_step>")
+          F"<X_low> <X_up> <X_step> <I_thresh_low> "
+          F"<I_thresh_up> <I_thresh_step>")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
@@ -25,6 +26,9 @@ L_local_step = int(sys.argv[11])
 X_lower = int(sys.argv[12])
 X_upper = int(sys.argv[13])
 X_step = int(sys.argv[14])
+I_thresh_low = int(sys.argv[15])
+I_thresh_up = int(sys.argv[16])
+I_thresh_step = int(sys.argv[17])
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
@@ -57,14 +61,14 @@ command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query
           F"100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary {num_t} " \
           F"{L_master_low} {L_master_up} {L_master_step} {L_local_low} " \
           F"{L_local_up} {L_local_step} {X_lower} {X_upper} " \
-          F"{X_step} " \
+          F"{X_step} {I_thresh_low} {I_thresh_up} {I_thresh_step}" \
           F"| tee -a {raw_file}"
 subprocess.run(command, env=env_vars, shell=True, check=True)
 
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 selected_file = F"output.{label}.selected.txt"
-subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 9 12 13 1 14 15 16 17 18 19 20 21 22 23 24', shell=True, check=True)
+subprocess.run(F'python3 ../scripts/output_rows_to_table.py {raw_file} {rows_file} 2 3 10 9 12 13 1 14 15 16 17 18 19 20 21 22 23', shell=True, check=True)
 subprocess.run(F'python3 ../scripts/output_row_minimum.py {rows_file} {table_file} 1 0', shell=True, check=True)
 # subprocess.run(F'python3 ../scripts/output_find_runtime_above_presicion.py {table_file} {selected_file} 0 2', shell=True, check=True)
 
