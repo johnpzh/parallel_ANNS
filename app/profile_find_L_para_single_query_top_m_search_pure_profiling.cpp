@@ -48,7 +48,8 @@ void search_one_time(
         uint64_t &compt,
         double &avg_merge,
         double &t_expand,
-        double &t_merge)
+        double &t_merge,
+        double &t_seq)
 {
     std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
     for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
@@ -109,7 +110,8 @@ void search_one_time(
                 "GFLOPS: %f "
                 "avg_merge: %f "
                 "t_expand(s.): %f "
-                "t_merge(s.): %f ",
+                "t_merge(s.): %f "
+                "t_seq(s.): %f ",
                 num_threads,
                 M,
                 L,
@@ -127,7 +129,8 @@ void search_one_time(
                 data_dimension * (1.0 + 1.0 + 1.0) * engine.count_distance_computation_ / (1U << 30U) /diff.count(),
                 engine.count_merge_ * 1.0 / query_num,
                 engine.time_expand_,
-                engine.time_merge_);
+                engine.time_merge_,
+                engine.time_seq_);
         printf("\n");
     }
     runtime = diff.count();
@@ -137,8 +140,10 @@ void search_one_time(
     engine.count_merge_ = 0;
     t_expand = engine.time_expand_;
     t_merge = engine.time_merge_;
+    t_seq = engine.time_seq_;
     engine.time_expand_ = 0.0;
     engine.time_merge_ = 0.0;
+    engine.time_seq_ = 0.0;
     set_K_list_return.swap(set_K_list);
 }
 
@@ -211,6 +216,7 @@ int main(int argc, char **argv)
         double avg_merge;
         double t_expand;
         double t_merge;
+        double t_seq;
 
         double last_runtime;
         uint64_t last_compt;
@@ -219,6 +225,7 @@ int main(int argc, char **argv)
         double last_avg_merge;
         double last_t_expand;
         double last_t_merge;
+        double last_t_seq;
 
         while (L_lower <= L_upper) {
             printf("L: %u "
@@ -245,7 +252,8 @@ int main(int argc, char **argv)
                     compt,
                     avg_merge,
                     t_expand,
-                    t_merge);
+                    t_merge,
+                    t_seq);
 
             if (recalls[100] < P_dest) {
                 L_lower = L + 1;
@@ -258,6 +266,7 @@ int main(int argc, char **argv)
                 last_avg_merge = avg_merge;
                 last_t_expand = t_expand;
                 last_t_merge = t_merge;
+                last_t_seq = t_seq;
             } else {
                 break;
             }
@@ -276,6 +285,7 @@ int main(int argc, char **argv)
             avg_merge = last_avg_merge;
             t_expand = last_t_expand;
             t_merge = last_t_merge;
+            t_seq = last_t_seq;
         }
         PANNS::DiskIO::save_result(argv[6], set_K_list);
         printf("---- FINAL ----\n");
@@ -289,8 +299,10 @@ int main(int argc, char **argv)
                "avg_merge: %f "
                "t_expand(s.): %f "
                "t_merge(s.): %f "
+               "t_seq(s.): %f "
                "t_p_expand(%%): %f "
-               "t_p_merge(%%): %f",
+               "t_p_merge(%%): %f "
+               "t_p_seq(%%): %f ",
                P_dest,
                runtime,
                compt,
@@ -301,8 +313,10 @@ int main(int argc, char **argv)
                avg_merge,
                t_expand,
                t_merge,
+               t_seq,
                t_expand / runtime * 100.0,
-               t_merge / runtime * 100.0);
+               t_merge / runtime * 100.0,
+               t_seq / runtime * 100.0);
         printf("\n");
     }
 //    }

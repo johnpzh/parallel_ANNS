@@ -51,6 +51,12 @@ elif data == "deep100m":
     num_v = 100
     dim = 96
     num_q = 10000
+elif data == "deep1m":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep1M"
+    num_v = 1
+    dim = 96
+    num_q = 10000
 else:
     print(F"Error: data {data} is unknown.")
     exit()

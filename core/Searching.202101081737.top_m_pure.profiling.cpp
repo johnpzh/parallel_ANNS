@@ -3,6 +3,7 @@
 //
 
 #include "Searching.202101081737.top_m_pure.profiling.h"
+#define BREAKDOWN_PRINT
 
 namespace PANNS {
 
@@ -1892,7 +1893,9 @@ void Searching::para_search_with_top_m_pure_profiling(
         std::vector<idi> &top_m_candidates,
         boost::dynamic_bitset<> &is_visited)
 {
-//    time_initialization_ -= WallTimer::get_time_mark();
+#ifdef BREAKDOWN_PRINT
+    time_seq_ -= WallTimer::get_time_mark();
+#endif
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
 //    idi set_L_size;
@@ -1906,7 +1909,6 @@ void Searching::para_search_with_top_m_pure_profiling(
             local_queues_sizes[num_threads_ - 1],
             init_ids,
             is_visited);
-//    time_initialization_ += WallTimer::get_time_mark();
 
     const distf &last_dist = set_L[master_queue_start + L - 1].distance_;
     idi top_m_candidates_size = 0;
@@ -1918,11 +1920,12 @@ void Searching::para_search_with_top_m_pure_profiling(
     // Sequential Phase
 
     uint64_t tmp_count_computation = 0;
-
+#ifdef BREAKDOWN_PRINT
+    time_seq_ += WallTimer::get_time_mark();
+#endif
     if (1 == num_threads_) {
         // Sequential Version
         while (true) {
-//        double test_time_iter = -WallTimer::get_time_mark();
             ++iter;
             // Pick
             last_k = L;
@@ -1989,7 +1992,9 @@ void Searching::para_search_with_top_m_pure_profiling(
     } else {
         // Parallel Version
         while (true) {
-//        double test_time_iter = -WallTimer::get_time_mark();
+#ifdef BREAKDOWN_PRINT
+            time_seq_ -= WallTimer::get_time_mark();
+#endif
             ++iter;
             // Pick
             last_k = L;
@@ -2003,10 +2008,16 @@ void Searching::para_search_with_top_m_pure_profiling(
                     top_m_candidates_size,
                     last_k);
             if (!top_m_candidates_size) {
+#ifdef BREAKDOWN_PRINT
+                time_seq_ += WallTimer::get_time_mark();
+#endif
                 break;
             }
-            // Expand
+#ifdef BREAKDOWN_PRINT
+            time_seq_ += WallTimer::get_time_mark();
             time_expand_ -= WallTimer::get_time_mark();
+#endif
+            // Expand
             nk = L;
 #pragma omp parallel for reduction(+ : tmp_count_computation)
             for (idi c_i = 0; c_i < top_m_candidates_size; ++c_i) {
@@ -2031,9 +2042,10 @@ void Searching::para_search_with_top_m_pure_profiling(
             top_m_candidates_size = 0;
             count_distance_computation_ += tmp_count_computation;
             tmp_count_computation = 0;
-
+#ifdef BREAKDOWN_PRINT
             time_expand_ += WallTimer::get_time_mark();
             time_merge_ -= WallTimer::get_time_mark();
+#endif
 
             // Merge
             ++count_merge_;
@@ -2051,16 +2063,25 @@ void Searching::para_search_with_top_m_pure_profiling(
             } else {
                 k = last_k + 1;
             }
+#ifdef BREAKDOWN_PRINT
             time_merge_ += WallTimer::get_time_mark();
+#endif
         } // Iterations
-
+#ifdef BREAKDOWN_PRINT
+        time_seq_ -= WallTimer::get_time_mark();
+#endif
 #pragma omp parallel for
         for (idi k_i = 0; k_i < K; ++k_i) {
             set_K[k_i] = set_L[master_queue_start + k_i].id_;
         }
+#ifdef BREAKDOWN_PRINT
+        time_seq_ += WallTimer::get_time_mark();
+#endif
 
     }
-
+#ifdef BREAKDOWN_PRINT
+    time_seq_ -= WallTimer::get_time_mark();
+#endif
     {// Reset
 //        std::fill(is_visited.begin(), is_visited.end(), 0);
         is_visited.reset();
@@ -2072,6 +2093,9 @@ void Searching::para_search_with_top_m_pure_profiling(
 //            exit(1);
 //        }
 //    }
+#ifdef BREAKDOWN_PRINT
+    time_seq_ += WallTimer::get_time_mark();
+#endif
 }
 
 }// namespace PANNS

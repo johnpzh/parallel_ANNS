@@ -3,6 +3,7 @@
 //
 
 #include "Searching.202101081821.scale_m_pure_large_graph.profiling.h"
+#define BREAKDOWN_PRINT
 
 namespace PANNS {
 /**
@@ -4310,6 +4311,9 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
 //        std::vector<distf> &local_thresholds)
 //        BitVector &is_visited)
 {
+#ifdef BREAKDOWN_PRINT
+    time_seq_ -= WallTimer::get_time_mark();
+#endif
 //    const idi base_set_L = (num_threads_ - 1) * local_queue_length;
     {
 //#pragma omp parallel for
@@ -4358,9 +4362,14 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
     idi tmp_count = 0; // for debug
     idi M = 1;
 
-
+#ifdef BREAKDOWN_PRINT
+    time_seq_ += WallTimer::get_time_mark();
+#endif
     { // Multiple Threads
         while (k < L) {
+#ifdef BREAKDOWN_PRINT
+            time_seq_ -= WallTimer::get_time_mark();
+#endif
             ++tmp_count;
 //        {//test
 //            printf("tmp_count: %d\n", tmp_count);
@@ -4379,9 +4388,11 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
                 set_L[index_set_L].is_checked_ = true;
                 top_m_candidates[top_m_candidates_end++] = set_L[index_set_L].id_;
             }
-
-            // Expand
+#ifdef BREAKDOWN_PRINT
+            time_seq_ += WallTimer::get_time_mark();
             time_expand_ -= WallTimer::get_time_mark();
+#endif
+            // Expand
             idi nk = L;
             // Push M candidates' neighbors into the queue.
 //#pragma omp parallel for reduction(+ : tmp_count_computation) num_threads(real_threads)
@@ -4445,12 +4456,13 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
             count_distance_computation_ += tmp_count_computation;
             tmp_count_computation = 0;
 
+#ifdef BREAKDOWN_PRINT
             time_expand_ += WallTimer::get_time_mark();
             time_merge_ -= WallTimer::get_time_mark();
+#endif
 
 //        // Merge. Merge all queues in parallel.
             {
-//                time_merge_ -= WallTimer::get_time_mark();
                 ++count_merge_;
                 if (num_threads_ > 1) {
 //                    idi r = merge_all_queues_seq(
@@ -4467,7 +4479,6 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
                         nk = r;
                     }
                 }
-//                time_merge_ += WallTimer::get_time_mark();
             }
             if (nk <= last_k) {
                 k = nk;
@@ -4482,11 +4493,14 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
 //                    M = value_M_max;
 //                }
             }
+#ifdef BREAKDOWN_PRINT
             time_merge_ += WallTimer::get_time_mark();
+#endif
         }
     }
-
-
+#ifdef BREAKDOWN_PRINT
+    time_seq_ -= WallTimer::get_time_mark();
+#endif
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i + base_set_L].id_;
@@ -4499,6 +4513,9 @@ void Searching::para_search_with_scale_m_large_graph_profiling(
 //        is_visited.clear_all();
         std::fill(local_queues_ends.begin(), local_queues_ends.end(), 0);
     }
+#ifdef BREAKDOWN_PRINT
+    time_seq_ += WallTimer::get_time_mark();
+#endif
 }
 
 } // namespace PANNS

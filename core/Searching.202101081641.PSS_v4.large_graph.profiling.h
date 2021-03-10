@@ -172,7 +172,7 @@ public:
     double time_expand_ = 0.0;
     double time_merge_ = 0.0;
     double time_seq_ = 0.0;
-    double time_pick_ = 0.0;
+//    double time_pick_ = 0.0;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;
 //    idi min_iterations_ = UINT_MAX;

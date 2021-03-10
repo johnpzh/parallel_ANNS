@@ -111,8 +111,8 @@ void search_one_time(
                 "avg_merge: %f "
                 "t_expand(s.): %f "
                 "t_merge(s.): %f "
-                "t_seq(s.): %f "
-                "t_pick(s.): %f ",
+                "t_seq(s.): %f ",
+//                "t_pick(s.): %f ",
                 num_threads,
                 L,
                 diff.count(),
@@ -133,8 +133,8 @@ void search_one_time(
                 engine.count_merge_ * 1.0 / query_num,
                 engine.time_expand_,
                 engine.time_merge_,
-                engine.time_seq_,
-                engine.time_pick_);
+                engine.time_seq_);
+//                engine.time_pick_);
         printf("\n");
     }
     runtime = diff.count();
@@ -145,11 +145,11 @@ void search_one_time(
     time_break[0] = engine.time_expand_;
     time_break[1] = engine.time_merge_;
     time_break[2] = engine.time_seq_;
-    time_break[3] = engine.time_pick_;
+//    time_break[3] = engine.time_pick_;
     engine.time_expand_ = 0.0;
     engine.time_merge_ = 0.0;
     engine.time_seq_ = 0.0;
-    engine.time_pick_ = 0.0;
+//    engine.time_pick_ = 0.0;
     set_K_list_return.swap(set_K_list);
 }
 
@@ -216,14 +216,14 @@ int main(int argc, char **argv)
         double runtime;
         uint64_t compt;
         double avg_merge;
-        std::vector<double> time_break(4);
+        std::vector<double> time_break(3);
 
         double last_runtime;
         uint64_t last_compt;
         double last_recall;
         unsigned last_L;
         double last_avg_merge;
-        std::vector<double> last_time_break(4);
+        std::vector<double> last_time_break(3);
 
         while (L_lower <= L_upper) {
             printf("L: %u "
@@ -293,11 +293,11 @@ int main(int argc, char **argv)
                "t_expand(s.): %f "
                "t_merge(s.): %f "
                "t_seq(s.): %f "
-               "t_pick(s.): %f "
+//               "t_pick(s.): %f "
                "t_p_expand(%%): %f "
                "t_p_merge(%%): %f "
-               "t_p_seq(%%): %f "
-               "t_p_pick(%%): %f ",
+               "t_p_seq(%%): %f ",
+//               "t_p_pick(%%): %f ",
                P_dest,
                runtime,
                compt,
@@ -309,11 +309,11 @@ int main(int argc, char **argv)
                time_break[0],
                time_break[1],
                time_break[2],
-               time_break[3],
+//               time_break[3],
                time_break[0] / runtime * 100.0,
                time_break[1] / runtime * 100.0,
-               time_break[2] / runtime * 100.0,
-               time_break[3] / runtime * 100.0);
+               time_break[2] / runtime * 100.0);
+//               time_break[3] / runtime * 100.0);
         printf("\n");
 
     }

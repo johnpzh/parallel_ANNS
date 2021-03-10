@@ -49,6 +49,9 @@ elif data == "sift100m":
 elif data == "deep100m":
     data_dir = base_dir + "/deep1b"
     data_name = "deep100M"
+elif data == "deep1m":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep1M"
 else:
     print(F"Error: data {data} is unknown.")
     exit()

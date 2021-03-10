@@ -1,4 +1,19 @@
 
+#for data in sift1m gist1m deep10m sift100m deep100m; do
+#    python3 ../scripts/output_find_runtime_above_presicion.py \
+#    output.${data}.PSS_v5_dt_T32_collected.table.txt \
+#    output.${data}.PSS_v5_dt_T32_collected.selected_1.txt \
+#    0 2 \
+#    0.900 0.910 0.920 0.930 0.940 \
+#    0.950 0.960 0.970 0.980 0.990 \
+#    0.991 0.992 0.993 0.994 0.995 \
+#    0.996 0.997 0.998 0.999
+#done
+
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilinga /home/zpeng/data sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /home/zpeng/data sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilin /home/zpeng/data sift1m test 16 104 104 1 30 30 1
+
 #data_dir="/home/zpeng/data"
 #data=deep10m
 #
@@ -50,8 +65,17 @@
 #python3 ../scripts/test49.find_L_PSS_v5_profile.py profile_find_L_para_single_query_search_PSS_v5_profile ~/data gist1m test 64 108 108 108 42 0.999
 
 
-
+##
 scpt_path="../scripts/knl"
-for ((i = 69; i <= 73; ++i)); do
+for ((i = 44; i <= 46; ++i)); do
     zsh ./${scpt_path}/sh${i}*.sh
 done
+for ((i = 49; i <= 51; ++i)); do
+    zsh ./${scpt_path}/sh${i}*.sh
+done
+#for ((i = 44; i <= 58; ++i)); do
+#    zsh ./${scpt_path}/sh${i}*.sh
+#done
+#for ((i = 74; i <= 76; ++i)); do
+#    zsh ./${scpt_path}/sh${i}*.sh
+#done

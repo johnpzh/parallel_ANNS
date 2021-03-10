@@ -180,6 +180,7 @@ public:
     uint64_t count_merge_ = 0;
     double time_expand_ = 0.0;
     double time_merge_ = 0.0;
+    double time_seq_ = 0.0;
 //    uint64_t count_single_query_computation_ = 0;
 //    distf dist_min_ = 0;
 //    distf dist_max_ = 0;

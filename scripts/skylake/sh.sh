@@ -1,4 +1,91 @@
 #!/usr/local/bin/zsh
+#data_dir="/scratch/zpeng"
+#num_t=16
+#P_target=0.999
+#
+##### SIFT100M
+#for M in 32 64 128 256; do
+#    tag="test_M${M}"
+#    data="sift100m"
+#    L_low=800
+#    L_up=1100
+#    python3 ../scripts/test63.find_L_top_m_scale_m.py profile_find_L_para_single_query_top_m_search_pure_large_graph_profiling ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${M} ${P_target}
+#
+#    table_file="output.${data}.test_M_collected.table.txt"
+#    cat output.${data}.test_M*.table.txt > ${table_file}
+#done
+#
+##### DEEP100M
+#for M in 32 64 128 256; do
+#    tag="test_M${M}"
+#    data="deep100m"
+#    L_low=2000
+#    L_up=4000
+#    python3 ../scripts/test63.find_L_top_m_scale_m.py profile_find_L_para_single_query_top_m_search_pure_large_graph_profiling ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${M} ${P_target}
+#
+#    table_file="output.${data}.test_M_collected.table.txt"
+#    cat output.${data}.test_M*.table.txt > ${table_file}
+#done
+#
+##### SIFT1M
+#for M in 32 64 128 256; do
+#    tag="test_M${M}"
+#    data="sift1m"
+#    L_low=200
+#    L_up=450
+#    python3 ../scripts/test63.find_L_top_m_scale_m.py profile_find_L_para_single_query_top_m_search_pure_large_graph_profiling ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${M} ${P_target}
+#
+#    table_file="output.${data}.test_M_collected.table.txt"
+#    cat output.${data}.test_M*.table.txt > ${table_file}
+#done
+#
+##### GIST1M
+#for M in 32 64 128 256; do
+#    tag="test_M${M}"
+#    data="gist1m"
+#    L_low=2000
+#    L_up=4000
+#    python3 ../scripts/test63.find_L_top_m_scale_m.py profile_find_L_para_single_query_top_m_search_pure_large_graph_profiling ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${M} ${P_target}
+#
+#    table_file="output.${data}.test_M_collected.table.txt"
+#    cat output.${data}.test_M*.table.txt > ${table_file}
+#done
+#
+##### DEEP10M
+#for M in 32 64 128 256; do
+#    tag="test_M${M}"
+#    data="deep10m"
+#    L_low=700
+#    L_up=1000
+#    python3 ../scripts/test63.find_L_top_m_scale_m.py profile_find_L_para_single_query_top_m_search_pure_large_graph_profiling ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${M} ${P_target}
+#
+#    table_file="output.${data}.test_M_collected.table.txt"
+#    cat output.${data}.test_M*.table.txt > ${table_file}
+#done
+
+#python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py PSS_v5_distance_threshold_profiling /scratch/zpeng sift1m test 16 100 100 1 0 0 0 30 30 1 0 0 0
+##python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py PSS_v5_LG_distance_threshold_profiling /scratch/zpeng deep100m test 16 224 224 1 0 0 0 216 216 1 0 0 0
+#
+####### Some crazy stuff #######
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilinga /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilin /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefgh /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefg /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+####### End #######
+
+
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 0 0 0 30 30 1 0 0 0
+#python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 100 100 1 0 0 0 30 30 1 0 0 0
+
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v4_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py atest /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py btest /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilinga /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profilin /scratch/zpeng sift1m test 16 104 104 1 30 30 1
+#python3 ../scripts/test44.PSS_v4_profiling_ranged_L.py profile_para_single_query_search_PSS_v5_dist_thresh_ranged_profiling /scratch/zpeng sift1m test 16 104 104 1 30 30 1
 
 #cd /home/zpeng/pppp/clion/panns_mac/cmake-build-release
 #data_dir="/scratch/zpeng"
@@ -132,6 +219,8 @@
 #done
 
 scpt_path="../scripts/skylake"
+##for ((i = 44; i <= 53; ++i)); do
+##for ((i = 54; i <= 58; ++i)); do
 for ((i = 69; i <= 73; ++i)); do
     zsh ./${scpt_path}/sh${i}*.sh
 done

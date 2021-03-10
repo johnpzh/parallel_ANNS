@@ -1300,7 +1300,7 @@ void Searching::para_search_PSS_v4_profiling(
 
         // Parallel Phase
         while (!no_need_to_continue) {
-            time_pick_ -= WallTimer::get_time_mark();
+            time_seq_ -= WallTimer::get_time_mark();
             ++iter;
             ++para_iter;
 //            {//test
@@ -1314,10 +1314,10 @@ void Searching::para_search_PSS_v4_profiling(
                     local_queues_sizes,
                     local_queue_capacity,
                     k_master)) {
-                time_pick_ += WallTimer::get_time_mark();
+                time_seq_ += WallTimer::get_time_mark();
                 break;
             }
-            time_pick_ += WallTimer::get_time_mark();
+            time_seq_ += WallTimer::get_time_mark();
 
 //            count_workers_done = 0;
             // Expand

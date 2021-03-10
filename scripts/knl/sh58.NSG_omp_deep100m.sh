@@ -11,7 +11,7 @@ data=deep100m
 bin="python3 ../scripts/test64.find_L_NSG_omp.py"
 app="profile_find_L_para_single_query_NSG_omp_large_graph"
 app_label="NSG_OMP"
-num_t=8
+num_t=32
 
 P_target=0.900
 tag="${app_label}_T${num_t}_P${P_target}"

@@ -55,5 +55,5 @@ subprocess.run(command, env=env_vars, shell=True, check=True)
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:12", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:14", shell=True, check=True)
 

@@ -482,10 +482,10 @@ void IndexNSG::Search(const float *query, const float *x, size_t K,
                 {
                     auto start = std::chrono::high_resolution_clock::now();
                     int r = InsertIntoPool(retset.data(), L, nn);
+                    if (r < nk) nk = r;
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> diff = end - start;
                     time_insert_ += diff.count();
-                    if (r < nk) nk = r;
                 }
             }
             count_distance_computation_ += tmp_count_compt;
@@ -584,10 +584,10 @@ void IndexNSG::SearchWithOptGraph(const float *query, size_t K,
                 {
                     auto start = std::chrono::high_resolution_clock::now();
                     int r = InsertIntoPool(retset.data(), L, nn);
+                    if (r < nk) nk = r;
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> diff = end - start;
                     time_insert_ += diff.count();
-                    if (r < nk) nk = r;
                 }
             }
             count_distance_computation_ += tmp_count_compt;

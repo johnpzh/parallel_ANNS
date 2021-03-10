@@ -3,6 +3,7 @@
 //
 
 #include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
+#define BREAKDOWN_PRINT
 
 namespace PANNS {
 
@@ -1363,8 +1364,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
         const idi subsearch_iterations)
 //        std::vector<idi> &top_m_candidates)
 {
-//    time_initialization_ -= WallTimer::get_time_mark();
+#ifdef BREAKDOWN_PRINT
     time_seq_ -= WallTimer::get_time_mark();
+#endif
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
@@ -1379,13 +1381,14 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             master_queue_size,
             init_ids,
             is_visited);
-//    time_initialization_ += WallTimer::get_time_mark();
 
 //    idi top_m_candidates_end = 0;
     const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
     idi iter = 0; // for debug
 
+#ifdef BREAKDOWN_PRINT
     time_seq_ += WallTimer::get_time_mark();
+#endif
 
     // Sequential Version
 //    if (num_threads_ == 1) {
@@ -1430,7 +1433,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //        {//test
 //            printf("q_i: %u\n", query_id);
 //        }
+#ifdef BREAKDOWN_PRINT
         time_seq_ -= WallTimer::get_time_mark();
+#endif
         idi k_master = 0; // Index of first unchecked candidate.
         idi para_iter = 0;
         uint64_t tmp_count_computation = 0;
@@ -1455,8 +1460,8 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                     cand.is_checked_ = true;
                     idi cand_id = cand.id_;
                     r = expand_one_candidate(
-//                            0,
-                            num_threads_ - 1,
+                            0,
+//                            num_threads_ - 1,
                             cand_id,
                             query_data,
                             last_dist,
@@ -1492,11 +1497,15 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //        if (index_th >= L) {
 //            index_th = L - 1;
 //        }
+#ifdef BREAKDOWN_PRINT
         time_seq_ += WallTimer::get_time_mark();
+#endif
 
         // Parallel Phase
         while (!no_need_to_continue) {
+#ifdef BREAKDOWN_PRINT
             time_seq_ -= WallTimer::get_time_mark();
+#endif
             ++iter;
             ++para_iter;
 //            {//test
@@ -1510,16 +1519,23 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                     local_queues_sizes,
                     local_queue_capacity,
                     k_master)) {
+#ifdef BREAKDOWN_PRINT
                 time_seq_ += WallTimer::get_time_mark();
+#endif
                 break;
             }
             distf dist_thresh = last_dist;
 //            distf dist_thresh = set_L[master_queue_start + master_queue_size - 1].distance_;
+#ifdef BREAKDOWN_PRINT
             time_seq_ += WallTimer::get_time_mark();
+#endif
 
 //            count_workers_done = 0;
             // Expand
+#ifdef BREAKDOWN_PRINT
             time_expand_ -= WallTimer::get_time_mark();
+#endif
+
 #pragma omp parallel reduction(+ : tmp_count_computation)
             {
 //                bool is_quota_done = false;
@@ -1554,15 +1570,15 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                         } else {
                             ++k_uc;
                         }
-                        if (
-//                        if (w_i != num_threads_ - 1 &&
-                                local_queue_size > index_thresh_
-                                && set_L[local_queue_start + index_thresh_].distance_ < dist_thresh) {
-                            dist_thresh = set_L[local_queue_start + index_thresh_].distance_;
-                        }
-//                        if (r >= index_thresh_) {
-//                            break;
+//                        if (
+////                        if (w_i != num_threads_ - 1 &&
+//                                local_queue_size > index_thresh_
+//                                && set_L[local_queue_start + index_thresh_].distance_ < dist_thresh) {
+//                            dist_thresh = set_L[local_queue_start + index_thresh_].distance_;
 //                        }
+////                        if (r >= index_thresh_) {
+////                            break;
+////                        }
                     } else {
                         ++k_uc;
                     }
@@ -1576,8 +1592,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             } // Workers
             count_distance_computation_ += tmp_count_computation;
             tmp_count_computation = 0;
+#ifdef BREAKDOWN_PRINT
             time_expand_ += WallTimer::get_time_mark();
             time_merge_ -= WallTimer::get_time_mark();
+#endif
             // Merge
             {
                 ++count_merge_;
@@ -1591,12 +1609,16 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                     k_master = r;
                 }
             }
+#ifdef BREAKDOWN_PRINT
             time_merge_ += WallTimer::get_time_mark();
+#endif
         } // Search Iterations
     } // Parallel Phase
 
 //    count_iterations_ += iter;
+#ifdef BREAKDOWN_PRINT
     time_seq_ -= WallTimer::get_time_mark();
+#endif
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i + master_queue_start].id_;
@@ -1623,7 +1645,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //            exit(1);
 //        }
 //    }
+#ifdef BREAKDOWN_PRINT
     time_seq_ += WallTimer::get_time_mark();
+#endif
 }
 
 
