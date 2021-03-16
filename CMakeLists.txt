@@ -598,3 +598,81 @@ target_link_libraries(
         PSS_v5_LG_distance_threshold_profiling
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
+add_executable(
+        PSS_v5_LG_v_counter
+        app/PSS_v5_LG_v_counter.cpp
+        core/Searching.202103101606.PSS_v5.large_graph.v_counter.cpp)
+target_compile_options(
+        PSS_v5_LG_v_counter
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_v_counter
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_count_reorder
+        app/PSS_v5_LG_count_reorder.cpp
+        core/Searching.202103101852.PSS_v5.large_graph.count_reorder.cpp)
+target_compile_options(
+        PSS_v5_LG_count_reorder
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_count_reorder
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        widget_neighbors_distance_distribution
+        tools/widget_neighbors_distance_distribution.cpp
+        core/Searching.202103101852.PSS_v5.large_graph.count_reorder.cpp)
+target_compile_options(
+        widget_neighbors_distance_distribution
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        widget_neighbors_distance_distribution
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+#add_executable(
+#        NSG_neighbor_distance_step
+#        app/NSG_neighbor_distance_step.cpp
+#        include/efanna2e/index.cpp
+#        include/efanna2e/index_nsg.202103121531.neighbor_distance_step.cpp)
+#target_compile_options(
+#        NSG_neighbor_distance_step
+#        PRIVATE ${CXX_OPTION})
+#target_link_libraries(
+#        NSG_neighbor_distance_step
+#        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        NSG_candidate_distance_step
+        app/NSG_candidate_distance_step.cpp
+        include/efanna2e/index.cpp
+        include/efanna2e/index_nsg.202103121531.neighbor_distance_step.cpp)
+target_compile_options(
+        NSG_candidate_distance_step
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        NSG_candidate_distance_step
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_distance_step
+        app/PSS_v5_LG_distance_step.cpp
+        core/Searching.202103141957.PSS_v5.large_graph.distance_step.cpp)
+target_compile_options(
+        PSS_v5_LG_distance_step
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_distance_step
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_degree_reorder
+        app/PSS_v5_LG_degree_reorder.cpp
+        core/Searching.202103152056.PSS_v5.large_graph.degree_reorder.cpp)
+target_compile_options(
+        PSS_v5_LG_degree_reorder
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_degree_reorder
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

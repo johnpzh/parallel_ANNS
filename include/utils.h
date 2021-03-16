@@ -47,7 +47,7 @@ public:
      * @param[out] dimension
      */
     static void load_data(
-            char *filename,
+            const char *filename,
 //        std::vector<dataf> &data,
 //        std::vector< std::vector<dataf> > &data,
             dataf *&data,

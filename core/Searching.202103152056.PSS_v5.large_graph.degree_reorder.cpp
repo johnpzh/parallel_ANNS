@@ -1,8 +1,8 @@
 //
-// Created by Zhen Peng on 02/03/2020.
+// Created by Zhen Peng on 03/10/2020.
 //
 
-#include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
+#include "Searching.202103152056.PSS_v5.large_graph.degree_reorder.h"
 #define BREAKDOWN_PRINT
 
 namespace PANNS {
@@ -11,7 +11,7 @@ namespace PANNS {
  * Input the data from the file.
  * @param filename
  */
-void Searching::load_data_load(char *filename)
+void Searching::load_data_load(const char *filename)
 {
     auto old_d = dimension_;
     DiskIO::load_data(
@@ -32,7 +32,7 @@ void Searching::load_data_load(char *filename)
  * Input queries from the file.
  * @param filename
  */
-void Searching::load_queries_load(char *filename)
+void Searching::load_queries_load(const char *filename)
 {
     auto old_d = dimension_;
     DiskIO::load_data(
@@ -135,7 +135,7 @@ void Searching::load_queries_load(char *filename)
 /*
  * Read NSG graph, save as index and neighbors.
  */
-void Searching::load_common_nsg_graph(char *filename)
+void Searching::load_common_nsg_graph(const char *filename)
 {
     std::ifstream fin(filename);
     if (!fin.is_open()) {
@@ -224,6 +224,198 @@ void Searching::load_common_nsg_graph(char *filename)
     }
 }
 
+void Searching::reorder_load_data()
+{
+    // Reorder data_load_
+    dataf *data = (dataf *) malloc(static_cast<uint64_t>(num_v_) * dimension_ * sizeof(dataf));
+    if (!data) {
+        fprintf(stderr, "Error: cannot malloc %lu bytes.\n", static_cast<uint64_t>(num_v_) * dimension_ * sizeof(dataf));
+        exit(EXIT_FAILURE);
+    }
+
+    for (idi old_i = 0; old_i < num_v_; ++old_i) {
+        idi new_i = map_old_to_new_[old_i];
+        dataf *new_base = data + (new_i * dimension_);
+        dataf *old_base = data_load_ + (old_i * dimension_);
+        memcpy(new_base, old_base, dimension_ * sizeof(dataf));
+    }
+
+    // Replace data_load_
+    free(data_load_);
+    data_load_ = data;
+}
+
+void Searching::reorder_true_NN(
+        const std::vector< std::vector<idi> > &old_true_nn_list,
+        std::vector< std::vector<idi> > &new_true_nn_list)
+{
+    idi num_queries = old_true_nn_list.size();
+    new_true_nn_list.resize(num_queries);
+    for (idi q_i = 0; q_i < num_queries; ++q_i) {
+//        idi new_i = map_old_to_new_[old_i];
+        const auto &old_list = old_true_nn_list[q_i];
+        auto &new_list = new_true_nn_list[q_i];
+        idi size = old_list.size();
+        new_list.resize(size);
+        for (idi e_i = 0; e_i < size; ++e_i) {
+            idi old_e = old_list[e_i];
+            idi new_e = map_old_to_new_[old_e];
+            new_list[e_i] = new_e;
+        }
+    }
+}
+
+void Searching::load_and_reorder_nsg_graph(const char *filename)
+{
+    std::ifstream fin(filename);
+    if (!fin.is_open()) {
+        std::cerr << "Error: cannot read file " << filename << " ." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    fin.read(reinterpret_cast<char *>(&width_), sizeof(unsigned));
+    fin.read(reinterpret_cast<char *>(&ep_), sizeof(unsigned));
+
+    // Get edge_list
+    std::vector< std::vector<idi> > edge_list(num_v_);
+    {
+        std::vector< std::vector<idi> > tmp_edge_list(num_v_);
+        // Read nsg file
+        idi v_id = 0;
+        while (true) {
+            idi degree;
+            fin.read(reinterpret_cast<char *>(&degree), sizeof(unsigned));
+            if (fin.eof()) {
+                break;
+            }
+
+            num_e_ += degree;
+
+            tmp_edge_list[v_id].resize(degree);
+            fin.read(reinterpret_cast<char *>(tmp_edge_list[v_id].data()), sizeof(unsigned) * degree);
+            ++v_id;
+        }
+        if (v_id != num_v_) {
+            std::cerr << "Error: for out degrees, NSG data has " << v_id
+                      << " vertices, but origin data has " << num_v_ << " vertices." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        // Reorder
+        for (idi old_i = 0; old_i < num_v_; ++old_i) {
+            idi new_i = map_old_to_new_[old_i];
+            idi out_degree = tmp_edge_list[old_i].size();
+            edge_list[new_i].resize(out_degree);
+            for (idi e_i = 0; e_i < out_degree; ++e_i) {
+                idi old_e = tmp_edge_list[old_i][e_i];
+                idi new_e = map_old_to_new_[old_e];
+                edge_list[new_i][e_i] = new_e;
+            }
+        }
+    }
+
+    // Replace ep_ and width_
+
+    {
+        ep_old_ = ep_;
+        ep_ = map_old_to_new_[ep_];
+        idi max_out_degree = 0;
+        for (idi v_i = 0; v_i < threshold_opt_id_; ++v_i) {
+            idi out_degree = edge_list[v_i].size();
+            max_out_degree = std::max(max_out_degree, out_degree);
+        }
+        width_ = max_out_degree;
+    }
+
+    // Get opt_nsg_graph_
+    edgei opt_num_e = 0;
+    {
+        data_bytes_ = (1 + dimension_) * sizeof(dataf);
+        neighbor_bytes_ = (1 + width_) * sizeof(idi);
+        vertex_bytes_ = data_bytes_ + neighbor_bytes_;
+        opt_nsg_graph_ = (char *) malloc(threshold_opt_id_ * vertex_bytes_);
+        if (!opt_nsg_graph_) {
+            std::cerr << "Error: no enough memory for opt_nsg_graph_." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        char *base_location = opt_nsg_graph_;
+        for (idi v_i = 0; v_i < threshold_opt_id_; ++v_i) {
+            idi degree = edge_list[v_i].size();
+            opt_num_e += degree;
+            // Norm and data
+            distf norm = compute_norm(data_load_ + v_i * dimension_);
+            memcpy(base_location, &norm, sizeof(distf)); // Norm
+            memcpy(base_location + sizeof(distf), data_load_ + v_i * dimension_, dimension_ * sizeof(dataf)); // Data
+            base_location += data_bytes_;
+
+            // Neighbors
+            memcpy(base_location, &degree, sizeof(idi)); // Number of neighbors
+//            fin.read(base_location + sizeof(idi), degree * sizeof(unsigned)); // Neighbors
+            memcpy(base_location + sizeof(idi), edge_list[v_i].data(), degree * sizeof(idi));
+            base_location += neighbor_bytes_;
+        }
+    }
+
+    // Get common_nsg_, which starts from threshold_opt_id_ rather than 0.
+    {
+        idi remain_num_v = num_v_ - threshold_opt_id_;
+        edgei remain_num_e = num_e_ - opt_num_e;
+        // Get common_nsg_vertex_base_
+        common_nsg_vertex_base_ = (edgei *) malloc(remain_num_v * sizeof(edgei));
+        common_nsg_deg_ngbrs_ = (idi *) malloc((remain_num_e + remain_num_v) * sizeof(idi));
+        if (!common_nsg_vertex_base_) {
+            fprintf(stderr, "Error: load_and_reorder_nsg_graph(): common_nsg_vertex_base_ malloc failed.\n");
+            exit(EXIT_FAILURE);
+        }
+        if (!common_nsg_deg_ngbrs_) {
+            fprintf(stderr, "Error: load_and_reorder_nsg_graph(): common_nsg_deg_ngbrs_ malloc failed.\n");
+            exit(EXIT_FAILURE);
+        }
+        edgei base_offset = 0;
+        idi *nsg_base = common_nsg_deg_ngbrs_;
+        for (idi v_i = 0; v_i < remain_num_v; ++v_i) {
+            idi v_id = v_i + threshold_opt_id_;
+            idi degree = edge_list[v_id].size();
+            common_nsg_vertex_base_[v_i] = base_offset;
+            base_offset += 1 + degree;
+
+            *nsg_base++ = degree;
+            memcpy(nsg_base, edge_list[v_id].data(), degree * sizeof(idi));
+            nsg_base += degree;
+        }
+    }
+
+    // Cut the data_load_
+    {
+        uint64_t bytes = (num_v_ - threshold_opt_id_) * dimension_ * sizeof(dataf);
+        dataf *data = (dataf *) malloc(bytes);
+        if (!data) {
+            fprintf(stderr, "Error: load_and_reorder_nsg_graph(): cannot allocate data.\n");
+            exit(EXIT_FAILURE);
+        }
+        memcpy(data, data_load_ + threshold_opt_id_ * dimension_, bytes);
+
+        free(data_load_);
+        data_load_ = data;
+    }
+}
+
+void Searching::load_reorder_map(
+        const char *filename)
+{
+//    map_new_to_old_.resize(num_v_);
+    map_old_to_new_.resize(num_v_);
+    std::ifstream fin(filename);
+    idi old_id;
+    idi new_id;
+
+    for (idi v_i = 0; v_i < num_v_; ++v_i) {
+        fin.read(reinterpret_cast<char *>(&old_id), sizeof(old_id));
+        fin.read(reinterpret_cast<char *>(&new_id), sizeof(new_id));
+        map_old_to_new_[old_id] = new_id;
+//        map_new_to_old_[new_id] = old_id;
+    }
+}
 
 /**
  * Load those true top-K neighbors (ground truth) of queries
@@ -340,9 +532,15 @@ void Searching::prepare_init_ids(
 //    }
 //    std::unordered_set<idi> visited_ids;
     boost::dynamic_bitset<> is_selected(num_v_);
-    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[ep_];
-//    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
-    idi out_degree = *out_edges++;
+//    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[ep_];
+////    idi *out_edges = (idi *) (opt_nsg_graph_ + ep_ * vertex_bytes_ + data_bytes_);
+//    idi out_degree = *out_edges++;
+    idi out_degree = 0;
+    idi *out_edges = nullptr;
+    get_out_degree_and_edges(
+            ep_,
+            out_degree,
+            out_edges);
     idi init_ids_end = 0;
 //    for (; tmp_l < L && tmp_l < out_degree; tmp_l++) {
     for (idi e_i = 0; e_i < out_degree && init_ids_end < L; ++e_i) {
@@ -363,6 +561,7 @@ void Searching::prepare_init_ids(
 //    }
 
     // If ep_'s neighbors are not enough, add other random vertices
+//    idi tmp_id = ep_old_ + 1; // use tmp_id to replace rand().
     idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
     while (init_ids_end < L) {
 //        tmp_id %= num_v_;
@@ -370,17 +569,34 @@ void Searching::prepare_init_ids(
             tmp_id = 0;
         }
         idi v_id = tmp_id++;
+//        v_id = map_old_to_new_[v_id];
         if (is_selected[v_id]) {
             continue;
         }
-//        if (visited_ids.find(id) != visited_ids.end()) {
+        is_selected[v_id] = true;
+        init_ids[init_ids_end++] = v_id;
+    }
+//    idi tmp_id = ep_ + 1; // use tmp_id to replace rand().
+//    while (init_ids_end < L) {
+////        tmp_id %= num_v_;
+//        if (tmp_id == num_v_) {
+//            tmp_id = 0;
+//        }
+//        idi v_id = tmp_id++;
+//        if (is_selected[v_id]) {
 //            continue;
 //        }
-        is_selected[v_id] = true;
-//        visited_ids.insert(id);
-        init_ids[init_ids_end++] = v_id;
-//        tmp_l++;
-    }
+//        is_selected[v_id] = true;
+//        init_ids[init_ids_end++] = v_id;
+//    }
+//    {//test
+//        for (idi v_i = 0; v_i < init_ids_end; ++v_i) {
+//            idi new_id = init_ids[v_i];
+//            idi old_id = map_new_to_old_[new_id];
+//            printf("%u: %u\n", v_i, old_id);
+//        }
+//        exit(EXIT_FAILURE);
+//    }
 }
 
 // TODO: re-code in AVX-512
@@ -951,14 +1167,47 @@ void Searching::pick_top_m_unchecked(
     top_m_candidates_size = tmc_size;
 }
 
+void Searching::get_out_degree_and_edges(
+        const idi cand_id_global,
+        idi &out_degree,
+        idi *&out_edges) const
+{
+    if (cand_id_global < threshold_opt_id_) {
+        // Optimized index
+        out_edges = (idi *) (opt_nsg_graph_ + cand_id_global * vertex_bytes_ + data_bytes_);
+    } else {
+        // Common index
+        out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[cand_id_global - threshold_opt_id_];
+    }
+    out_degree = *out_edges++;
+}
+
+distf Searching::get_distance_to_query(
+        const idi v_id_global,
+        const dataf *query_data,
+        const dataf query_norm) const
+{
+    if (v_id_global < threshold_opt_id_) {
+        // Optimized index
+        dataf *nb_data = (dataf *) (opt_nsg_graph_ + v_id_global * vertex_bytes_);
+        dataf norm = *nb_data++;
+        return compute_distance_with_norm(nb_data, query_data, norm) + query_norm;
+    } else {
+        // Common index
+        dataf *nb_data = data_load_ + (v_id_global - threshold_opt_id_) * dimension_;
+        return compute_distance(nb_data, query_data);
+    }
+}
+
 /*
  * Function: expand a candidate, visiting its neighbors.
  * Return the lowest adding location.
  */
 idi Searching::expand_one_candidate(
         const int worker_id,
-        const idi cand_id,
+        const idi cand_id_global,
         const dataf *query_data,
+        const dataf query_norm,
         const distf &dist_bound,
         distf &dist_thresh,
         std::vector<Candidate> &set_L,
@@ -967,22 +1216,21 @@ idi Searching::expand_one_candidate(
         const idi &local_queue_capacity,
         boost::dynamic_bitset<> &is_visited,
         uint64_t &local_count_computation)
-//        bool &is_quota_done)
 {
     uint64_t tmp_count_computation = 0;
-//    _mm_prefetch(opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
-    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[cand_id];
-//    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id * vertex_bytes_ + data_bytes_);
-    idi out_degree = *out_edges++;
-//    if (threads_computations_[q_i] + out_degree >= thread_compuation_quota_) {
-//        is_quota_done = true;
-//        return local_queue_capacity;
-//    }
-//    for (idi n_i = 0; n_i < out_degree; ++n_i) {
-//        _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
-//    }
-//    tmp_time_pick_top_m += WallTimer::get_time_mark();
-//    uint64_t tmp_last_count_computation = tmp_count_computation;
+    idi out_degree = 0;
+    idi *out_edges = nullptr;
+    get_out_degree_and_edges(
+            cand_id_global,
+            out_degree,
+            out_edges);
+////    _mm_prefetch(opt_nsg_graph_ + cand_id_shifted * vertex_bytes_ + data_bytes_, _MM_HINT_T0);
+//    idi *out_edges = common_nsg_deg_ngbrs_ + common_nsg_vertex_base_[cand_id_shifted];
+////    idi *out_edges = (idi *) (opt_nsg_graph_ + cand_id_shifted * vertex_bytes_ + data_bytes_);
+//    idi out_degree = *out_edges++;
+////    for (idi n_i = 0; n_i < out_degree; ++n_i) {
+////        _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
+////    }
     idi nk = local_queue_capacity;
 
     for (idi e_i = 0; e_i < out_degree; ++e_i) {
@@ -994,13 +1242,16 @@ idi Searching::expand_one_candidate(
             is_visited[nb_id] = true;
         }
 
-//        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
-//        dataf norm = *nb_data++;
-//        ++tmp_count_computation;
-//        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
-        dataf *nb_data = data_load_ + nb_id * dimension_;
+////        auto *nb_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + nb_id * vertex_bytes_);
+////        dataf norm = *nb_data++;
+////        distf dist = compute_distance_with_norm(nb_data, query_data, norm);
+//        dataf *nb_data = data_load_ + nb_id * dimension_;
+//        distf dist = compute_distance(nb_data, query_data);
         ++tmp_count_computation;
-        distf dist = compute_distance(nb_data, query_data);
+        distf dist = get_distance_to_query(
+                nb_id,
+                query_data,
+                query_norm);
 
 //        if (dist > dist_bound) {
         if (dist > dist_bound || dist > dist_thresh) {
@@ -1018,10 +1269,6 @@ idi Searching::expand_one_candidate(
             nk = r;
         }
     }
-//    threads_computations_[q_i] += tmp_count_computation - tmp_last_count_computation;
-//    if (threads_computations_[q_i] >= thread_compuation_quota_) {
-//        is_quota_done = true;
-//    }
     local_count_computation += tmp_count_computation;
 
     return nk;
@@ -1029,6 +1276,7 @@ idi Searching::expand_one_candidate(
 
 void Searching::initialize_set_L_para(
         const dataf *query_data,
+        const dataf query_norm,
         const idi L,
         std::vector<Candidate> &set_L,
         const idi set_L_start,
@@ -1054,11 +1302,14 @@ void Searching::initialize_set_L_para(
         unsigned v_id = init_ids[i];
 //        auto *v_data = reinterpret_cast<dataf *>(opt_nsg_graph_ + v_id * vertex_bytes_);
 //        dataf norm = *v_data++;
-//        ++tmp_count_computation;
 //        distf dist = compute_distance_with_norm(v_data, query_data, norm);
-        auto *v_data = data_load_ + v_id * dimension_;
+//        auto *v_data = data_load_ + v_id * dimension_;
+//        distf dist = compute_distance(v_data, query_data);
         ++tmp_count_computation;
-        distf dist = compute_distance(v_data, query_data);
+        distf dist = get_distance_to_query(
+                v_id,
+                query_data,
+                query_norm);
         set_L[set_L_start + i] = Candidate(v_id, dist, false); // False means not checked.
     }
     count_distance_computation_ += tmp_count_computation;
@@ -1348,7 +1599,7 @@ void Searching::initialize_set_L_para(
 //}
 
 
-void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
+void Searching::para_search_PSS_v5_large_graph_count_reorder(
 //        const idi M,
 //        const idi worker_M,
         const idi query_id,
@@ -1370,10 +1621,12 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
+    const dataf query_norm = compute_norm(query_data);
 
     // Initialization Phase
     initialize_set_L_para(
             query_data,
+            query_norm,
             L,
 //            local_queue_capacity,
             set_L,
@@ -1464,6 +1717,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //                            num_threads_ - 1,
                             cand_id,
                             query_data,
+                            query_norm,
                             last_dist,
                             dist_thresh,
                             set_L,
@@ -1488,7 +1742,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
         }
 //        {//test
 //            for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//                printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
+//                printf("id: %u dist: %f\n", map_new_to_old_[set_L[master_queue_start + v_i].id_], set_L[master_queue_start + v_i].distance_);
 //            }
 //        }
 //        idi index_th = L - 1;
@@ -1562,6 +1816,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                                 w_i,
                                 cand_id,
                                 query_data,
+                                query_norm,
                                 last_dist,
                                 dist_thresh,
                                 set_L,
@@ -1573,7 +1828,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //                        {//test
 //                            printf("==== worker_iter: %u ====\n", worker_iter);
 //                            for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//                                printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
+//                                printf("id: %u dist: %f\n", map_new_to_old_[set_L[master_queue_start + v_i].id_], set_L[master_queue_start + v_i].distance_);
 //                            }
 //                        }
                         if (r <= k_uc) {
@@ -1591,7 +1846,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 ////                            break;
 ////                        }
 //                        {//test
-//                            printf("iter:%u cand_id:%u\n", iter, cand_id);
+//                            printf("iter:%u cand_id:%u\n", iter, map_new_to_old_[cand_id]);
 //                        }
                     } else {
                         ++k_uc;
@@ -1664,7 +1919,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 #endif
 //    {//test
 //        for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//            printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
+//            printf("id: %u dist: %f\n", map_new_to_old_[set_L[master_queue_start + v_i].id_], set_L[master_queue_start + v_i].distance_);
 //        }
 //    }
 //    {//test
@@ -1674,5 +1929,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //    }
 }
 
+//void Searching::test_reorder()
+//{
+//    std::vector<idi> map_new_to_old(num_v_);
+//    for ()
+//}
 
 }// namespace PANNS

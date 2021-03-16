@@ -1,195 +1,47 @@
 #!/usr/local/bin/zsh
 
 dir_base="/scratch/zpeng"
-app_tag="dist_step"
 
-#### T8
-num_t=8
-
+#num_bins=1000
 data_dir="${dir_base}/sift1m"
 data="sift"
-tag="${data}_${app_tag}_T${num_t}"
-L=100
-X=57
+tag="${data}.dist_each_step"
+L=428
 echo -n "${tag} ... "
-./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
+./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
 echo "done."
 
 data_dir="${dir_base}/gist1m"
 data="gist"
-tag="${data}_${app_tag}_T${num_t}"
-L=278
-X=286
+tag="${data}.dist_each_step"
+L=2300
 echo -n "${tag} ... "
-./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
+./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
 echo "done."
 
 data_dir="${dir_base}/deep1b"
 data="deep10M"
-tag="${data}_${app_tag}_T${num_t}"
-L=119
-X=119
+tag="${data}.dist_each_step"
+L=994
 echo -n "${tag} ... "
-./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
+./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
 echo "done."
 
 data_dir="${dir_base}/sift1b"
 data="sift100M"
-tag="${data}_${app_tag}_T${num_t}"
-L=140
-X=132
+tag="${data}.dist_each_step"
+L=1039
 echo -n "${tag} ... "
-./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
+./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
 echo "done."
 
 data_dir="${dir_base}/deep1b"
 data="deep100M"
-tag="${data}_${app_tag}_T${num_t}"
-L=417
-X=417
+tag="${data}.dist_each_step"
+L=4399
 echo -n "${tag} ... "
-./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
+./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
 echo "done."
-#
-##### T4
-#num_t=4
-#
-#data_dir="${dir_base}/sift1m"
-#data="sift"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=107
-#X=115
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/gist1m"
-#data="gist"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=572
-#X=556
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/deep1b"
-#data="deep10M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=230
-#X=230
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/sift1b"
-#data="sift100M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=265
-#X=257
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/deep1b"
-#data="deep100M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=834
-#X=850
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-##### T2
-#num_t=2
-#
-#data_dir="${dir_base}/sift1m"
-#data="sift"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=218
-#X=214
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/gist1m"
-#data="gist"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=1112
-#X=1128
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/deep1b"
-#data="deep10M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=461
-#X=453
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/sift1b"
-#data="sift100M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=507
-#X=515
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-#
-#data_dir="${dir_base}/deep1b"
-#data="deep100M"
-#tag="${data}_${app_tag}_T${num_t}"
-#L=1677
-#X=1669
-#echo -n "${tag} ... "
-#./PSS_v5_LG_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 ${X} ${X} 1 > output.${tag}.txt
-#echo "done."
-
-######################
-
-##num_bins=1000
-#data_dir="${dir_base}/sift1m"
-#data="sift"
-#tag="${data}.dist_each_step"
-#L=428
-#echo -n "${tag} ... "
-#./NSG_neighbor_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-#echo "done."
-#
-##data_dir="${dir_base}/gist1m"
-##data="gist"
-##tag="${data}.dist_each_step"
-##L=2300
-##echo -n "${tag} ... "
-##./NSG_neighbor_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-##echo "done."
-##
-##data_dir="${dir_base}/deep1b"
-##data="deep10M"
-##tag="${data}.dist_each_step"
-##L=994
-##echo -n "${tag} ... "
-##./NSG_neighbor_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-##echo "done."
-##
-##data_dir="${dir_base}/sift1b"
-##data="sift100M"
-##tag="${data}.dist_each_step"
-##L=1039
-##echo -n "${tag} ... "
-##./NSG_neighbor_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-##echo "done."
-#
-#data_dir="${dir_base}/deep1b"
-#data="deep100M"
-#tag="${data}.dist_each_step"
-#L=4399
-#echo -n "${tag} ... "
-#./NSG_candidate_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-##./NSG_neighbor_distance_step ${data_dir}/${data}_base.fvecs ${data_dir}/${data}_query.fvecs ${data_dir}/${data}.nsg ${L} 100 output.ivecs ${data_dir}/${data}.true-100_NN.v2.binary ${L} 0.999 > output.${tag}.txt
-#echo "done."
 
 #./PSS_v5_LG_count_reorder /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 100 output.ivecs /scratch/zpeng/sift1m/sift.true-100_NN.v2.binary 1 413 413 1 0 0 0 999 999 1 /scratch/zpeng/sift1m/sift_reorder_map.binary 99999999
 #./PSS_v5_LG_count_reorder /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 100 output.ivecs /scratch/zpeng/sift1m/sift.true-100_NN.v2.binary 1 413 413 1 0 0 0 999 999 1 /scratch/zpeng/sift1m/sift_reorder_map.binary 0

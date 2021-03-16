@@ -1,9 +1,9 @@
 //
-// Created by Zhen Peng on 02/03/2020.
+// Created by Zhen Peng on 03/10/2020.
 //
 
-#include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
-#define BREAKDOWN_PRINT
+#include "Searching.202103101606.PSS_v5.large_graph.v_counter.h"
+//#define BREAKDOWN_PRINT
 
 namespace PANNS {
 
@@ -1458,6 +1458,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                 auto &cand = set_L[master_queue_start + k_master];
                 if (!cand.is_checked_) {
                     cand.is_checked_ = true;
+                    ++visit_counter_[cand.id_];
                     idi cand_id = cand.id_;
                     r = expand_one_candidate(
                             0,
@@ -1486,11 +1487,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                 }
             }
         }
-//        {//test
-//            for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//                printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
-//            }
-//        }
 //        idi index_th = L - 1;
 //        idi index_th = K / 3;
 //        idi index_th = K * 2 / 3;
@@ -1541,7 +1537,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             time_expand_ -= WallTimer::get_time_mark();
 #endif
 
-#pragma omp parallel reduction(+ : tmp_count_computation)
+//#pragma omp parallel reduction(+ : tmp_count_computation)
             {
 //                bool is_quota_done = false;
                 int w_i = omp_get_thread_num();
@@ -1556,6 +1552,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                     auto &cand = set_L[local_queue_start + k_uc];
                     if (!cand.is_checked_) {
                         cand.is_checked_ = true;
+                        ++visit_counter_[cand.id_];
                         ++worker_iter;
                         cand_id = cand.id_;
                         r = expand_one_candidate(
@@ -1570,12 +1567,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                                 queue_capacity,
                                 is_visited,
                                 tmp_count_computation);
-//                        {//test
-//                            printf("==== worker_iter: %u ====\n", worker_iter);
-//                            for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//                                printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
-//                            }
-//                        }
                         if (r <= k_uc) {
                             k_uc = r;
                         } else {
@@ -1590,9 +1581,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 ////                        if (r >= index_thresh_) {
 ////                            break;
 ////                        }
-//                        {//test
-//                            printf("iter:%u cand_id:%u\n", iter, cand_id);
-//                        }
                     } else {
                         ++k_uc;
                     }
@@ -1662,16 +1650,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 #ifdef BREAKDOWN_PRINT
     time_seq_ += WallTimer::get_time_mark();
 #endif
-//    {//test
-//        for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//            printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
-//        }
-//    }
-//    {//test
-//        if (query_id == 0) {
-//            exit(0);
-//        }
-//    }
 }
 
 
