@@ -10,7 +10,7 @@ Parallel Approximate Nearest Neighbor Search
 - Requires boost for C++ to support `boost::dynamic_bitset`.
 - Requires OpenMP.
 - Requires `bash` or `zsh` for those `.sh` scripts.
-- `KMP_AFFINITY` right now is set in the `test51.PSS_v5_dt_profiling_ranged_L.py` and `test48.find_L_simple_search.py`. Its value might needs to be **modified** according to the running machine.
+- `KMP_AFFINITY` right now is set in the `test51.PSS_v5_dt_profiling_ranged_L.py` and `test48.find_L_simple_search.py`. Its value might need to be **modified** according to the running machine.
 
 # Prepare
 
