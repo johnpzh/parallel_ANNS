@@ -3,7 +3,6 @@ Parallel Approximate Nearest Neighbor Search
 
 # Environment
 
--------------
 
 - Compiler: Recommend Intel C++ Compiler (`icpc`).
 - Requires CMake ≥ 3.9 .
@@ -15,7 +14,6 @@ Parallel Approximate Nearest Neighbor Search
 
 # Prepare
 
----------
 
 Right now, the dataset's relative path and file names are hard code.
 
@@ -24,7 +22,6 @@ Right now, the dataset's relative path and file names are hard code.
 
 # Build
 
--------
 
 In the repository's root directory, use `cmake` to build.
 
@@ -36,7 +33,6 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=
 
 # Run
 
------
 
 After building is finished, under directory `cmake-build-release/`, use the following command to run the shell script `sh70.PSS_v5_dt_profiling_deep1b.sh` to test the **Parallel Search**'s performance. Please note to use in the command the directory `/path/to/some/data/directory`, not `/path/to/some/data/directory/deep1b`. And the number of threads (`num_t`) is set in the script. In default, it will run 1 to 64 threads.
 
