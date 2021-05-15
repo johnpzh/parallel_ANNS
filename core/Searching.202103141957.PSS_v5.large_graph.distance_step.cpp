@@ -1236,6 +1236,7 @@ idi Searching::expand_one_candidate(
 ////        _mm_prefetch(opt_nsg_graph_ + out_edges[n_i] * vertex_bytes_, _MM_HINT_T0);
 ////    }
     idi nk = local_queue_capacity;
+    uint64_t worker_cmpt = 0;
 
     for (idi e_i = 0; e_i < out_degree; ++e_i) {
         idi nb_id = out_edges[e_i];
@@ -1256,6 +1257,7 @@ idi Searching::expand_one_candidate(
                 nb_id,
                 query_data,
                 query_norm);
+        ++worker_cmpt;
 
 //        if (dist > dist_bound) {
         if (dist > dist_bound || dist > dist_thresh) {
@@ -1285,6 +1287,7 @@ idi Searching::expand_one_candidate(
     }
     local_count_computation += tmp_count_computation;
 
+    prf_cmpt_step_list_[worker_id].emplace_back(total_iter, worker_cmpt);
     return nk;
 }
 
@@ -1634,6 +1637,8 @@ void Searching::para_search_PSS_v5_large_graph_distance_step(
 #endif
 
     std::vector< std::vector<Cand> > cand_step_dist_to_query_list(num_threads_);
+    prf_cmpt_step_list_.resize(num_threads_);
+
 
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
@@ -1924,44 +1929,125 @@ void Searching::para_search_PSS_v5_large_graph_distance_step(
 //        std::fill(local_queues_sizes.begin(), local_queues_sizes.end(), 0);
 //        std::fill(threads_computations_.begin(), threads_computations_.end(), 0);
     }
-    { // Print
-        printf("Step");
+//    { // Print step and distance
+//
+//        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+//            printf("Step\tT%d\t100-NN\n", w_i);
+//            const auto &cand_step_dist = cand_step_dist_to_query_list[w_i];
+//            for (const auto &e : cand_step_dist) {
+//                printf("%u\t%f\n", e.step_, e.dist_);
+//            }
+//            // kNN
+//            for (idi v_i = 0; v_i < K; ++v_i) {
+//                idi id = set_L[master_queue_start + v_i].id_;
+//                for (const auto &e : cand_step_dist) {
+//                    if (e.id_ != id) {
+//                        continue;
+//                    }
+//                    printf("%u\t\t%f\n", e.step_, e.dist_);
+//                }
+//            }
+//        }
+//
+////        /////////////////////////////
+////        printf("Step");
+////        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+////            printf("\tT%d", w_i);
+////        }
+////        printf("\t100-NN\n");
+////        // New candidate step and sitance to query
+////        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+////            const auto &cand_step_dist = cand_step_dist_to_query_list[w_i];
+////            for (const auto &e : cand_step_dist) {
+////                printf("%u\t", e.step_);
+////
+////                for (int i = 0; i < w_i; ++i) {
+////                    printf("\t");
+////                }
+////
+////                printf("%f\n", e.dist_);
+////            }
+////        }
+////
+////        // kNN
+////        for (idi v_i = 0; v_i < K; ++v_i) {
+////            idi id = set_L[master_queue_start + v_i].id_;
+////            for (int w_i = 0; w_i < num_threads_; ++w_i) {
+////                const auto &cand_step_dist = cand_step_dist_to_query_list[w_i];
+////                for (const auto &e : cand_step_dist) {
+////                    if (e.id_ != id) {
+////                        continue;
+////                    }
+////                    printf("%u\t", e.step_);
+////
+////                    for (int t_i = 0; t_i < num_threads_; ++t_i) {
+////                        printf("\t");
+////                    }
+////
+////                    printf("%f\n", e.dist_);
+////                }
+////            }
+////        }
+//        exit(EXIT_SUCCESS);
+//    }
+    {// Print workers' computation vs. step
+//        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+//            printf("Step_T%d\t"
+//                   "Compt.\n",
+//                   w_i);
+//            for (const auto &e : prf_cmpt_step_list_[w_i]) {
+//                printf("%u\t%lu\n", e.first, e.second);
+//            }
+//        }
+//        printf("Step");
+//        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+//            printf("\tCompt_T%d", w_i);
+//        }
+//        printf("\n");
+//        for (int w_i = 0; w_i < num_threads_; ++w_i) {
+//            for (const auto &e : prf_cmpt_step_list_[w_i]) {
+//                printf("%u\t", e.first);
+//
+//                for (int t_i = 0; t_i < w_i; ++t_i) {
+//                    printf("\t");
+//                }
+//
+//                printf("%lu\n", e.second);
+//            }
+//        }
         for (int w_i = 0; w_i < num_threads_; ++w_i) {
-            printf("\tT%d", w_i);
+            printf("Step\tT%d_Compt.", w_i);
+            if (w_i != num_threads_ - 1) {
+                printf("\t");
+            }
         }
-        printf("\t100-NN\n");
-        // New candidate step and sitance to query
-        for (int w_i = 0; w_i < num_threads_; ++w_i) {
-            const auto &cand_step_dist = cand_step_dist_to_query_list[w_i];
-            for (const auto &e : cand_step_dist) {
-                printf("%u\t", e.step_);
+        printf("\n");
+        idi row_idx = 0;
+        while (true) {
+            idi count_not_empty = 0;
 
-                for (int i = 0; i < w_i; ++i) {
+            // if finished
+            for (int w_i = 0; w_i < num_threads_; ++w_i) {
+                if (row_idx < prf_cmpt_step_list_[w_i].size()) {
+                    ++count_not_empty;
+                }
+            }
+            if (!count_not_empty) {
+                break;
+            }
+            for (int w_i = 0; w_i < num_threads_; ++w_i) {
+                const auto log = prf_cmpt_step_list_[w_i];
+                if (row_idx >= log.size()) {
+                    printf("\t");
+                } else {
+                    printf("%u\t%lu", log[row_idx].first, log[row_idx].second);
+                }
+                if (w_i != num_threads_ - 1) {
                     printf("\t");
                 }
-
-                printf("%f\n", e.dist_);
             }
-        }
-
-        // kNN
-        for (idi v_i = 0; v_i < K; ++v_i) {
-            idi id = set_L[master_queue_start + v_i].id_;
-            for (int w_i = 0; w_i < num_threads_; ++w_i) {
-                const auto &cand_step_dist = cand_step_dist_to_query_list[w_i];
-                for (const auto &e : cand_step_dist) {
-                    if (e.id_ != id) {
-                        continue;
-                    }
-                    printf("%u\t", e.step_);
-
-                    for (int t_i = 0; t_i < num_threads_; ++t_i) {
-                        printf("\t");
-                    }
-
-                    printf("%f\n", e.dist_);
-                }
-            }
+            printf("\n");
+            ++row_idx;
         }
         exit(EXIT_SUCCESS);
     }

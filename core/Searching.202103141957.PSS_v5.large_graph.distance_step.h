@@ -207,6 +207,8 @@ public:
     std::vector< std::vector<double> > prf_step_dist_query_list_;
     std::vector< std::vector<idi> > cnt_step_query_list_;
 
+    std::vector< std::vector< std::pair<uint32_t, uint64_t> > > prf_cmpt_step_list_;
+
 //    double time_pick_ = 0.0;
 //    uint64_t count_full_merge_ = 0;
 //    uint64_t count_iterations_ = 0;

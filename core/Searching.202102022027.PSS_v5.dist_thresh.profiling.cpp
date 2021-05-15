@@ -3,7 +3,7 @@
 //
 
 #include "Searching.202102022027.PSS_v5.dist_thresh.profiling.h"
-#define BREAKDOWN_PRINT
+//#define BREAKDOWN_PRINT
 
 namespace PANNS {
 
@@ -826,7 +826,7 @@ idi Searching::expand_one_candidate(
         const idi cand_id,
         const dataf *query_data,
         const distf &dist_bound,
-        distf &dist_thresh,
+//        distf &dist_thresh,
         std::vector<Candidate> &set_L,
         const idi local_queue_start,
         idi &local_queue_size,
@@ -1319,7 +1319,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                     no_need_to_continue = true;
                     break;
                 }
-                distf dist_thresh = last_dist;
+//                distf dist_thresh = last_dist;
                 auto &cand = set_L[master_queue_start + k_master];
                 if (!cand.is_checked_) {
                     cand.is_checked_ = true;
@@ -1330,7 +1330,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                             cand_id,
                             query_data,
                             last_dist,
-                            dist_thresh,
+//                            dist_thresh,
                             set_L,
                             master_queue_start,
                             master_queue_size,
@@ -1389,7 +1389,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
 #endif
                 break;
             }
-            distf dist_thresh = last_dist;
+//            distf dist_thresh = last_dist;
 //            distf dist_thresh = set_L[master_queue_start + master_queue_size - 1].distance_;
 #ifdef BREAKDOWN_PRINT
             time_seq_ += WallTimer::get_time_mark();
@@ -1422,7 +1422,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                                 cand_id,
                                 query_data,
                                 last_dist,
-                                dist_thresh,
+//                                dist_thresh,
                                 set_L,
                                 local_queue_start,
                                 local_queue_size,

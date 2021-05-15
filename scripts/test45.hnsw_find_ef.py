@@ -19,7 +19,8 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin=F"numactl -m 0 ./{app}"
+# bin=F"numactl -m 0 ./{app}"
+bin=F"./{app}"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
@@ -55,6 +56,12 @@ elif data == "deep1m":
     data_dir = base_dir + "/deep1b"
     data_name = "deep1M"
     num_v = 1
+    dim = 96
+    num_q = 10000
+elif data == "deep1b":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep1B"
+    num_v = 1000
     dim = 96
     num_q = 10000
 else:

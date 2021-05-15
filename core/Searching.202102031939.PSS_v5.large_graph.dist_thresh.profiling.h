@@ -68,7 +68,7 @@ public:
 //    int num_threads_inter_query_ = 1;
 //    uint64_t thread_compuation_quota_ = 0;
 //    std::vector<uint64_t> threads_computations_;
-    idi index_thresh_ = 99;
+    idi index_thresh_ = 99; // No Use
 
     dataf compute_norm(
             const dataf *data) const;

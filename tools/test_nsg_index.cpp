@@ -7,6 +7,7 @@
 
 #include "../include/efanna2e/index_nsg.h"
 #include "../include/efanna2e/util.h"
+#include <omp.h>
 
 void load_data(char* filename, float*& data, unsigned& num,
                unsigned& dim) {  // load data with sift10K pattern
@@ -30,8 +31,8 @@ void load_data(char* filename, float*& data, unsigned& num,
     in.close();
 }
 int main(int argc, char** argv) {
-    if (argc != 7) {
-        std::cout << argv[0] << " data_file nn_graph_path L R C save_graph_file"
+    if (argc != 8) {
+        std::cout << argv[0] << " data_file nn_graph_path L R C save_graph_file num_t"
                   << std::endl;
         exit(-1);
     }
@@ -46,6 +47,8 @@ int main(int argc, char** argv) {
     unsigned L = (unsigned)atoi(argv[3]);
     unsigned R = (unsigned)atoi(argv[4]);
     unsigned C = (unsigned)atoi(argv[5]);
+    unsigned num_t = strtoull(argv[7], nullptr, 0);
+    omp_set_num_threads(num_t);
 
     // data_load = efanna2e::data_align(data_load, points_num, dim);//one must
     // align the data before build
@@ -64,6 +67,7 @@ int main(int argc, char** argv) {
     std::chrono::duration<double> diff = e - s;
 
     std::cout << "indexing_time: " << diff.count() << "\n";
+    printf("Save...\n");
     index.Save(argv[6]);
 
     return 0;

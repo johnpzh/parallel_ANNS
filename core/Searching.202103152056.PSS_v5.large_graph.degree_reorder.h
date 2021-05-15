@@ -37,7 +37,7 @@ public:
 
     idi width_ = 0; // NSG largest degree
     idi ep_ = 0; // Start point
-    idi ep_old_ = 0;
+//    idi ep_old_ = 0;
 
 //    std::vector<dataf> data_load_;
 //    std::vector<dataf> queries_load_;
@@ -59,6 +59,7 @@ public:
 
     char *opt_nsg_graph_ = nullptr;
     uint64_t data_bytes_;
+    uint64_t child_bytes_;
     uint64_t neighbor_bytes_;
     uint64_t vertex_bytes_;
 
@@ -69,7 +70,7 @@ public:
 //    int num_threads_inter_query_ = 1;
 //    uint64_t thread_compuation_quota_ = 0;
 //    std::vector<uint64_t> threads_computations_;
-    idi index_thresh_ = 99;
+//    idi index_thresh_ = 99;
 
     dataf compute_norm(
             const dataf *data) const;
@@ -126,21 +127,21 @@ public:
             std::vector<idi> &local_queues_sizes,
             const idi local_queue_capacity,
             const idi L) const;
-    void get_out_degree_and_edges(
-            const idi cand_id_global,
-            idi &out_degree,
-            idi *&out_edges) const;
-    distf get_distance_to_query(
-            const idi v_id_global,
-            const dataf *query_data,
-            const dataf query_norm) const;
+//    void get_out_degree_and_edges(
+//            const idi cand_id_global,
+//            idi &out_degree,
+//            idi *&out_edges) const;
+//    distf get_distance_to_query(
+//            const idi v_id_global,
+//            const dataf *query_data,
+//            const dataf query_norm) const;
     idi expand_one_candidate(
             const int worker_id,
             const idi cand_id_global,
             const dataf *query_data,
             const dataf query_norm,
             const distf &dist_bound,
-            distf &dist_thresh,
+//            distf &dist_thresh,
             std::vector<Candidate> &set_L,
             const idi local_queue_start,
             idi &local_queue_size,
@@ -236,20 +237,30 @@ public:
     void load_common_nsg_graph(const char *filename);
 //    void build_opt_graph();
     void reorder_load_data();
-    void load_and_reorder_nsg_graph(const char *filename);
+    void load_nsg_and_reorder(const char *filename);
     void load_reorder_map(const char *filename);
+    void load_data_and_reorder(
+            const char *filename);
     void prepare_init_ids(
             std::vector<unsigned> &init_ids,
             const unsigned L) const;
     void load_true_NN(
             const char *filename,
-            std::vector< std::vector<idi> > &true_nn_list);
-    void reorder_true_NN(
-            const std::vector< std::vector<idi> > &old_true_nn_list,
-            std::vector< std::vector<idi> > &new_true_nn_list);
+            std::vector< std::vector< std::pair<idi, distf> > > &true_nn_list);
+//            std::vector< std::vector<idi> > &true_nn_list);
+    void load_true_NN_and_reorder(
+            const char *filename,
+            std::vector< std::vector< std::pair<idi, distf> > > &true_nn_list);
+//    void reorder_true_NN(
+//            const std::vector< std::vector< std::pair<idi, distf> > > &old_true_nn_list,
+//            std::vector< std::vector< std::pair<idi, distf> > > &new_true_nn_list);
+////            const std::vector< std::vector<idi> > &old_true_nn_list,
+////            std::vector< std::vector<idi> > &new_true_nn_list);
     void get_recall_for_all_queries(
-            const std::vector< std::vector<idi> > &true_nn_list,
-            const std::vector<std::vector<unsigned>> &set_K_list,
+            const std::vector< std::vector< std::pair<idi, distf> > > &true_nn_list,
+            const std::vector< std::vector< std::pair<idi, distf> > > &set_K_list,
+//            const std::vector< std::vector<idi> > &true_nn_list,
+//            const std::vector<std::vector<unsigned>> &set_K_list,
             std::unordered_map<unsigned, double> &recalls,
             const idi L) const;
 
@@ -268,7 +279,7 @@ public:
 //            boost::dynamic_bitset<> &is_visited,
 //            const idi subsearch_iterations,
 //            std::vector<idi> &top_m_candidates);
-    void para_search_PSS_v5_large_graph_count_reorder(
+    void para_search_PSS_v5_large_graph_degree_reorder(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,
@@ -276,7 +287,8 @@ public:
             const idi L,
             std::vector<Candidate> &set_L,
             const std::vector<idi> &init_ids,
-            std::vector<idi> &set_K,
+            std::vector< std::pair<idi, distf> > &set_K,
+//            std::vector<idi> &set_K,
             const idi local_queue_capacity, // Maximum size of local queue
             const std::vector<idi> &local_queues_starts,
             std::vector<idi> &local_queues_sizes, // Sizes of local queue

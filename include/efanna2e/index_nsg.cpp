@@ -215,6 +215,11 @@ void IndexNSG::init_graph(const Parameters &parameters) {
         for (unsigned j = 0; j < dimension_; j++) {
             center[j] += data_[i * dimension_ + j];
         }
+        {//test
+            if ((i & 0x1FFFFFF) == 0) {
+                printf("init_graph:i:%u\n", i);
+            }
+        }
     }
     for (unsigned j = 0; j < dimension_; j++) {
         center[j] /= nd_;
@@ -376,25 +381,39 @@ void IndexNSG::Link(const Parameters &parameters, SimpleNeighbor *cut_graph_) {
             std::cout<<progress++ <<"/"<< percent << " completed" << std::endl;
             }
             */
+            {//test
+                if ((n & 0xFFFF) == 0) {
+                    printf("Link:n:%u\n", n);
+                }
+            }
         }
     }
 
 #pragma omp for schedule(dynamic, 100)
     for (unsigned n = 0; n < nd_; ++n) {
         InterInsert(n, range, locks, cut_graph_);
+        {//test
+            if ((n & 0x1FFFFFF) == 0) {
+                printf("Link:InterInsert:n:%u\n", n);
+            }
+        }
     }
 }
 
 void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) {
     std::string nn_graph_path = parameters.Get<std::string>("nn_graph_path");
     unsigned range = parameters.Get<unsigned>("R");
+    printf("load nn_graph: %s ...\n", nn_graph_path.c_str());
     Load_nn_graph(nn_graph_path.c_str());
     data_ = data;
+    printf("init_graph()...\n");
     init_graph(parameters);
     SimpleNeighbor *cut_graph_ = new SimpleNeighbor[nd_ * (size_t)range];
+    printf("Link...\n");
     Link(parameters, cut_graph_);
     final_graph_.resize(nd_);
 
+    printf("final_graph...\n");
     for (size_t i = 0; i < nd_; i++) {
         SimpleNeighbor *pool = cut_graph_ + i * (size_t)range;
         unsigned pool_size = 0;
@@ -407,8 +426,14 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) 
         for (unsigned j = 0; j < pool_size; j++) {
             final_graph_[i][j] = pool[j].id;
         }
+        {//test
+            if ((i & 0x1FFFFFF) == 0) {
+                printf("Build:i:%lu\n", i);
+            }
+        }
     }
 
+    printf("tree_grow...\n");
     tree_grow(parameters);
 
     unsigned max = 0, min = 1e6, avg = 0;
@@ -680,10 +705,10 @@ void IndexNSG::tree_grow(const Parameters &parameter) {
     unsigned unlinked_cnt = 0;
     while (unlinked_cnt < nd_) {
         DFS(flags, root, unlinked_cnt);
-        // std::cout << unlinked_cnt << '\n';
+        std::cout << unlinked_cnt << '\n';
         if (unlinked_cnt >= nd_) break;
         findroot(flags, root, parameter);
-        // std::cout << "new root"<<":"<<root << '\n';
+        std::cout << "new root"<<":"<<root << '\n';
     }
     for (size_t i = 0; i < nd_; ++i) {
         if (final_graph_[i].size() > width) {

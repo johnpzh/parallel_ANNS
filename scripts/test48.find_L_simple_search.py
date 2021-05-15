@@ -20,8 +20,8 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin=F"numactl -m 0 ./{app}"
-# bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search"
+# bin=F"numactl -m 0 ./{app}"
+bin=F"./{app}"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
@@ -41,6 +41,9 @@ elif data == "deep100m":
 elif data == "deep1m":
     data_dir = base_dir + "/deep1b"
     data_name = "deep1M"
+elif data == "deep1b":
+    data_dir = base_dir + "/deep1b"
+    data_name = "deep1B"
 else:
     print(F"Error: data {data} is unknown.")
     exit()

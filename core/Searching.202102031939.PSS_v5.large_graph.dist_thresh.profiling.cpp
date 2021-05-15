@@ -3,7 +3,7 @@
 //
 
 #include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
-#define BREAKDOWN_PRINT
+//#define BREAKDOWN_PRINT
 
 namespace PANNS {
 
@@ -144,15 +144,26 @@ void Searching::load_common_nsg_graph(char *filename)
     }
     fin.read(reinterpret_cast<char *>(&width_), sizeof(unsigned));
     fin.read(reinterpret_cast<char *>(&ep_), sizeof(unsigned));
+#ifdef DEBUG_PRINT
+    printf("width_: %u ep_: %u num_v: %u\n", width_, ep_, num_v_);
+    printf("memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+#endif
 
-    std::vector< std::vector<idi> > edge_list(num_v_);
+//    std::vector< std::vector<idi> > edge_list(num_v_);
+    std::vector< std::vector<idi> > edge_list;
+#ifdef DEBUG_PRINT
+    printf("created edge_list: memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+#endif
     // Read edge_list
     {
-        common_nsg_vertex_base_ = (edgei *) malloc(num_v_ * sizeof(edgei));
+        common_nsg_vertex_base_ = (edgei *) malloc(static_cast<uint64_t>(num_v_) * sizeof(edgei));
         if (!common_nsg_vertex_base_) {
             fprintf(stderr, "Error: load_common_nsg_graph(): common_nsg_vertex_base_ malloc failed.\n");
             exit(EXIT_FAILURE);
         }
+#ifdef DEBUG_PRINT
+        printf("created common_nsg_vertex_base_ memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+#endif
         edgei base_offset = 0;
         idi v_id = 0;
         num_e_ = 0;
@@ -166,8 +177,14 @@ void Searching::load_common_nsg_graph(char *filename)
 
             num_e_ += degree;
             base_offset += 1 + degree;
-
-            edge_list[v_id].resize(degree);
+            edge_list.emplace_back(degree);
+#ifdef DEBUG_PRINT
+            if (!(v_id & 0xFFFFFF)) {
+                printf("edge_list: v_id: %u degree: %u base_offset: %lu ", v_id, degree, base_offset);
+                printf("memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+            }
+#endif
+//            edge_list[v_id].resize(degree);
             fin.read(reinterpret_cast<char *>(edge_list[v_id].data()), sizeof(unsigned) * degree);
             ++v_id;
         }
@@ -180,17 +197,26 @@ void Searching::load_common_nsg_graph(char *filename)
 
     // Copy neighbors
     {
-        common_nsg_deg_ngbrs_ = (idi *) malloc((num_v_ + num_e_) * sizeof(idi));
+        common_nsg_deg_ngbrs_ = (idi *) malloc((static_cast<uint64_t>(num_v_) + static_cast<uint64_t>(num_e_)) * sizeof(idi));
         if (!common_nsg_deg_ngbrs_) {
             fprintf(stderr, "Error: load_common_nsg_graph(): common_nsg_deg_ngbrs_ malloc failed.\n");
             exit(EXIT_FAILURE);
         }
+#ifdef DEBUG_PRINT
+        printf("created common_nsg_deg_ngbrs_ memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+#endif
         idi *nsg_base = common_nsg_deg_ngbrs_;
         for (idi v_id = 0; v_id < num_v_; ++v_id) {
             idi degree = edge_list[v_id].size();
             *nsg_base++ = degree;
             memcpy(nsg_base, edge_list[v_id].data(), sizeof(unsigned) * degree);
             nsg_base += degree;
+#ifdef DEBUG_PRINT
+            if (!(v_id & 0xFFFFFF)) {
+                printf("neighbors: v_id: %u degree: %u nsg_base: %lu\n", v_id, degree, nsg_base);
+            }
+#endif
+
         }
 //        fin.clear(std::ios_base::goodbit);
 //        fin.seekg(2 * sizeof(unsigned), std::ios_base::beg);
@@ -1001,7 +1027,6 @@ idi Searching::expand_one_candidate(
         dataf *nb_data = data_load_ + nb_id * dimension_;
         ++tmp_count_computation;
         distf dist = compute_distance(nb_data, query_data);
-
 //        if (dist > dist_bound) {
         if (dist > dist_bound || dist > dist_thresh) {
             continue;
@@ -1370,7 +1395,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
     const idi master_queue_start = local_queues_starts[num_threads_ - 1];
     idi &master_queue_size = local_queues_sizes[num_threads_ - 1];
     const dataf *query_data = queries_load_ + query_id * dimension_;
-
+#ifdef DEBUG_PRINT
+    printf("Initializing...\n");
+#endif
     // Initialization Phase
     initialize_set_L_para(
             query_data,
@@ -1381,7 +1408,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             master_queue_size,
             init_ids,
             is_visited);
-
 //    idi top_m_candidates_end = 0;
     const distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
     idi iter = 0; // for debug
@@ -1441,6 +1467,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
         uint64_t tmp_count_computation = 0;
 //        uint8_t count_workers_done = 0;
 
+#ifdef DEBUG_PRINT
+        printf("Sequential starting...\n");
+#endif
         // Sequential Start
         bool no_need_to_continue = false;
         {
@@ -1506,6 +1535,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
         time_seq_ += WallTimer::get_time_mark();
 #endif
 
+#ifdef DEBUG_PRINT
+        printf("Parallel running...\n");
+#endif
+
         // Parallel Phase
         while (!no_need_to_continue) {
 #ifdef BREAKDOWN_PRINT
@@ -1517,6 +1550,9 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //                printf("------- iter: %u -------\n", iter);
 //            }
             // Pick and copy top-M unchecked from Master to other workers
+#ifdef DEBUG_PRINT
+            printf("query_id: %u iter: %u picking...\n", query_id, iter);
+#endif
             if (!pick_top_m_to_workers(
 //                    M,
                     set_L,
@@ -1539,6 +1575,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             // Expand
 #ifdef BREAKDOWN_PRINT
             time_expand_ -= WallTimer::get_time_mark();
+#endif
+
+#ifdef DEBUG_PRINT
+            printf("query_id: %u iter: %u expanding...\n", query_id, iter);
 #endif
 
 #pragma omp parallel reduction(+ : tmp_count_computation)
@@ -1610,6 +1650,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
             time_expand_ += WallTimer::get_time_mark();
             time_merge_ -= WallTimer::get_time_mark();
 #endif
+
+#ifdef DEBUG_PRINT
+            printf("query_id: %u iter: %u merging...\n", query_id, iter);
+#endif
             // Merge
             {
                 ++count_merge_;
@@ -1633,6 +1677,10 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 #ifdef BREAKDOWN_PRINT
     time_seq_ -= WallTimer::get_time_mark();
 #endif
+
+#ifdef DEBUG_PRINT
+    printf("query_id: %u iter: %u ending...\n", query_id, iter);
+#endif
 #pragma omp parallel for
     for (idi k_i = 0; k_i < K; ++k_i) {
         set_K[k_i] = set_L[k_i + master_queue_start].id_;
@@ -1650,6 +1698,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 //               "iter: %u\n",
 //               query_id,
 //               iter);
+//        exit(0);
 //    }
 //    {//test
 //        for (idi k_i = 0; k_i < K; ++k_i) {

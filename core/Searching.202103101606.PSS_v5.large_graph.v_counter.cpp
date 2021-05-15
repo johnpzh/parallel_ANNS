@@ -1060,6 +1060,8 @@ void Searching::initialize_set_L_para(
         ++tmp_count_computation;
         distf dist = compute_distance(v_data, query_data);
         set_L[set_L_start + i] = Candidate(v_id, dist, false); // False means not checked.
+
+        ++visit_counter_[v_id];
     }
     count_distance_computation_ += tmp_count_computation;
 //        threads_computations_[0] += tmp_count_computation;

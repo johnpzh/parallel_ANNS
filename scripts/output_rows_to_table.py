@@ -28,7 +28,7 @@ with open(sys.argv[1]) as fin, \
         line = line.strip()
         if line[0] in ['%', '#', '-', '=', '+', 'F', 'N']:
             # is_first_line = True
-            fout.write(line + '\n')
+            # fout.write(line + '\n')
             continue
 
         # Get all columns

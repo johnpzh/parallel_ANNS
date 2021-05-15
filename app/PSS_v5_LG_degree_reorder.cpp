@@ -55,28 +55,61 @@ int main(int argc, char **argv)
     setlocale(LC_NUMERIC, ""); // For comma number format
 
     PANNS::Searching engine;
-    engine.load_data_load(argv[1]);
-    engine.load_queries_load(argv[2]);
-    const char *file_reorder_map = argv[17];
-    const unsigned opt_id_threshold = strtoull(argv[18], nullptr, 0);
-    engine.load_reorder_map(file_reorder_map);
-    engine.threshold_opt_id_ = std::min(opt_id_threshold, engine.num_v_);
-    engine.reorder_load_data();
-    engine.load_and_reorder_nsg_graph(argv[3]);
-//    engine.load_common_nsg_graph(argv[3]);
-
+    const char *file_data = argv[1];
+    const char *file_query = argv[2];
+    const char *file_nsg = argv[3];
     const unsigned K = strtoull(argv[4], nullptr, 0);
     const char *path_results = argv[5];
-    std::vector< std::vector<PANNS::idi> > true_nn_list;
-    {
-        std::vector< std::vector<PANNS::idi> > old_true_nn_list;
-        engine.load_true_NN(
-                argv[6],
-                old_true_nn_list);
-        engine.reorder_true_NN(
-                old_true_nn_list,
-                true_nn_list);
-    }
+    const char *file_true_NN = argv[6];
+    const char *file_reorder_map = argv[17];
+    const unsigned opt_id_threshold = strtoull(argv[18], nullptr, 0);
+    printf("==== read %s .\n", file_reorder_map);
+    engine.load_reorder_map(file_reorder_map);
+    engine.threshold_opt_id_ = std::min(opt_id_threshold, engine.num_v_);
+    printf("==== opt_id_threshold: %u\n", engine.threshold_opt_id_);
+    printf("==== read %s .\n", file_data);
+    engine.load_data_and_reorder(file_data);
+    printf("==== read %s .\n", file_nsg);
+    engine.load_nsg_and_reorder(file_nsg);
+    printf("==== read %s .\n", file_query);
+    engine.load_queries_load(file_query);
+    printf("==== read %s .\n", file_true_NN);
+    std::vector< std::vector< std::pair<PANNS::idi, PANNS::distf> > > true_nn_list;
+    engine.load_true_NN_and_reorder(file_true_NN, true_nn_list);
+
+//    {//test
+//        return 0;
+//    }
+//    //////////////////
+//    printf("==== read %s .\n", argv[1]);
+//    engine.load_data_load(argv[1]);
+//    printf("==== read %s . \n", argv[2]);
+//    engine.load_queries_load(argv[2]);
+//    const char *file_reorder_map = argv[17];
+//    const unsigned opt_id_threshold = strtoull(argv[18], nullptr, 0);
+//    printf("==== read %s .\n", file_reorder_map);
+//    engine.load_reorder_map(file_reorder_map);
+//    engine.threshold_opt_id_ = std::min(opt_id_threshold, engine.num_v_);
+//    engine.reorder_load_data();
+//    printf("==== read %s .\n", argv[3]);
+//    engine.load_nsg_and_reorder(argv[3]);
+/////////////////////////
+////    engine.load_common_nsg_graph(argv[3]);
+
+//    const unsigned K = strtoull(argv[4], nullptr, 0);
+//    const char *path_results = argv[5];
+//    std::vector< std::vector< std::pair<PANNS::idi, PANNS::distf> > > true_nn_list;
+////    std::vector< std::vector<PANNS::idi> > true_nn_list;
+//    {
+//        std::vector< std::vector< std::pair<PANNS::idi, PANNS::distf> > > old_true_nn_list;
+////        std::vector< std::vector<PANNS::idi> > old_true_nn_list;
+//        engine.load_true_NN(
+//                argv[6],
+//                old_true_nn_list);
+//        engine.reorder_true_NN(
+//                old_true_nn_list,
+//                true_nn_list);
+//    }
 
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
@@ -107,16 +140,17 @@ int main(int argc, char **argv)
 
     for (unsigned L_master = L_master_low; L_master <= L_master_up; L_master += L_master_step) {
         unsigned L_local = L_master;
-        unsigned Index_thresh = L_local - 1;
+//        unsigned Index_thresh = L_local - 1;
 //        for (unsigned L_local = L_local_low; L_local <= L_local_up; L_local += L_local_step) {
 
         for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_up; subsearch_iterations += X_step) {
 
 //                for (unsigned Index_thresh = I_thresh_low; Index_thresh <= I_thresh_up; Index_thresh += I_thresh_step) {
-            engine.index_thresh_ = Index_thresh;
+//            engine.index_thresh_ = Index_thresh;
             unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
-                std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
+                std::vector<std::vector< std::pair<PANNS::idi, PANNS::distf> > > set_K_list(query_num);
+//                std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
                 for (unsigned i = 0; i < query_num; i++) set_K_list[i].resize(K);
 
                 std::vector<PANNS::idi> init_ids(L_master);
@@ -136,7 +170,7 @@ int main(int argc, char **argv)
 //                    {//test
 //                        printf("q_i: %u\n", q_i);
 //                    }
-                    engine.para_search_PSS_v5_large_graph_count_reorder(
+                    engine.para_search_PSS_v5_large_graph_degree_reorder(
                             q_i,
                             K,
                             L_master,
@@ -148,6 +182,12 @@ int main(int argc, char **argv)
                             local_queues_sizes,
                             is_visited,
                             subsearch_iterations);
+                    ////////////////////////////
+                    //// CAREFUL!!!!
+                    if (q_i == 0) {
+                        break;
+                    }
+                    ////////////////////////////
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -177,7 +217,7 @@ int main(int argc, char **argv)
                             "GFLOPS: %f "
                             "local_L: %u "
                             "sub_iters: %u "
-                            "index_thresh: %u "
+//                            "index_thresh: %u "
                             "avg_merge: %f "
                             "t_expand(s.): %f "
                             "t_merge(s.): %f "
@@ -205,7 +245,7 @@ int main(int argc, char **argv)
                             diff.count(),
                             L_local,
                             subsearch_iterations,
-                            engine.index_thresh_,
+//                            engine.index_thresh_,
                             engine.count_merge_ * 1.0 / query_num,
                             engine.time_expand_,
                             engine.time_merge_,
@@ -226,7 +266,7 @@ int main(int argc, char **argv)
                 engine.time_merge_ = 0.0;
                 engine.time_seq_ = 0.0;
 //                engine.time_pick_ = 0.0;
-                PANNS::DiskIO::save_result(path_results, set_K_list);
+//                PANNS::DiskIO::save_result(path_results, set_K_list);
             }
 //                } // Index_threshold Ranged
         } // X Ranged

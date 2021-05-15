@@ -28,6 +28,12 @@ endif()
 #set(CXX_OPTION ${CXX_OPTION} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free)
 #set(LIBPAPI /usr/local/lib/libpapi.a)
 set(CXX_OPTION ${CXX_OPTION} -march=native)
+IF(DEFINED DEBUG_PRINT)
+        string(TOLOWER ${DEBUG_PRINT} DEBUG_PRINT_lower)
+        IF(NOT ${DEBUG_PRINT_lower} MATCHES "off")
+            add_compile_definitions(DEBUG_PRINT)
+        ENDIF()
+ENDIF()
 
 ## Build Library
 #add_library(PANNS
@@ -181,6 +187,11 @@ add_executable(test_nsg_index tools/test_nsg_index.cpp include/efanna2e/index_ns
 #target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
 target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION})
 target_link_libraries(test_nsg_index PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
+
+add_executable(test_nsg_index_findroot tools/test_nsg_index_findroot.cpp include/efanna2e/index_nsg.202104211705.findroot.cpp)
+#target_compile_options(test_nsg_index PRIVATE ${CXX_OPTION} -xHost)
+target_compile_options(test_nsg_index_findroot PRIVATE ${CXX_OPTION})
+target_link_libraries(test_nsg_index_findroot PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG)
 
 add_executable(test.true_NN tools/test.true_NN.cpp include/efanna2e/index_nsg.cpp)
 #target_compile_options(test.true_NN PRIVATE ${CXX_OPTION} -xHost)
@@ -431,6 +442,10 @@ add_executable(
         tools/widget_transpose.cpp)
 
 add_executable(
+        widget_get_fake_reorder_map
+        tools/widget_get_fake_reorder_map.cpp)
+
+add_executable(
         profile_para_single_query_search_PSS_v5_ranged_profiling
         app/profile_para_single_query_search_PSS_v5_ranged_profiling.cpp
         core/Searching.202101301609.PSS_v5.profiling.cpp)
@@ -675,4 +690,75 @@ target_compile_options(
         PRIVATE ${CXX_OPTION})
 target_link_libraries(
         PSS_v5_LG_degree_reorder
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_in_degree
+        app/PSS_v5_LG_in_degree.cpp
+        core/Searching.202103101606.PSS_v5.large_graph.v_counter.cpp)
+target_compile_options(
+        PSS_v5_LG_in_degree
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_in_degree
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_sequence_traverse
+        app/PSS_v5_sequence_traverse.cpp
+        core/Searching.202103191537.PSS_v5.sequence_traverse.cpp)
+target_compile_options(
+        PSS_v5_sequence_traverse
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_sequence_traverse
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_sequence_traverse_B
+        app/PSS_v5_sequence_traverse_B.cpp
+        core/Searching.202103191800.PSS_v5.sequence_traverse_B.cpp)
+target_compile_options(
+        PSS_v5_sequence_traverse_B
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_sequence_traverse_B
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_distance_threshold_profiling_no_search
+        app/PSS_v5_distance_threshold_profiling_no_search.cpp
+        core/Searching.202102022027.PSS_v5.dist_thresh.profiling.cpp)
+target_compile_options(
+        PSS_v5_distance_threshold_profiling_no_search
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_distance_threshold_profiling_no_search
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_distance_threshold_profiling_no_search
+        app/PSS_v5_LG_distance_threshold_profiling_no_search.cpp
+        core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.cpp)
+target_compile_options(
+        PSS_v5_LG_distance_threshold_profiling_no_search
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_distance_threshold_profiling_no_search
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#IF(DEFINED DEBUG_PRINT)
+#    target_compile_definitions(
+#            PSS_v5_LG_distance_threshold_profiling_no_search
+#            PRIVATE DEBUG_PRINT)
+#ENDIF()
+
+add_executable(
+        PSS_v5_LG_degree_reorder_no_search
+        app/PSS_v5_LG_degree_reorder_no_search.cpp
+        core/Searching.202103152056.PSS_v5.large_graph.degree_reorder.cpp)
+target_compile_options(
+        PSS_v5_LG_degree_reorder_no_search
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_degree_reorder_no_search
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

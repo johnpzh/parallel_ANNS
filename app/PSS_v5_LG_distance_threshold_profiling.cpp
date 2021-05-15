@@ -30,7 +30,7 @@
 //#include "../core/Searching.202008152055.interval_merge_v5.h"
 //#include "../core/Searching.202008211350.simple_top_m.h"
 #include "../core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
-
+//#define DEBUG_PRINT
 void usage(int argc, char *argv[])
 {
     if (argc != 20) {
@@ -52,8 +52,22 @@ int main(int argc, char **argv)
     setlocale(LC_NUMERIC, ""); // For comma number format
 
     PANNS::Searching engine;
+#ifdef DEBUG_PRINT
+    printf("Loading data: %s\n", argv[1]);
+#endif
     engine.load_data_load(argv[1]);
+#ifdef DEBUG_PRINT
+    printf("Loading queries: %s\n", argv[2]);
+#endif
     engine.load_queries_load(argv[2]);
+#ifdef DEBUG_PRINT
+    printf("Loading nsg index: %s\n", argv[3]);
+#endif
+//    {//test
+//        engine.num_v_ = 1000000000; // 1 Billion
+//        engine.num_queries_ = 10000;
+//        engine.dimension_ = 96;
+//    }
     engine.load_common_nsg_graph(argv[3]);
 
 //    engine.build_opt_graph();
@@ -72,6 +86,9 @@ int main(int argc, char **argv)
 //    }
     const char *path_results = argv[5];
     std::vector< std::vector<PANNS::idi> > true_nn_list;
+#ifdef DEBUG_PRINT
+    printf("Loading true_NN: %s\n", argv[6]);
+#endif
     engine.load_true_NN(
             argv[6],
             true_nn_list);
@@ -97,16 +114,18 @@ int main(int argc, char **argv)
     const unsigned I_thresh_low = strtoull(argv[17], nullptr, 0);
     const unsigned I_thresh_up = strtoull(argv[18], nullptr, 0);
     const unsigned I_thresh_step = strtoull(argv[19], nullptr, 0);
-
+#ifdef DEBUG_PRINT
+    printf("set num_threads: %d\n", num_threads);
+#endif
     for (unsigned L_master = L_master_low; L_master <= L_master_up; L_master += L_master_step) {
         unsigned L_local = L_master;
-        unsigned Index_thresh = L_local - 1;
+//        unsigned Index_thresh = L_local - 1;
 //        for (unsigned L_local = L_local_low; L_local <= L_local_up; L_local += L_local_step) {
 
         for (unsigned subsearch_iterations = X_low; subsearch_iterations <= X_up; subsearch_iterations += X_step) {
 
 //                for (unsigned Index_thresh = I_thresh_low; Index_thresh <= I_thresh_up; Index_thresh += I_thresh_step) {
-            engine.index_thresh_ = Index_thresh;
+//            engine.index_thresh_ = Index_thresh;
             unsigned warmup_max = 1;
             for (unsigned warmup = 0; warmup < warmup_max; ++warmup) {
                 std::vector<std::vector<PANNS::idi> > set_K_list(query_num);
@@ -126,6 +145,9 @@ int main(int argc, char **argv)
 //                engine.prepare_init_ids(init_ids, L_local);
                 engine.prepare_init_ids(init_ids, L_master);
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
+#ifdef DEBUG_PRINT
+                    printf("query_id: %u\n", q_i);
+#endif
                     engine.para_search_PSS_v5_large_graph_dist_thresh_profiling(
                             q_i,
                             K,
@@ -214,7 +236,7 @@ int main(int argc, char **argv)
                 engine.time_merge_ = 0.0;
                 engine.time_seq_ = 0.0;
 //                engine.time_pick_ = 0.0;
-                PANNS::DiskIO::save_result(path_results, set_K_list);
+//                PANNS::DiskIO::save_result(path_results, set_K_list);
             }
 //                } // Index_threshold Ranged
         } // X Ranged

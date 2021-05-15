@@ -75,7 +75,9 @@ int main(int argc, char **argv)
     engine.load_true_NN(
             argv[6],
             true_nn_list);
-
+//    {//test
+//        return 0;
+//    }
     unsigned data_dimension = engine.dimension_;
     unsigned points_num = engine.num_v_;
     unsigned query_num = engine.num_queries_;
@@ -140,6 +142,12 @@ int main(int argc, char **argv)
                             local_queues_sizes,
                             is_visited,
                             subsearch_iterations);
+                    ////////////////////////////
+                    //// CAREFUL!!!!
+                    if (q_i == 0) {
+                        break;
+                    }
+                    ////////////////////////////
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;
@@ -216,7 +224,7 @@ int main(int argc, char **argv)
                 engine.time_merge_ = 0.0;
                 engine.time_seq_ = 0.0;
 //                engine.time_pick_ = 0.0;
-                PANNS::DiskIO::save_result(path_results, set_K_list);
+//                PANNS::DiskIO::save_result(path_results, set_K_list);
             }
 //                } // Index_threshold Ranged
         } // X Ranged

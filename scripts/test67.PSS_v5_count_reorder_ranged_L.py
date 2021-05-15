@@ -3,11 +3,11 @@ import os
 import sys
 import subprocess
 
-if len(sys.argv) != 16:
+if len(sys.argv) != 17:
     print(F"{sys.argv[0]} <app> <data_dir> <data> "
           F"<tag> <num_t> <L_master_low> <L_master_up> "
           F"<L_master_step> <L_local_low> <L_local_up> <L_local_step> "
-          F"<X_low> <X_up> <X_step> <opt_id_threshold> ")
+          F"<X_low> <X_up> <X_step> <opt_id_threshold> <expand|in_degree>")
     # print(f"{sys.argv[0]} <data_dir> <tag>")
     exit()
 
@@ -26,11 +26,12 @@ X_lower = int(sys.argv[12])
 X_upper = int(sys.argv[13])
 X_step = int(sys.argv[14])
 opt_id_threshold = int(sys.argv[15])
+reorder_mode = sys.argv[16]
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin=F"numactl -p 0 ./{app}"
-# bin=F"numactl -m 0 ./{app}"
+# bin=F"numactl -p 0 ./{app}"
+bin=F"numactl -m 0 ./{app}"
 
 if data == "sift1m":
     data_dir = base_dir + "/sift1m"
@@ -54,6 +55,14 @@ else:
     print(F"Error: data {data} is unknown.")
     exit()
 
+if reorder_mode == "expand":
+    file_reorder_map = F"{data_dir}/{data_name}_reorder_map.expand.binary"
+elif reorder_mode == "in_degree":
+    file_reorder_map = F"{data_dir}/{data_name}_reorder_map.in_degree.binary"
+else:
+    print(F"Error: reorder mode {reorder_mode} is unknown.")
+    exit()
+
 label = F"{data}.{tag}"
 raw_file = F"output.{label}.raw.txt"
 
@@ -62,7 +71,7 @@ command = F"{bin} {data_dir}/{data_name}_base.fvecs {data_dir}/{data_name}_query
           F"100 output.ivecs {data_dir}/{data_name}.true-100_NN.v2.binary {num_t} " \
           F"{L_master_low} {L_master_up} {L_master_step} {L_local_low} " \
           F"{L_local_up} {L_local_step} {X_lower} {X_upper} " \
-          F"{X_step} {data_dir}/{data_name}_reorder_map.binary {opt_id_threshold} " \
+          F"{X_step} {file_reorder_map} {opt_id_threshold} " \
           F"| tee -a {raw_file}"
 subprocess.run(command, env=env_vars, shell=True, check=True)
 

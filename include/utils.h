@@ -14,6 +14,8 @@
 #include <fstream>
 #include <cmath>
 #include <sys/time.h>
+//#include <sys/resource.h>
+#include <unistd.h>
 #include <immintrin.h>
 #include "definitions.h"
 
@@ -32,6 +34,48 @@ namespace PANNS {
 //        const std::vector<std::vector<unsigned>> &results);
 //
 //double get_time_mark();
+
+class Mem {
+public:
+    /**
+     * reference: https://github.com/nmslib/hnswlib/blob/master/sift_1b.cpp
+     * @return memory footprint in bytes.
+     */
+    static size_t getCurrentRSS() {
+#if defined(_WIN32)
+        /* Windows -------------------------------------------------- */
+    PROCESS_MEMORY_COUNTERS info;
+    GetProcessMemoryInfo(GetCurrentProcess(), &info, sizeof(info));
+    return (size_t)info.WorkingSetSize;
+
+#elif defined(__APPLE__) && defined(__MACH__)
+        /* OSX ------------------------------------------------------ */
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+    if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO,
+        (task_info_t)&info, &infoCount) != KERN_SUCCESS)
+        return (size_t)0L;      /* Can't access? */
+    return (size_t)info.resident_size;
+
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+        /* Linux ---------------------------------------------------- */
+        long rss = 0L;
+        FILE *fp = nullptr;
+        if ((fp = fopen("/proc/self/statm", "r")) == nullptr)
+            return (size_t) 0L;      /* Can't open? */
+        if (fscanf(fp, "%*s%ld", &rss) != 1) {
+            fclose(fp);
+            return (size_t) 0L;      /* Can't read? */
+        }
+        fclose(fp);
+        return (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
+
+#else
+        /* AIX, BSD, Solaris, and Unknown OS ------------------------ */
+    return (size_t)0L;          /* Unsupported. */
+#endif
+    }
+};
 
 /**
  * Class for Disk IO, such as load data from file and save result to file.
@@ -60,6 +104,7 @@ public:
             fprintf(stderr, "Error: cannot open file %s\n", filename);
             exit(EXIT_FAILURE);
         }
+        dimension = 0;
         fin.read(reinterpret_cast<char *>(&dimension), 4); // Read the dimension
         fin.seekg(0, std::ios_base::end);
         uint64_t file_size = fin.tellg();
@@ -81,6 +126,12 @@ public:
 //        fin.read(reinterpret_cast<char *>(&data[i * dimension]), 4 * dimension);
 //        fin.read(reinterpret_cast<char *>(data[i].data()), 4 * dimension);
             fin.read(reinterpret_cast<char *>(data + i * dimension), 4 * dimension);
+#ifdef DEBUG_PRINT
+            if (!(i & 0xFFFFFF)) {
+                printf("load_data: v_id: %lu ", i);
+                printf("memory: %lu GB\n", Mem::getCurrentRSS() >> 30);
+            }
+#endif
         }
     }
 

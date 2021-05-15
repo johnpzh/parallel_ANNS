@@ -130,7 +130,7 @@ public:
             const idi cand_id,
             const dataf *query_data,
             const distf &dist_bound,
-            distf &dist_thresh,
+//            distf &dist_thresh,
             std::vector<Candidate> &set_L,
             const idi local_queue_start,
             idi &local_queue_size,
