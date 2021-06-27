@@ -14,7 +14,7 @@ void read_num_v(
         char *filename,
         PANNS::Searching &engine)
 {
-    unsigned dimension;
+    unsigned dimension = 0;
     unsigned number;
 
     std::ifstream fin(filename);

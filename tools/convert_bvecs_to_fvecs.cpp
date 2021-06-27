@@ -29,7 +29,7 @@ void convert(
         exit(EXIT_FAILURE);
     }
 
-    uint64_t dimension;
+    uint64_t dimension = 0;
     fin.read(reinterpret_cast<char *>(&dimension), 4); // Read the dimension
     fin.seekg(0, std::ios_base::end);
     const uint64_t data_bytes = dimension;

@@ -42,10 +42,10 @@ void generate(
 
 //    const uint32_t total_count = 200000000; // 200M
     const uint32_t total_count = sample_count;
-    uint64_t dimension;
+    uint64_t dimension = 0;
     fin.read(reinterpret_cast<char *>(&dimension), 4); // Read the dimension
     fin.seekg(0, std::ios_base::end);
-    const uint64_t data_bytes = dimension;
+    const uint64_t data_bytes = dimension; // SIFT1B is .bvces, so every data point is int8.
     const uint64_t element_bytes = 4 + data_bytes;
     const uint64_t file_bytes = fin.tellg();
     const uint64_t num_vectors = file_bytes / element_bytes; // Totle elements in the file.

@@ -13,7 +13,8 @@ set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS thread)
+#find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED)
 
 # OpenMP
 find_package(OpenMP REQUIRED)
@@ -120,43 +121,43 @@ target_compile_options(profile_para_single_query_top_m_search_middle_m PRIVATE $
 #target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX -lpapi)
 target_link_libraries(profile_para_single_query_top_m_search_middle_m PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
-add_executable(profile_seq_simple_search_two_queues app/profile_seq_simple_search_two_queues.cpp)
-if(FOUND_GCC930 AND FOUND_CPP6)
-#    message(KNL!!!)
-    ## For KNL
-    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
-    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
-else()
-    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION})
-    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-endif()
-
-add_executable(profile_para_simple_search_two_global_queues app/profile_para_simple_search_two_global_queues.cpp)
-if(FOUND_GCC930 AND FOUND_CPP6)
-#    message(KNL!!!)
-    ## For KNL
-    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
-    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
-#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
-else()
-    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION})
-    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES})
-#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-endif()
-
-
-add_executable(profile_para_simple_search_two_global_queues.workbuffer app/profile_para_simple_search_two_global_queues.workbuffer.cpp)
-if(FOUND_GCC930 AND FOUND_CPP6)
-    #    message(KNL!!!)
-    ## For KNL
-    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
-    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
-    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
-else()
-    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION})
-    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES})
-    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
-endif()
+#add_executable(profile_seq_simple_search_two_queues app/profile_seq_simple_search_two_queues.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+##    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+#    target_compile_options(profile_seq_simple_search_two_queues PRIVATE ${CXX_OPTION})
+#    target_link_libraries(profile_seq_simple_search_two_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
+#
+#add_executable(profile_para_simple_search_two_global_queues app/profile_para_simple_search_two_global_queues.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+##    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+##    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+#    target_compile_options(profile_para_simple_search_two_global_queues PRIVATE ${CXX_OPTION})
+#    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES})
+##    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
+#
+#
+#add_executable(profile_para_simple_search_two_global_queues.workbuffer app/profile_para_simple_search_two_global_queues.workbuffer.cpp)
+#if(FOUND_GCC930 AND FOUND_CPP6)
+#    #    message(KNL!!!)
+#    ## For KNL
+#    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION} -gxx-name=${FOUND_GCC930})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES} ${FOUND_CPP6})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX ${FOUND_CPP6})
+#else()
+#    target_compile_options(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${CXX_OPTION})
+#    target_link_libraries(profile_para_simple_search_two_global_queues.workbuffer PRIVATE ${Boost_LIBRARIES})
+#    #    target_link_libraries(profile_para_simple_search_two_global_queues PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+#endif()
 
 add_executable(profile_para_single_query_top_m_search_m_width.v2 app/profile_para_single_query_top_m_search_m_width.v2.cpp core/Searching.202008251657.m_width.v2.cpp)
 target_compile_options(profile_para_single_query_top_m_search_m_width.v2 PRIVATE ${CXX_OPTION})
@@ -761,4 +762,176 @@ target_compile_options(
         PRIVATE ${CXX_OPTION})
 target_link_libraries(
         PSS_v5_LG_degree_reorder_no_search
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_percentile
+        app/PSS_v5_LG_percentile.cpp
+        core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.cpp)
+target_compile_options(
+        PSS_v5_LG_percentile
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_percentile
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(NSG_seq_LG_percentile
+        app/NSG_seq_LG_percentile.cpp
+        include/efanna2e/index.cpp
+        include/efanna2e/index_nsg.cpp)
+target_compile_options(NSG_seq_LG_percentile PRIVATE ${CXX_OPTION})
+target_link_libraries(NSG_seq_LG_percentile PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_nn_distribution
+        app/PSS_v5_LG_nn_distribution.cpp
+        core/Searching.202105281923.PSS_v5_LG_nn_distribution.cpp)
+target_compile_options(
+        PSS_v5_LG_nn_distribution
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_nn_distribution
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+#add_executable(
+#        PSS_v5_LG_core_subgraph
+#        app/PSS_v5_LG_core_subgraph.cpp
+#        core/Searching.202105302215.PSS_v5_LG_core_subgraph.cpp)
+#target_compile_options(
+#        PSS_v5_LG_core_subgraph
+#        PRIVATE ${CXX_OPTION})
+#target_link_libraries(
+#        PSS_v5_LG_core_subgraph
+#        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_bfs_nn_subgraph
+        app/PSS_LG_bfs_nn_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_bfs_nn_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_bfs_nn_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_monotonic_bfs_subgraph
+        app/PSS_LG_monotonic_bfs_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_monotonic_bfs_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_monotonic_bfs_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_all_monotonic_bfs_subgraph
+        app/PSS_LG_all_monotonic_bfs_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_all_monotonic_bfs_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_all_monotonic_bfs_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_connected_to_nn_all_monotonic_bfs_subgraph
+        app/PSS_LG_connected_to_nn_all_monotonic_bfs_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_connected_to_nn_all_monotonic_bfs_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_connected_to_nn_all_monotonic_bfs_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_parallel_search_path_in_subgraph
+        app/PSS_LG_parallel_search_path_in_subgraph.cpp
+        core/Searching.202106170130.PSS_LG_bfs_parallel_path_subgraph.cpp)
+target_compile_options(
+        PSS_LG_parallel_search_path_in_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_parallel_search_path_in_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_parallel_search_path_in_subgraph_core_only
+        app/PSS_LG_parallel_search_path_in_subgraph_core_only.cpp
+        core/Searching.202106170130.PSS_LG_bfs_parallel_path_subgraph.cpp)
+target_compile_options(
+        PSS_LG_parallel_search_path_in_subgraph_core_only
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_parallel_search_path_in_subgraph_core_only
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_parallel_search_path_in_subgraph_w_nonmono
+        app/PSS_LG_parallel_search_path_in_subgraph_w_nonmono.cpp
+        core/Searching.202106251238.PSS_LG_bfs_parallel_path_w_nonmono_subgraph.cpp)
+target_compile_options(
+        PSS_LG_parallel_search_path_in_subgraph_w_nonmono
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_parallel_search_path_in_subgraph_w_nonmono
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_in_6_steps_connected_to_nn_all_monotonic_bfs_subgraph
+        app/PSS_LG_in_6_steps_connected_to_nn_all_monotonic_bfs_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_in_6_steps_connected_to_nn_all_monotonic_bfs_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_in_6_steps_connected_to_nn_all_monotonic_bfs_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_parallel_search_path_2_steps_dist_prune
+        app/PSS_LG_parallel_search_path_2_steps_dist_prune.cpp
+        core/Searching.202106261435.PSS_LG_bfs_parallel_path_2_steps_dist_prune.cpp)
+target_compile_options(
+        PSS_LG_parallel_search_path_2_steps_dist_prune
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_parallel_search_path_2_steps_dist_prune
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_nn_distribution_2_steps_dist_prune
+        app/PSS_v5_LG_nn_distribution_2_steps_dist_prune.cpp
+        core/Searching.202106261539.PSS_v5_LG_nn_distribution_2_steps_dist_prune.cpp)
+target_compile_options(
+        PSS_v5_LG_nn_distribution_2_steps_dist_prune
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_nn_distribution_2_steps_dist_prune
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v6_radius_bound
+        app/PSS_v6_radius_bound.cpp
+        core/Searching.202106271444.PSS_v6_radius_bound.cpp)
+target_compile_options(
+        PSS_v6_radius_bound
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v6_radius_bound
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v6_LG_radius_bound
+        app/PSS_v6_LG_radius_bound.cpp
+        core/Searching.202106271447.PSS_v6_LG_radius_bound.cpp)
+target_compile_options(
+        PSS_v6_LG_radius_bound
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v6_LG_radius_bound
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

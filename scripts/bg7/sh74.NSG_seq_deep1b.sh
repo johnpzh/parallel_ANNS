@@ -27,8 +27,8 @@ app_label="NSG_SEQ"
 
 P_target=0.900
 tag="${app_label}_find_L_P${P_target}"
-L_low=20000
-L_up=40000
+L_low=20800
+L_up=21100
 P_ts="0.9"
 eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${P_ts}
 

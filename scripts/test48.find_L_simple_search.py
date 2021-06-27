@@ -44,6 +44,9 @@ elif data == "deep1m":
 elif data == "deep1b":
     data_dir = base_dir + "/deep1b"
     data_name = "deep1B"
+elif data == "sift1b":
+    data_dir = base_dir + "/sift1b"
+    data_name = "sift1B"
 else:
     print(F"Error: data {data} is unknown.")
     exit()
@@ -61,7 +64,7 @@ subprocess.run(command, env=env_vars, shell=True, check=True)
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:12", shell=True, check=True)
 
 # #### DEEP100M
 # data_dir = base_dir + "/deep1b"
