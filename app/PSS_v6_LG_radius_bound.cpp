@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG_PRINT
                     printf("query_id: %u\n", q_i);
 #endif
-                    engine.para_search_PSS_v5_large_graph_dist_thresh_profiling(
+                    engine.PSS_v6_LG_radius_bound(
                             q_i,
                             K,
                             L_master,

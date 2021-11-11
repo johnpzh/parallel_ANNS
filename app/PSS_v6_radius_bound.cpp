@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 //                engine.prepare_init_ids(init_ids, L_local);
                 engine.prepare_init_ids(init_ids, L_master);
                 for (unsigned q_i = 0; q_i < query_num; ++q_i) {
-                    engine.para_search_PSS_v5_dist_thresh_profiling(
+                    engine.PSS_v6_radius_bound(
                             q_i,
                             K,
                             L_master,

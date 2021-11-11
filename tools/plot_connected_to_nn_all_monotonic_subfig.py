@@ -150,7 +150,7 @@ def plot(input_file: str, output_file: str, query_id: int):
         print(f"num_arrows: {num_arr}")
         # arrows = list()
         for a_i in range(num_arr):
-            sx, sy, ex, ey = fin.readline().split()
+            sid, sx, sy, eid, ex, ey = fin.readline().split()
 
             # #### test
             # if a_i > 600:

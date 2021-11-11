@@ -354,12 +354,35 @@ void test_omp_static(int argc, char *argv[])
 
 void test_level2(int parent)
 {
-#pragma omp parallel for num_threads(3)
-    for (int i = 0; i < 3; ++i) {
-//#pragma omp master
-        {
-            printf("level2: num_threads: %u parent: %u i: %u tid: %u\n",
-                   omp_get_num_threads(), parent, i, omp_get_thread_num());
+//#pragma omp parallel for num_threads(3)
+//    for (int i = 0; i < 3; ++i) {
+////#pragma omp master
+//        {
+//            printf("level2: num_threads: %u parent: %u i: %u tid: %u\n",
+//                   omp_get_num_threads(), parent, i, omp_get_thread_num());
+//            double sum = 17;
+//            uint64_t count = 0;
+//            while (true) {
+//                sum += sum * log10(sum) * sqrt(sum) * pow(sum, 7);
+//                ++count;
+//                if (0 == count && 0xFFFFFFFF) {
+//                    printf("count: %lu sum: %f\n", count, sum);
+//                }
+//            }
+//        }
+//    }
+#pragma omp parallel num_threads(3)
+    {
+        printf("level2: num_threads: %u parent: %u tid: %u\n",
+               omp_get_num_threads(), parent, omp_get_thread_num());
+        double sum = 17;
+        uint64_t count = 0;
+        while (true) {
+            sum += sum * log10(sum) * sqrt(sum) * pow(sum, 7);
+//            ++count;
+//            if (0 == count && 0xFFFFFFFF) {
+//                printf("count: %lu sum: %f\n", count, sum);
+//            }
         }
     }
 }
@@ -379,7 +402,7 @@ void test_level1(int parent)
 
 void test_run_levels()
 {
-    omp_set_nested(1);
+//    omp_set_nested(1); // Deprecated.
     omp_set_max_active_levels(2);
     test_level1(0);
 }
@@ -784,8 +807,8 @@ int main(int argc, char *argv[])
 
 //    test_openmp_performance(argc, argv);
 //    test_bitvector(argc, argv);
-    test_omp_static(argc, argv);
-//    test_run_levels();
+//    test_omp_static(argc, argv);
+    test_run_levels();
 //    test_thread();
 //    test_reduction();
 //    test_sections();

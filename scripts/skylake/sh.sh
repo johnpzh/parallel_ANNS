@@ -1,20 +1,34 @@
 #!/usr/local/bin/zsh
+set -x
+#data_dir="/scratch/zpeng/data"
+#data_dir="/home/zpeng/data"
+data_dir="/scratch/zpeng"
+data=sift100m
 
-#for num_t in 1 2 4 8 16 32 64; do
-#    python ../tools/plot_graph.py output.sift_Q17_T${num_t}_subgraph.txt output.sift_Q17_T${num_t}_subgraph.png
-#done
-base_dir=
-data_dir=
-data=sift
-q_id=17
+####################################
+#### PSS Multiple Threads
+####################################
+bin="python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py"
+app="PSS_v5_multi_queries_LG"
+app_tag="PSS_v5_multi_queries"
+################################
+#### Latency
+################################
 
-num_t=1
-L=
-X=
-tag=
-subgraph_file="output.sift_Q17_T${num_t}_subgraph.txt"
-./PSS_v5_LG_core_subgraph /scratch/zpeng/sift1m/sift_base.fvecs /scratch/zpeng/sift1m/sift_query.fvecs /scratch/zpeng/sift1m/sift.nsg 100 ${subgraph_file} /scratch/zpeng/sift1m/sift.true-100_NN.v2.binary ${num_t} 413 413 1 0 0 0 9999999 9999999 1 0 0 0 17
+P_target=0.999
+L_low=140
+L_up=140
+L_step=1
+X_low=140
+X_up=141
+X_step=1
 
-subgraph_file="output.sift_Q17_T${num_t}_subgraph_con2nn.txt"
-# python ../tools/plot_graph.py ${subgraph_file} output.sift_Q17_T1_subgraph.pdf
- python ../tools/plot_graph.py ${subgraph_file} output.sift_Q17_T1_subgraph.png
+for num_t in 16; do
+    tag="${app_tag}_T${num_t}_P${P_target}"
+    eval ${bin} ${app} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} 0 0 0 ${X_low} ${X_up} ${X_step} 0 0 0
+    table_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.table.txt"
+    selected_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.selected.txt"
+    python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2 ${P_target}
+done
+
+set +x

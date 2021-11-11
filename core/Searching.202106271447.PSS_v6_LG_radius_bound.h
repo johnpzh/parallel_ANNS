@@ -130,7 +130,7 @@ public:
             const idi cand_id,
             const dataf *query_data,
             const distf &dist_bound,
-            distf &dist_thresh,
+            const distf &dist_thresh,
             std::vector<Candidate> &set_L,
             const idi local_queue_start,
             idi &local_queue_size,
@@ -249,7 +249,7 @@ public:
 //            boost::dynamic_bitset<> &is_visited,
 //            const idi subsearch_iterations,
 //            std::vector<idi> &top_m_candidates);
-    void para_search_PSS_v5_large_graph_dist_thresh_profiling(
+    void PSS_v6_LG_radius_bound(
 //        const idi M,
 //        const idi worker_M,
             const idi query_id,

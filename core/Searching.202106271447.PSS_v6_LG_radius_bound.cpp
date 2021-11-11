@@ -986,7 +986,7 @@ idi Searching::expand_one_candidate(
         const idi cand_id,
         const dataf *query_data,
         const distf &dist_bound,
-        distf &dist_thresh,
+        const distf &dist_thresh,
         std::vector<Candidate> &set_L,
         const idi local_queue_start,
         idi &local_queue_size,
@@ -1373,7 +1373,7 @@ void Searching::initialize_set_L_para(
 //}
 
 
-void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
+void Searching::PSS_v6_LG_radius_bound(
 //        const idi M,
 //        const idi worker_M,
         const idi query_id,
@@ -1473,7 +1473,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
         // Sequential Start
         bool no_need_to_continue = false;
         {
-//            distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
             idi r;
 //            idi seq_iter_bound = num_threads_;
             const idi seq_iter_bound = 1;
@@ -1515,22 +1514,14 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                 }
             }
         }
-//        {//test
-//            for (idi v_i = 0; v_i < master_queue_size; ++v_i) {
-//                printf("id: %u dist: %f\n", set_L[master_queue_start + v_i].id_, set_L[master_queue_start + v_i].distance_);
-//            }
-//        }
-//        idi index_th = L - 1;
-//        idi index_th = K / 3;
-//        idi index_th = K * 2 / 3;
-//        idi index_th= K;
-//        idi index_th= K * 5 / 3 / num_threads_;
-//        if (index_th >= local_queue_capacity) {
-//            index_th = local_queue_capacity - 1;
-//        }
-//        if (index_th >= L) {
-//            index_th = L - 1;
-//        }
+//        const distf dist_thresh = set_L[master_queue_start].distance_;
+        distf dist_thresh;
+        const distf best_first = set_L[master_queue_start].distance_;
+        if (best_first < 0) {
+            dist_thresh = best_first / 1.3;
+        } else {
+            dist_thresh = 1.3 * best_first;
+        }
 #ifdef BREAKDOWN_PRINT
         time_seq_ += WallTimer::get_time_mark();
 #endif
@@ -1565,8 +1556,7 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
 #endif
                 break;
             }
-            distf dist_thresh = last_dist;
-//            distf dist_thresh = set_L[master_queue_start + master_queue_size - 1].distance_;
+//            distf dist_thresh = last_dist;
 #ifdef BREAKDOWN_PRINT
             time_seq_ += WallTimer::get_time_mark();
 #endif
@@ -1621,18 +1611,6 @@ void Searching::para_search_PSS_v5_large_graph_dist_thresh_profiling(
                         } else {
                             ++k_uc;
                         }
-//                        if (
-////                        if (w_i != num_threads_ - 1 &&
-//                                local_queue_size > index_thresh_
-//                                && set_L[local_queue_start + index_thresh_].distance_ < dist_thresh) {
-//                            dist_thresh = set_L[local_queue_start + index_thresh_].distance_;
-//                        }
-////                        if (r >= index_thresh_) {
-////                            break;
-////                        }
-//                        {//test
-//                            printf("iter:%u cand_id:%u\n", iter, cand_id);
-//                        }
                     } else {
                         ++k_uc;
                     }

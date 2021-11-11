@@ -291,10 +291,10 @@ int main(int argc, char **argv)
                 my_step,
                 my_distance,
                 all_mono_edgelist);
-        {//test
-            std::cout << "is_reached[640961]: " << is_reached[640961] << std::endl;
-            std::cout << "is_reached[735238]: " << is_reached[735238] << std::endl;
-        }
+//        {//test
+//            std::cout << "is_reached[640961]: " << is_reached[640961] << std::endl;
+//            std::cout << "is_reached[735238]: " << is_reached[735238] << std::endl;
+//        }
 
         // Get reverse edgelist
         printf("Getting reversed monotonic edges...\n");
@@ -318,10 +318,10 @@ int main(int argc, char **argv)
 //                my_distance, // for test
                 is_connected_to_nn);
 
-        {//test
-            std::cout << "is_connected_to_nn[640961]: " << is_connected_to_nn[640961] << std::endl;
-            std::cout << "is_connected_to_nn[735238]: " << is_connected_to_nn[735238] << std::endl;
-        }
+//        {//test
+//            std::cout << "is_connected_to_nn[640961]: " << is_connected_to_nn[640961] << std::endl;
+//            std::cout << "is_connected_to_nn[735238]: " << is_connected_to_nn[735238] << std::endl;
+//        }
 //        // Merge the vertices connected to the source and to the nearest neighbors
 //        printf("Merging vertices connected to source and nn...\n");
 //        get_vertices_connected_to_source_and_nn(
@@ -424,11 +424,15 @@ int main(int argc, char **argv)
             distf e_dist = my_distance[e_i];
             fprintf(fout,
                     "%u\t"
+                    "%u\t"
                     "%f\t"
                     "%u\t"
+                    "%u\t"
                     "%f\n",
+                    v_i,
                     v_step,
                     v_dist,
+                    e_i,
                     e_step,
                     e_dist);
         }

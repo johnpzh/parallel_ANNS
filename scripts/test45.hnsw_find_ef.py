@@ -64,6 +64,12 @@ elif data == "deep1b":
     num_v = 1000
     dim = 96
     num_q = 10000
+elif data == "sift1b":
+    data_dir = base_dir + "/sift1b"
+    data_name = "sift1B"
+    num_v = 1000
+    dim = 128
+    num_q = 10000
 else:
     print(F"Error: data {data} is unknown.")
     exit()

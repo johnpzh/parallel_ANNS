@@ -935,3 +935,163 @@ target_compile_options(
 target_link_libraries(
         PSS_v6_LG_radius_bound
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_bfs_path_from_17_vertices_w_radius_bound
+        app/PSS_LG_bfs_path_from_17_vertices_w_radius_bound.cpp
+        core/Searching.202106271833.PSS_LG_bfs_path_from_17_vertices.cpp)
+target_compile_options(
+        PSS_LG_bfs_path_from_17_vertices_w_radius_bound
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_bfs_path_from_17_vertices_w_radius_bound
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_LG_mini_cut_bfs_subgraph
+        app/PSS_LG_mini_cut_bfs_subgraph.cpp
+        core/Searching.202106051704.PSS_LG_bfs_subgraph.cpp)
+target_compile_options(
+        PSS_LG_mini_cut_bfs_subgraph
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_LG_mini_cut_bfs_subgraph
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_multi_queries
+        app/PSS_v5_multi_queries.cpp
+        core/Searching.202107291833.PSS_v5.multi_queries.cpp)
+target_compile_options(
+        PSS_v5_multi_queries
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_multi_queries
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_multi_queries_LG
+        app/PSS_v5_multi_queries_LG.cpp
+        core/Searching.202107292234.PSS_v5.multi_queries.LG.cpp)
+target_compile_options(
+        PSS_v5_multi_queries_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_multi_queries_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_multi_queries_load_balance
+        app/PSS_v5_multi_queries_load_balance.cpp
+        core/Searching.202107291833.PSS_v5.multi_queries.cpp)
+target_compile_options(
+        PSS_v5_multi_queries_load_balance
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_multi_queries_load_balance
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_multi_queries_load_balance_LG
+        app/PSS_v5_multi_queries_load_balance_LG.cpp
+        core/Searching.202107292234.PSS_v5.multi_queries.LG.cpp)
+target_compile_options(
+        PSS_v5_multi_queries_load_balance_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_multi_queries_load_balance_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        app_para_searching
+        app/app_para_searching.cpp)
+target_compile_options(
+        app_para_searching
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        app_para_searching
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        app_para_searching_LG
+        app/app_para_searching_LG.cpp)
+target_compile_options(
+        app_para_searching_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        app_para_searching_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_K_values
+        app/PSS_v5_LG_K_values.cpp
+        core/Searching.202108160800.PSS_v5_K_values_LG.cpp)
+target_compile_options(
+        PSS_v5_LG_K_values
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_K_values
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(NSG_seq_LG_K_values
+        app/NSG_seq_LG_K_values.cpp
+        include/efanna2e/index.cpp
+        include/efanna2e/index_nsg.cpp)
+target_compile_options(NSG_seq_LG_K_values PRIVATE ${CXX_OPTION})
+target_link_libraries(NSG_seq_LG_K_values PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_LG_separate_search
+        app/PSS_v5_LG_separate_search.cpp
+        core/Searching.202108171220.PSS_v5.separate_search.LG.cpp)
+target_compile_options(
+        PSS_v5_LG_separate_search
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_LG_separate_search
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_every_step_merge
+        app/PSS_v5_find_L_every_step_merge.cpp
+        core/Searching.202102022027.PSS_v5.dist_thresh.profiling.cpp)
+target_compile_options(
+        PSS_v5_find_L_every_step_merge
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_every_step_merge
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_every_step_merge_LG
+        app/PSS_v5_find_L_every_step_merge_LG.cpp
+        core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.cpp)
+target_compile_options(
+        PSS_v5_find_L_every_step_merge_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_every_step_merge_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_every_step_merge_L_master_LG
+        app/PSS_v5_find_L_every_step_merge_L_master_LG.cpp
+        core/Searching.202110151700.PSS_v5.LG.every_step_merge.cpp)
+target_compile_options(
+        PSS_v5_find_L_every_step_merge_L_master_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_every_step_merge_L_master_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_worker_variation_LG
+        app/PSS_v5_worker_variation_LG.cpp
+        core/Searching.202111050014.PSS_v5.worker_variation.LG.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_worker_variation_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_worker_variation_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)

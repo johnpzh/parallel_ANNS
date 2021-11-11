@@ -14,6 +14,8 @@
 #include <fstream>
 #include <cmath>
 #include <sys/time.h>
+#include <numeric>
+#include <algorithm>
 //#include <sys/resource.h>
 #include <unistd.h>
 #include <immintrin.h>
@@ -315,6 +317,34 @@ public:
 //    }
 //};
 // End class L2CacheMissRate
+
+/**
+ * Get the distance variation for the given vector.
+ * @param distances
+ * @return
+ */
+double get_dist_variation(const std::vector<distf> &distances);
+
+/**
+ * Get the distance standard deviation for the given vector.
+ * @param distances
+ * @return
+ */
+double get_dist_standard_deviation(const std::vector<distf> &distances);
+
+/**
+ * Get the distance's std_dev/mean for the given vector.
+ * @param distances
+ * @return
+ */
+double get_normalized_std_dev(const std::vector<distf> &distances);
+
+/**
+ * Get the median of all given indices
+ * @param ids
+ * @return
+ */
+idi get_index_median(const std::vector<idi> &ids);
 
 } // PANNS
 

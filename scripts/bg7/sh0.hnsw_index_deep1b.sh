@@ -93,17 +93,41 @@ set -x
 #    ./hnsw_index ${input} ${output} ${num_v} ${dim} ${M} ${efConstruction}
 #done
 
+##### DEEP1B
+#data_dir="${data_base}/deep1b"
+#data="deep1B"
+#input="${data_dir}/${data}_base.fvecs"
+#output="${data_dir}/${data}.hnsw"
+#num_v=1000
+#dim=96
+##efConstruction=40
+#for efConstruction in 400; do
+#    output="${data_dir}/${data}.ef${efConstruction}.hnsw"
+#    ./hnsw_index ${input} ${output} ${num_v} ${dim} ${M} ${efConstruction}
+#done
+
+#### SIFT1B
+data_dir="${data_base}/sift1b"
+data="sift1B"
+input="${data_dir}/${data}_base.fvecs"
+#output="${data_dir}/${data}.hnsw"
+num_v=1000
+dim=128
+efConstruction=1
+#efConstruction=40
+output="${data_dir}/${data}.ef${efConstruction}.hnsw"
+./hnsw_index ${input} ${output} ${num_v} ${dim} ${M} ${efConstruction}
+
 #### DEEP1B
 data_dir="${data_base}/deep1b"
 data="deep1B"
 input="${data_dir}/${data}_base.fvecs"
-output="${data_dir}/${data}.hnsw"
+#output="${data_dir}/${data}.hnsw"
 num_v=1000
 dim=96
+efConstruction=1
 #efConstruction=40
-for efConstruction in 400; do
-    output="${data_dir}/${data}.ef${efConstruction}.hnsw"
-    ./hnsw_index ${input} ${output} ${num_v} ${dim} ${M} ${efConstruction}
-done
+output="${data_dir}/${data}.ef${efConstruction}.hnsw"
+./hnsw_index ${input} ${output} ${num_v} ${dim} ${M} ${efConstruction}
 
 set +x

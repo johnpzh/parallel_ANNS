@@ -182,12 +182,12 @@ int main(int argc, char **argv)
                             local_queues_sizes,
                             is_visited,
                             subsearch_iterations);
-                    ////////////////////////////
-                    //// CAREFUL!!!!
-                    if (q_i == 0) {
-                        break;
-                    }
-                    ////////////////////////////
+//                    ////////////////////////////
+//                    //// CAREFUL!!!!
+//                    if (q_i == 0) {
+//                        break;
+//                    }
+//                    ////////////////////////////
                 }
                 auto e = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> diff = e - s;

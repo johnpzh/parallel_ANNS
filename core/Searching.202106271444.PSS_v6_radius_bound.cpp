@@ -826,7 +826,7 @@ idi Searching::expand_one_candidate(
         const idi cand_id,
         const dataf *query_data,
         const distf &dist_bound,
-//        distf &dist_thresh,
+        const distf &dist_thresh,
         std::vector<Candidate> &set_L,
         const idi local_queue_start,
         idi &local_queue_size,
@@ -864,8 +864,8 @@ idi Searching::expand_one_candidate(
         ++tmp_count_computation;
         distf dist = compute_distance_with_norm(nb_data, query_data, norm);
 
-        if (dist > dist_bound) {
-//        if (dist > dist_bound || dist > dist_thresh) {
+//        if (dist > dist_bound) {
+        if (dist > dist_bound || dist > dist_thresh) {
             continue;
         }
         Candidate cand(nb_id, dist, false);
@@ -1215,7 +1215,7 @@ void Searching::initialize_set_L_para(
 ////    }
 //}
 
-void Searching::para_search_PSS_v5_dist_thresh_profiling(
+void Searching::PSS_v6_radius_bound(
 //        const idi M,
 //        const idi worker_M,
         const idi query_id,
@@ -1309,7 +1309,6 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
         // Sequential Start
         bool no_need_to_continue = false;
         {
-//            distf &last_dist = set_L[master_queue_start + master_queue_size - 1].distance_;
             idi r;
 //            idi seq_iter_bound = num_threads_;
             const idi seq_iter_bound = 1;
@@ -1319,7 +1318,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                     no_need_to_continue = true;
                     break;
                 }
-//                distf dist_thresh = last_dist;
+                distf dist_thresh = last_dist;
                 auto &cand = set_L[master_queue_start + k_master];
                 if (!cand.is_checked_) {
                     cand.is_checked_ = true;
@@ -1330,7 +1329,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                             cand_id,
                             query_data,
                             last_dist,
-//                            dist_thresh,
+                            dist_thresh,
                             set_L,
                             master_queue_start,
                             master_queue_size,
@@ -1351,17 +1350,14 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                 }
             }
         }
-//        idi index_th = L - 1;
-//        idi index_th = K / 3;
-//        idi index_th = K * 2 / 3;
-//        idi index_th= K;
-//        idi index_th= K * 5 / 3 / num_threads_;
-//        if (index_th >= local_queue_capacity) {
-//            index_th = local_queue_capacity - 1;
-//        }
-//        if (index_th >= L) {
-//            index_th = L - 1;
-//        }
+//        const distf dist_thresh = set_L[master_queue_start].distance_;
+        distf dist_thresh;
+        const distf best_first = set_L[master_queue_start].distance_;
+        if (best_first < 0) {
+            dist_thresh = best_first / 1.3;
+        } else {
+            dist_thresh = 1.3 * best_first;
+        }
 #ifdef BREAKDOWN_PRINT
         time_seq_ += WallTimer::get_time_mark();
 #endif
@@ -1412,6 +1408,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                 idi r;
                 idi worker_iter = 0;
                 while (worker_iter < subsearch_iterations && k_uc < local_queue_size) {
+//                    distf dist_thresh = last_dist;
                     auto &cand = set_L[local_queue_start + k_uc];
                     if (!cand.is_checked_) {
                         cand.is_checked_ = true;
@@ -1422,7 +1419,7 @@ void Searching::para_search_PSS_v5_dist_thresh_profiling(
                                 cand_id,
                                 query_data,
                                 last_dist,
-//                                dist_thresh,
+                                dist_thresh,
                                 set_L,
                                 local_queue_start,
                                 local_queue_size,
