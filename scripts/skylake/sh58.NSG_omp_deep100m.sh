@@ -7,7 +7,7 @@ data_dir="/scratch/zpeng"
 data=deep100m
 
 ###############
-#### SGS
+#### DEEP100M
 ###############
 bin="python3 ../scripts/test64.find_L_NSG_omp.py"
 app="profile_find_L_para_single_query_NSG_omp_large_graph"

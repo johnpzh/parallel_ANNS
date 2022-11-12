@@ -3,7 +3,7 @@
 //
 
 #include "Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.h"
-//#define BREAKDOWN_PRINT
+#define BREAKDOWN_PRINT
 
 namespace PANNS {
 

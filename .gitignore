@@ -7,6 +7,9 @@ venv/
 # MacOS
 .DS_Store
 
+# CLion
+.clion.source.upload.marker
+
 # Prerequisites
 *.d
 

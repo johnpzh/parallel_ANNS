@@ -1,0 +1,96 @@
+#!/usr/local/bin/zsh
+
+set -x
+
+data_dir="/home/zpeng/data"
+data=sift1m
+
+###############
+#### SIFT1M
+###############
+bin="python3 ../scripts/test64.find_L_NSG_omp.py"
+app="profile_find_L_para_single_query_NSG_omp_profile"
+app_label="NSG_OMP"
+#num_t=32
+
+#P_target=0.900
+#tag="${app_label}_T${num_t}_P${P_target}"
+#L_low=90
+#L_up=100
+#P_ts="0.9 0.91 0.92 0.93 0.94 0.95 0.96"
+#eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+#
+#P_target=0.970
+#tag="${app_label}_T${num_t}_P${P_target}"
+#L_low=100
+#L_up=200
+#P_ts="0.97 0.98 0.99 0.991 0.992"
+#eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+#
+#P_target=0.993
+#tag="${app_label}_T${num_t}_P${P_target}"
+#L_low=200
+#L_up=300
+#P_ts="0.993 0.994 0.995 0.996 0.997"
+#eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+#
+#P_target=0.998
+#tag="${app_label}_T${num_t}_P${P_target}"
+#L_low=300
+#L_up=350
+#P_ts="0.998"
+#eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+
+###############
+## 0.999
+###############
+P_target=0.999
+for num_t in 1 2 4 8 16 32 64; do
+    tag="${app_label}_P${P_target}_T${num_t}"
+    L_low=428
+    L_up=428
+    P_ts="0.999"
+    eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+done
+
+output_files="output.${data}.${app_label}_P${P_target}_T"
+table_file="output.${data}.${app_label}_P${P_target}_collected.table.txt"
+cat ${output_files}*.table.txt > ${table_file}
+
+###############
+## 0.99
+###############
+P_target=0.99
+#for num_t in 32 64; do
+for num_t in 1 2 4 8 16 32 64; do
+    tag="${app_label}_P${P_target}_T${num_t}"
+    L_low=173
+    L_up=173
+    P_ts="0.99"
+    eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+done
+
+output_files="output.${data}.${app_label}_P${P_target}_T"
+table_file="output.${data}.${app_label}_P${P_target}_collected.table.txt"
+cat ${output_files}*.table.txt > ${table_file}
+
+###############
+## 0.9
+###############
+P_target=0.9
+#for num_t in 32 64; do
+for num_t in 1 2 4 8 16 32 64; do
+    tag="${app_label}_P${P_target}_T${num_t}"
+    L_low=91
+    L_up=91
+    P_ts="0.9"
+    eval ${bin} ${app} ${data_dir} ${data} ${tag} ${L_low} ${L_up} ${num_t} ${P_ts}
+done
+
+output_files="output.${data}.${app_label}_P${P_target}_T"
+table_file="output.${data}.${app_label}_P${P_target}_collected.table.txt"
+cat ${output_files}*.table.txt > ${table_file}
+
+set +x
+
+

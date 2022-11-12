@@ -159,16 +159,16 @@ int main(int argc, char **argv)
 //                        continue;
 //                    }
                     // DEEP100M
-//                    if (q_i != 278
-//                        && q_i != 449
+                    if (q_i != 278
+                        && q_i != 449
 //                        && q_i != 1816
 //                        && q_i != 1864
-//                        && q_i != 2279
-//                        && q_i != 3540
+                        && q_i != 2279
+                        && q_i != 3540) {
 //                        && q_i != 5328
 //                        && q_i != 6164) {
-//                        continue;
-//                    }
+                        continue;
+                    }
 //                    // SIFT1M
 //                    if (std::find(queries_chosen.begin(), queries_chosen.end(), q_i) == queries_chosen.end()) {
 //                        continue;
@@ -193,16 +193,16 @@ int main(int argc, char **argv)
                             merge_step);
 
                     {// print out
-                        if (merge_step.size() <= 1) {
-                            continue;
-                        }
-                        {
-                            printf("merge_steps:");
-                            for (uint32_t ms : merge_step) {
-                                printf(" %u", ms);
-                            }
-                            printf("\n");
-                        }
+//                        if (merge_step.size() <= 1) {
+//                            continue;
+//                        }
+//                        {
+//                            printf("merge_steps:");
+//                            for (uint32_t ms : merge_step) {
+//                                printf(" %u", ms);
+//                            }
+//                            printf("\n");
+//                        }
                         printf("step:\tQ%u-dvar\tQ%u-imed\n", q_i, q_i);
                         for (uint32_t s_i = 0; s_i < every_step_variance.size(); ++s_i) {
                             printf("%u\t%f\t%u",

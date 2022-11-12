@@ -1003,6 +1003,17 @@ target_link_libraries(
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(
+        PSS_v5_multi_queries_tuning_intra_LG
+        app/PSS_v5_multi_queries_tuning_intra_LG.cpp
+        core/Searching.202107292234.PSS_v5.multi_queries.LG.cpp)
+target_compile_options(
+        PSS_v5_multi_queries_tuning_intra_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_multi_queries_tuning_intra_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
         app_para_searching
         app/app_para_searching.cpp)
 target_compile_options(
@@ -1095,3 +1106,233 @@ target_compile_options(
 target_link_libraries(
         PSS_v5_worker_variation_LG
         PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_index_adaptive_merge_LG
+        app/PSS_v5_find_L_index_adaptive_merge_LG.cpp
+        core/Searching.202111110022.PSS_v5.index_adaptive_merge.LG.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_find_L_index_adaptive_merge_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_index_adaptive_merge_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        app/PSS_v5_find_L_index_adaptive_merge_L_master_LG.cpp
+        core/Searching.202111152031.PSS_v5.index_adaptive_merge_L_master.LG.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_worker_std_deviation_LG
+        app/PSS_v5_worker_std_deviation_LG.cpp
+        core/Searching.202111171644.PSS_v5.worker_std_deviation.LG.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_worker_std_deviation_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_worker_std_deviation_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_every_step_merge_fixed_local_L_LG
+        app/PSS_v5_find_L_every_step_merge_fixed_local_L_LG.cpp
+        core/Searching.202110151700.PSS_v5.LG.every_step_merge.cpp)
+target_compile_options(
+        PSS_v5_find_L_every_step_merge_fixed_local_L_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_every_step_merge_fixed_local_L_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_fixed_local_L_update_positions_LG
+        app/PSS_v5_find_L_fixed_local_L_update_positions_LG.cpp
+        core/Searching.202111210046.PSS_v5.LG.update_positions.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_find_L_fixed_local_L_update_positions_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_fixed_local_L_update_positions_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_every_step_merge_LG_for_ratio_1st_half
+        app/PSS_v5_find_L_every_step_merge_LG_for_ratio_1st_half.cpp
+        core/Searching.202111251430.PSS_v5.LG.TQueue.ratio_1st_half.cpp
+        include/utils.cpp)
+target_compile_options(
+        PSS_v5_find_L_every_step_merge_LG_for_ratio_1st_half
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_every_step_merge_LG_for_ratio_1st_half
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_no_staged_LG
+        app/PSS_v5_find_L_no_staged_LG.cpp
+        core/Searching.202111301625.PSS_v5.LG.no_staged.cpp)
+target_compile_options(
+        PSS_v5_find_L_no_staged_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_no_staged_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        NSG_omp_profile_multi_queues
+        app/NSG_omp_profile_multi_queues.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202204201951.omp_profile_multi_queues.cpp)
+target_compile_options(
+        NSG_omp_profile_multi_queues
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        NSG_omp_profile_multi_queues
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        NSG_omp_profile_multi_queues_LG
+        app/NSG_omp_profile_multi_queues_LG.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202204201951.omp_profile_multi_queues.cpp)
+target_compile_options(
+        NSG_omp_profile_multi_queues_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        NSG_omp_profile_multi_queues_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+add_executable(
+        PSS_v5_find_L_path_wise_every_step_merge_LG
+        app/PSS_v5_find_L_path_wise_every_step_merge_LG.cpp
+        core/Searching.202204210403.PSS_v5.large_graph.path_wise_every_step_merge.cpp)
+target_compile_options(
+        PSS_v5_find_L_path_wise_every_step_merge_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        PSS_v5_find_L_path_wise_every_step_merge_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
+
+# PCM LIB
+find_package(Threads)
+set(PCM_SOURCES
+        include/PCM/src/cpucounters.cpp
+        include/PCM/src/utils.cpp
+        include/PCM/src/msr.cpp
+        include/PCM/src/pci.cpp
+        include/PCM/src/mmio.cpp
+        include/PCM/src/bw.cpp
+        include/PCM/src/topology.cpp
+        include/PCM/src/debug.cpp
+        include/PCM/src/threadpool.cpp
+        include/PCM/src/dashboard.cpp
+        include/PCM/src/resctrl.cpp)
+
+add_library(LIB_PCM_MEM
+        include/pcm_mem.cpp
+        ${PCM_SOURCES})
+target_link_libraries(LIB_PCM_MEM PRIVATE Threads::Threads)
+
+# PCM Demo
+add_executable(pcm_demo
+        app/pcm_demo.cpp)
+target_link_libraries(pcm_demo PRIVATE
+        LIB_PCM_MEM)
+
+# PCM NSG
+add_executable(pcm_mem_NSG_find_L_LG
+        app/pcm_mem_NSG_find_L_LG.cpp)
+target_compile_options(pcm_mem_NSG_find_L_LG PRIVATE
+        ${CXX_OPTION})
+target_link_libraries(pcm_mem_NSG_find_L_LG PRIVATE
+        ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG LIB_PCM_MEM)
+
+# PCM NSG Inter-Query
+add_executable(pcm_mem_NSG_inter_query_LG
+        app/pcm_mem_NSG_inter_query_LG.cpp)
+target_compile_options(pcm_mem_NSG_inter_query_LG PRIVATE
+        ${CXX_OPTION})
+target_link_libraries(pcm_mem_NSG_inter_query_LG PRIVATE
+        ${Boost_LIBRARIES} OpenMP::OpenMP_CXX NSG LIB_PCM_MEM)
+
+#PCM NSG Edge-Wise Parallel
+add_executable(
+        pcm_mem_NSG_omp_find_LG
+        app/pcm_mem_NSG_omp_find_LG.cpp
+        include/efanna2e/index.cpp include/efanna2e/index_nsg.202101172012.omp.cpp)
+target_compile_options(
+        pcm_mem_NSG_omp_find_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_NSG_omp_find_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)
+
+#PCM PSS_v5_index_adaptive_merge (iQAN)
+add_executable(
+        pcm_mem_PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        app/pcm_mem_PSS_v5_find_L_index_adaptive_merge_L_master_LG.cpp
+        core/Searching.202111152031.PSS_v5.index_adaptive_merge_L_master.LG.cpp
+        include/utils.cpp)
+target_compile_options(
+        pcm_mem_PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_PSS_v5_find_L_index_adaptive_merge_L_master_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)
+
+#PCM PSS_v5 (Exhaust)
+add_executable(
+        pcm_mem_PSS_v5_LG
+        app/pcm_mem_PSS_v5_LG.cpp
+        core/Searching.202102031939.PSS_v5.large_graph.dist_thresh.profiling.cpp)
+target_compile_options(
+        pcm_mem_PSS_v5_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_PSS_v5_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)
+
+#PCM PathWise (every step merge)
+add_executable(
+        pcm_mem_PathWise_every_step_merge_LG
+        app/pcm_mem_PathWise_every_step_merge_LG.cpp
+        core/Searching.202204210403.PSS_v5.large_graph.path_wise_every_step_merge.cpp)
+target_compile_options(
+        pcm_mem_PathWise_every_step_merge_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_PathWise_every_step_merge_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)
+
+#PCM NoStaged
+add_executable(
+        pcm_mem_NoStaged_LG
+        app/pcm_mem_NoStaged_LG.cpp
+        core/Searching.202111301625.PSS_v5.LG.no_staged.cpp)
+target_compile_options(
+        pcm_mem_NoStaged_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_NoStaged_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)
+
+#PCM NoSync
+add_executable(
+        pcm_mem_NoSync_merge_once_LG
+        app/pcm_mem_NoSync_merge_once_LG.cpp
+        core/Searching.202110151700.PSS_v5.LG.every_step_merge.cpp)
+target_compile_options(
+        pcm_mem_NoSync_merge_once_LG
+        PRIVATE ${CXX_OPTION})
+target_link_libraries(
+        pcm_mem_NoSync_merge_once_LG
+        PRIVATE ${Boost_LIBRARIES} OpenMP::OpenMP_CXX LIB_PCM_MEM)

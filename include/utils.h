@@ -346,6 +346,12 @@ double get_normalized_std_dev(const std::vector<distf> &distances);
  */
 idi get_index_median(const std::vector<idi> &ids);
 
+/**
+ * Get the mean of all given indices
+ * @param ids
+ * @return
+ */
+idi get_index_mean(const std::vector<idi> &ids);
 } // PANNS
 
 #endif //BATCH_SEARCHING_UTILS_H

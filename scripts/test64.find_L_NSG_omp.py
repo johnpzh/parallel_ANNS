@@ -21,7 +21,8 @@ P_level = " ".join(targets)
 
 env_vars = os.environ
 env_vars["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
-bin=F"numactl -m 0 ./{app}"
+bin=F"numactl -p 0 ./{app}"
+# bin=F"numactl -m 0 ./{app}"
 # bin="numactl -m 0 ./profile_find_L_seq_single_query_simple_search"
 
 if data == "sift1m":
@@ -56,5 +57,5 @@ subprocess.run(command, env=env_vars, shell=True, check=True)
 rows_file = F"output.{label}.rows.txt"
 table_file = F"output.{label}.table.txt"
 subprocess.run(F"python3 ../scripts/output_surrounding.py {raw_file} {rows_file}", shell=True, check=True)
-subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:8", shell=True, check=True)
+subprocess.run(F"python3 ../scripts/output_format.py {rows_file} {table_file} 0:9", shell=True, check=True)
 

@@ -1,74 +1,96 @@
 #!/usr/local/bin/zsh
 
-set -x
+zsh ../scripts/knl/sh143.NSG_omp_mem_bdw_deep100m.sh
+zsh ../scripts/knl/sh145.PSS_v5_adaptive_merge_L_master_mem_bdw_deep100m.sh
+zsh ../scripts/knl/sh146.PathWise_every_step_merge_LG_mem_bdw_deep100m.sh
+zsh ../scripts/knl/sh147.NoStaged_mem_bdw_deep100m.sh
+zsh ../scripts/knl/sh148.NoSync_mem_bdw_deep100m.sh
 
-#data_dir="/scratch/zpeng/data"
-data_dir="/home/zpeng/data"
-#data_dir="/scratch/zpeng"
-data=deep100m
+#
+##data_dir="/scratch/zpeng/data"
+#data_dir="/home/zpeng/data"
+##data_dir="/scratch/zpeng"
+##app_tag="worker_std_deviation"
+#app_tag="NSG_pcm_mem"
+##num_t=32
+##bin="python ../scripts/test78.PSS_v5_work_std_deviation_ranged_L.py ./PSS_v5_worker_std_deviation_LG"
+##bin="./pcm_mem_NSG_find_L_LG"
+#bin="python3 ../scripts/test48.find_L_simple_search.py ./pcm_mem_NSG_find_L_LG"
+#output="output_${app_tag}.txt"
+#:> ${output}
+#set -x
+#
+#P_target=0.999
+###################
+### SIFT1M
+###################
+#dataset=sift1m
+#L_lower=427
+#L_upper=428
+#{
+#    echo ""
+#    echo "###############"
+#    echo "## ${dataset}"
+#    echo "###############"
+#} >> ${output}
+#eval ${bin} ${data_dir} ${dataset} ${app_tag} ${L_lower} ${L_upper} ${P_target} | tee -a ${output}
+#
+###################
+### DEEP100M
+###################
+#dataset=deep100m
+#L_lower=4399
+#L_upper=4399
+#{
+#    echo ""
+#    echo "###############"
+#    echo "## ${dataset}"
+#    echo "###############"
+#} >> ${output}
+#eval ${bin} ${data_dir} ${dataset} ${app_tag} ${L_lower} ${L_upper} ${P_target} | tee -a ${output}
+#
+###################
+### GIST1M
+###################
+#dataset=gist1m
+#L_lower=2280
+#L_upper=2281
+#{
+#    echo ""
+#    echo "###############"
+#    echo "## ${dataset}"
+#    echo "###############"
+#} >> ${output}
+#eval ${bin} ${data_dir} ${dataset} ${app_tag} ${L_lower} ${L_upper} ${P_target} | tee -a ${output}
+#
+###################
+### DEEP10M
+###################
+#dataset=deep10m
+#L_lower=994
+#L_upper=995
+#{
+#    echo ""
+#    echo "###############"
+#    echo "## ${dataset}"
+#    echo "###############"
+#} >> ${output}
+#eval ${bin} ${data_dir} ${dataset} ${app_tag} ${L_lower} ${L_upper} ${P_target} | tee -a ${output}
+#
+###################
+### SIFT100M
+###################
+#dataset=sift100m
+#L_lower=1039
+#L_upper=1040
+#{
+#    echo ""
+#    echo "###############"
+#    echo "## ${dataset}"
+#    echo "###############"
+#} >> ${output}
+#eval ${bin} ${data_dir} ${dataset} ${app_tag} ${L_lower} ${L_upper} ${P_target} | tee -a ${output}
 
-####################################
-#### PSS Multiple Threads
-####################################
-bin="python3 ../scripts/test51.PSS_v5_dt_profiling_ranged_L.py"
-app="PSS_v5_LG_separate_search"
-#K=10
-app_tag="PSS_v5_separate_search"
-################################
-#### Latency
-################################
-
-#############
-# 32 Threads
-#############
-#for num_t in 8; do
-#for num_t in 32; do
-num_t=8
-
-P_target=0.999
-L_Seq=3340
-L_low=3340
-L_up=3340
-L_step=100
-X_low=17
-X_up=17
-X_step=4
-tag="${app_tag}_T${num_t}_P${P_target}"
-eval ${bin} ${app} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} 0 0 0 ${X_low} ${X_up} ${X_step} 0 0 0
-table_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.table.txt"
-selected_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.selected.txt"
-python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2 ${P_target}
-
-P_target=0.995
-L_Seq=1143
-L_low=1143
-L_up=1143
-L_step=20
-X_low=17
-X_up=17
-X_step=4
-tag="${app_tag}_T${num_t}_P${P_target}"
-eval ${bin} ${app} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} 0 0 0 ${X_low} ${X_up} ${X_step} 0 0 0
-table_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.table.txt"
-selected_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.selected.txt"
-python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2 ${P_target}
-
-P_target=0.990
-L_Seq=711
-L_low=711
-L_up=711
-L_step=20
-X_low=17
-X_up=17
-X_step=4
-tag="${app_tag}_T${num_t}_P${P_target}"
-eval ${bin} ${app} ${data_dir} ${data} ${tag} ${num_t} ${L_low} ${L_up} ${L_step} 0 0 0 ${X_low} ${X_up} ${X_step} 0 0 0
-table_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.table.txt"
-selected_file="output.${data}.${app_tag}_T${num_t}_P${P_target}.selected.txt"
-python3 ../scripts/output_find_runtime_above_presicion.py ${table_file} ${selected_file} 0 2 ${P_target}
-#done
-
-######
 
 set +x
 

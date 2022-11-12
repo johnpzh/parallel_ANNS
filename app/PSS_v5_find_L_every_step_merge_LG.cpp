@@ -72,7 +72,8 @@ void search_one_time(
                 true_nn_list,
                 set_K_list,
                 recalls,
-                L_master);
+                K);
+//                L_master);
     }
     {// Basic output
         printf(

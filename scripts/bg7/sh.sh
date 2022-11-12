@@ -1,88 +1,22 @@
 #!/usr/local/bin/zsh
 
 data_dir="/scratch/zpeng/data"
-app_tag="worker_deviation"
+app_tag="worker_std_deviation"
 num_t=32
+bin="python ../scripts/test78.PSS_v5_work_std_deviation_ranged_L.py ./PSS_v5_worker_std_deviation_LG"
+
 set -x
+
 ##################
-#base_dir="sift1m"
-#data="sift"
-#L=100
-#X=999999999
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#
-#L=100
-#X=17
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#
-#L=100
-#X=8
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
+data="deep100m"
+L_master_lower=90
+L_master_upper=150
+L_master_step=3
 
-
-###################
-base_dir="deep1b"
-data="deep100M"
-#L=104
-#X=999999999
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#
-#L=104
-#X=112
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#
-#L=104
-#X=56
-#output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-
-L=104
-for X in 112; do
-#for X in 999999999 112 56 28 14 7 3; do
-    output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-
-    ./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
+for std_dev_threshold in 0.2 0.4 0.8 1.6 3.2; do
+    tag="${app_tag}.T${num_t}.SD${std_dev_threshold}"
+    eval ${bin} ${data_dir} ${data} ${tag} ${num_t} ${L_master_lower} ${L_master_upper} ${L_master_step} 0 0 0 ${std_dev_threshold}
 done
-
-
-###################
-#base_dir="sift1b"
-#data="sift100M"
-##L=100
-##X=999999999
-##output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-##
-##./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-##
-##L=100
-##X=39
-##output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-##
-##./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-##
-##L=100
-##X=19
-##output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-##
-##./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#
-#L=100
-#for X in 9 4 2; do
-#    output="output.${app_tag}.${data}.T${num_t}.L${L}.X${X}.txt"
-#
-#    ./PSS_v5_worker_variation_LG ${data_dir}/${base_dir}/${data}_base.fvecs ${data_dir}/${base_dir}/${data}_query.fvecs ${data_dir}/${base_dir}/${data}.nsg 100 output.ivcs ${data_dir}/${base_dir}/${data}.true-100_NN.v2.binary ${num_t} ${L} ${L} 1 0 0 0 ${X} ${X} 1 0 0 0 2>&1 | tee ${output}
-#done
 
 
 
